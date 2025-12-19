@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vite --mode dev",
     "build": "run-p type-check \"build-only {@}\" --",
-    "preview": "vite preview",
+    "preview": "vite preview --mode prod",
     "build-only": "vite build --mode prod",
     "type-check": "vue-tsc --build",
     "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
@@ -29,6 +29,8 @@
     "format": "使用 prettier 对代码进行格式化，确保代码风格一致，‘--write’ 会修改文件，‘--experimental-cli’ 是启用实验性 CLI 功能"
   },
   "dependencies": {
+    "axios": "^1.13.2",
+    "naive-ui": "^2.43.2",
     "pinia": "^3.0.4",
     "vue": "^3.5.25",
     "vue-router": "^4.6.3"
@@ -54,12 +56,12 @@
     "eslint-plugin-oxlint": "~1.29.0",
     "eslint-plugin-vue": "~10.5.1",
     "jiti": "^2.6.1",
-    "naive-ui": "^2.43.2",
     "npm-run-all2": "^8.0.4",
     "oxlint": "~1.29.0",
     "prettier": "3.6.2",
     "rollup-plugin-visualizer": "^6.0.5",
     "typescript": "~5.9.0",
+    "unocss": "^66.5.10",
     "unplugin-auto-import": "^20.3.0",
     "unplugin-vue-components": "^30.0.0",
     "vfonts": "^0.0.3",

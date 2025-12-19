@@ -1,0 +1,59 @@
+/**
+ * 系统资源
+ */
+export default interface SysPermission {
+  /**
+   * 主键ID
+   */
+  id: string
+
+  /**
+   * 父资源id
+   */
+  pid?: string
+
+  /**
+   * 资源名称
+   */
+  permissionName: string
+
+  /**
+   * 资源唯一编码
+   */
+  permissionCode: string
+
+  /**
+   * 资源类型，1-接口、2-页面、3-页面元素
+   */
+  permissionType?: 1 | 2 | 3
+
+  /**
+   * 前端组件地址（type为页面时生效）
+   */
+  component?: string
+
+  /**
+   * 图标
+   */
+  icon?: string
+
+  /**
+   * 是否可见
+   */
+  visible?: boolean
+
+  /**
+   * 排序
+   */
+  sort?: number
+
+  /**
+   * 重定向
+   */
+  redirect?: string
+
+  /**
+   * 子资源
+   */
+  children?: Array<SysPermission>
+}

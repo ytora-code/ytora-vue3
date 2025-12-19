@@ -7,6 +7,7 @@ import Components from 'unplugin-vue-components/vite'
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import { visualizer } from 'rollup-plugin-visualizer'
+import Unocss from 'unocss/vite'
 import path from 'path'
 
 export default defineConfig(({ mode }) => {
@@ -21,6 +22,7 @@ export default defineConfig(({ mode }) => {
         brotliSize: true, // 显示 Brotli 压缩后的文件大小
       }),
       vue(),
+      Unocss(),
       AutoImport({
         imports: [
           'vue',
@@ -43,6 +45,7 @@ export default defineConfig(({ mode }) => {
       host: env.VITE_APP_HOST,
       port: Number(env.VITE_APP_PORT),
       open: true,
+      root: path.resolve(__dirname, env.VITE_APP_NAME)
     },
     resolve: {
       alias: {
