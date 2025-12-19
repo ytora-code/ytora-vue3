@@ -1,0 +1,70 @@
+{
+  "name": "ytora-vue3",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite --mode dev",
+    "build": "run-p type-check \"build-only {@}\" --",
+    "preview": "vite preview",
+    "build-only": "vite build --mode prod",
+    "type-check": "vue-tsc --build",
+    "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
+    "lint:eslint": "eslint . --fix --cache",
+    "lint": "run-s lint:*",
+    "format": "prettier --write --experimental-cli src/"
+  },
+  "_script-desc": {
+    "dev": "本地运行项目",
+    "build": "构建项目，首先执行类型检查，然后构建生产版本。‘run-p’ 会并行执行 ‘type-check’ 和 ‘build-only’",
+    "preview": "对项目的打包结构进行预览",
+    "build-only": "仅构建项目，不做类型检查",
+    "type-check": "运行 TypeScript 类型检查，确保代码中没有类型错误，使用 vue-tsc 进行 Vue 项目的类型检查",
+    "lint:oxlint": "使用 oxlint 工具进行静态代码检查，修复能自动修复的错误，忽略 .gitignore 中指定的文件，检查代码的正确性",
+    "lint:eslint": "使用 eslint 进行 JavaScript/TypeScript 代码的静态分析，修复能自动修复的问题，启用缓存加速检查",
+    "lint": "运行所有 lint 相关命令，先执行 lint:oxlint，再执行 lint:eslint，确保代码符合代码质量要求",
+    "format": "使用 prettier 对代码进行格式化，确保代码风格一致，‘--write’ 会修改文件，‘--experimental-cli’ 是启用实验性 CLI 功能"
+  },
+  "dependencies": {
+    "pinia": "^3.0.4",
+    "vue": "^3.5.25",
+    "vue-router": "^4.6.3"
+  },
+  "devDependencies": {
+    "@prettier/plugin-oxc": "^0.0.5",
+    "@tsconfig/node24": "^24.0.3",
+    "@types/node": "^24.10.1",
+    "@vicons/antd": "^0.13.0",
+    "@vicons/carbon": "^0.13.0",
+    "@vicons/fa": "^0.13.0",
+    "@vicons/fluent": "^0.13.0",
+    "@vicons/ionicons4": "^0.13.0",
+    "@vicons/ionicons5": "^0.13.0",
+    "@vicons/material": "^0.13.0",
+    "@vicons/tabler": "^0.13.0",
+    "@vicons/utils": "^0.1.4",
+    "@vitejs/plugin-vue": "^6.0.2",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "@vue/eslint-config-typescript": "^14.6.0",
+    "@vue/tsconfig": "^0.8.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-oxlint": "~1.29.0",
+    "eslint-plugin-vue": "~10.5.1",
+    "jiti": "^2.6.1",
+    "naive-ui": "^2.43.2",
+    "npm-run-all2": "^8.0.4",
+    "oxlint": "~1.29.0",
+    "prettier": "3.6.2",
+    "rollup-plugin-visualizer": "^6.0.5",
+    "typescript": "~5.9.0",
+    "unplugin-auto-import": "^20.3.0",
+    "unplugin-vue-components": "^30.0.0",
+    "vfonts": "^0.0.3",
+    "vite": "^7.2.4",
+    "vite-plugin-vue-devtools": "^8.0.5",
+    "vue-tsc": "^3.1.5"
+  }
+}
