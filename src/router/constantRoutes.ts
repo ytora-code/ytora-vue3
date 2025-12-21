@@ -49,15 +49,12 @@ const notFound: SysPermission = {
   permissionCode: '/:catchAll(.*)',
   permissionName: '404',
   permissionType: 2,
+  redirect: '/home',
   component: '/layouts/404/index.vue',
   visible: false,
   children: [],
 }
 
-const constantRoutes: SysPermission[] = [
-  login,
-  home,
-  //notFound
-]
+const constantRoutes: SysPermission[] = [login, home, notFound]
 
 export default constantRoutes

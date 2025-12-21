@@ -1,0 +1,79 @@
+[
+  {
+    "id": "1",
+    "permissionName": "控制台",
+    "permissionCode": "dashboard",
+    "permissionType": 2,
+    "icon": "SpeedometerOutline",
+    "component": "/views/dashboard/index.vue",
+    "visible": true,
+    "sort": 1
+  },
+  {
+    "id": "2",
+    "permissionName": "系统管理",
+    "permissionCode": "system",
+    "permissionType": 1,
+    "icon": "SettingsOutline",
+    "visible": true,
+    "sort": 2,
+    "children": [
+      {
+        "id": "3",
+        "permissionName": "用户管理",
+        "permissionCode": "user-manage",
+        "permissionType": 2,
+        "icon": "PeopleOutline",
+        "component": "/views/rbac/user/index.vue",
+        "visible": true
+      },
+      {
+        "id": "4",
+        "permissionName": "角色管理",
+        "permissionCode": "role-manage",
+        "permissionType": 2,
+        "icon": "ShieldCheckmarkOutline",
+        "component": "/views/rbac/role/index.vue",
+        "visible": true
+      },
+      {
+        "id": "5",
+        "permissionName": "权限菜单",
+        "permissionCode": "permission-manage",
+        "permissionType": 2,
+        "icon": "KeyOutline",
+        "component": "/views/rbac/permission/index.vue",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "6",
+    "permissionName": "内容管理",
+    "permissionCode": "content",
+    "permissionType": 1,
+    "icon": "BookOutline",
+    "visible": true,
+    "sort": 3,
+    "children": [
+      {
+        "id": "7",
+        "permissionName": "文章列表",
+        "permissionCode": "article-list",
+        "permissionType": 2,
+        "icon": "DocumentTextOutline",
+        "component": "/views/content/article/index.vue",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "8",
+    "permissionName": "隐藏测试",
+    "permissionCode": "hidden-test",
+    "permissionType": 2,
+    "icon": "EyeOffOutline",
+    "component": "/views/test/index.vue",
+    "visible": false
+  }
+]
