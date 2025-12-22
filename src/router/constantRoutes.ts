@@ -55,6 +55,6 @@ const notFound: SysPermission = {
   children: [],
 }
 
-const constantRoutes: SysPermission[] = [login, home, ]
+const constantRoutes: SysPermission[] = [login, home]
 
 export default constantRoutes

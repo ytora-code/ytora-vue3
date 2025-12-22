@@ -19,14 +19,14 @@ class LoginApi extends BaseApi {
    * 根据token获取在线用户详情
    */
   getUserDetailByToken = () => {
-    return this.get<LoginUserDetail>("queryDetailByToken")
+    return this.get<LoginUserDetail>('queryDetailByToken')
   }
 
   /**
    * 退出
    */
   logout = () => {
-    return this.get<string>("logout")
+    return this.get<string>('logout')
   }
 }
 

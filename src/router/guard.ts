@@ -39,33 +39,36 @@ export function setupRouterGuard(router: Router) {
         //访问其他页面时
         else {
           //如果刷新了浏览器，则pinia数据会清空，此时需要重新给获取用户数据并保持到pinia
-          if (userStore.permissions.length === 0) {
-            console.log("用户数据被刷新，重新请求授权")
-            loginApi.getUserDetailByToken().then(userDetail => {
-              userStore.id = userDetail.id
-              userStore.userName = userDetail.userName
-              userStore.realName = userDetail.realName
-              userStore.avatar = userDetail.avatar
-              userStore.phone = userDetail.phone
-              userStore.email = userDetail.email
-              userStore.remark = userDetail.remark
-              // userStore.roles = userDetail.roles
-              userStore.departCode = userDetail.departCode
-              userStore.departName = userDetail.departName
-              userStore.updatePermission(userDetail.permissions)
+          if (!userStore.permissions) {
+            console.log('用户数据被刷新，重新请求授权')
+            loginApi
+              .getUserDetailByToken()
+              .then((userDetail) => {
+                userStore.id = userDetail.id
+                userStore.userName = userDetail.userName
+                userStore.realName = userDetail.realName
+                userStore.avatar = userDetail.avatar
+                userStore.phone = userDetail.phone
+                userStore.email = userDetail.email
+                userStore.remark = userDetail.remark
+                // userStore.roles = userDetail.roles
+                userStore.departCode = userDetail.departCode
+                userStore.departName = userDetail.departName
+                userStore.updatePermission(userDetail.permissions)
 
-              //next()会造成刷新后白屏
-              next({...to, replace: true})
-            }).catch(error => {
-              console.log("授权不通过，跳到登录页面")
-              console.log(error)
+                //next()会造成刷新后白屏
+                next({ ...to, replace: true })
+              })
+              .catch((error) => {
+                console.log('授权不通过，跳到登录页面')
+                console.log(error)
 
-              //退出，然后跳转到登录页面
-              loginApi.logout().finally(() => {
-                removeCookie("Authorization")
-                next({path: '/login', query: {redirect: to.path}})
-              });
-            })
+                //退出，然后跳转到登录页面
+                loginApi.logout().finally(() => {
+                  removeCookie('Authorization')
+                  next({ path: '/login', query: { redirect: to.path } })
+                })
+              })
           }
           //没有刷新浏览器，可以放行
           else {

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import Sider from './sider/index.vue'
+import Header from './header/index.vue'
+import Content from './content/index.vue'
 </script>
 
 <template>
@@ -15,14 +17,11 @@ import Sider from './sider/index.vue'
 
     <n-layout>
       <n-layout-header bordered>
-        <div h="[50px]">
-        </div>
+        <Header></Header>
       </n-layout-header>
 
       <n-layout-content>
-        <div h="[calc(100vh-60px)]">
-          <router-view></router-view>
-        </div>
+        <Content></Content>
       </n-layout-content>
     </n-layout>
   </n-layout>

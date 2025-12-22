@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { FormInst } from 'naive-ui'
-import {useUserStore} from "@/stores/userStore.ts";
+import { useUserStore } from '@/stores/userStore.ts'
 import { loginApi } from '@/api/LoginApi.ts'
 import type LoginReq from '@/types/req/LoginReq.ts'
 import type LoginUserDetail from '@/types/resp/LoginUserDetail.ts'
@@ -55,7 +55,6 @@ const doLogin = async () => {
     // 3. 登录成功，跳转
     console.log('登录成功', data)
     await router.replace((route.query.redirect ?? '/') as string)
-
   } catch (err) {
     // 情况 A: 表单校验没通过 (NaiveUI 抛出的 err 是数组)
     // 情况 B: 接口调用错误

@@ -44,7 +44,7 @@ export const useUserStore = defineStore('user', () => {
   /**
    * 当前用户的拥有的资源
    */
-  const permissions = ref<SysPermission[]>([])
+  const permissions = ref<SysPermission[]>()
 
   /**
    * 更新权限的函数，单独抽取出来作为一个方法，是因为当权限更新时，需要同步更新动态路由

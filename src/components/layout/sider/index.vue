@@ -12,7 +12,10 @@ const menuOptions = ref<MenuOption[]>([])
 
 const collapsed = ref(false)
 
-const transformPermissionToMenu = (permissions: SysPermission[]): MenuOption[] => {
+const transformPermissionToMenu = (permissions: SysPermission[] | undefined): MenuOption[] => {
+  if (!permissions) {
+    return []
+  }
   // 1. 先过滤掉不可见的
   const visibleItems = permissions.filter((item) => item.visible !== false)
 
@@ -20,7 +23,7 @@ const transformPermissionToMenu = (permissions: SysPermission[]): MenuOption[] =
 
   visibleItems.forEach((item) => {
     // 获取当前项的可见子项
-    const visibleChildren = item.children?.filter(c => c.visible !== false) || []
+    const visibleChildren = item.children?.filter((c) => c.visible !== false) || []
 
     // 如果菜单只有一个子菜单
     if (visibleChildren.length === 1) {
@@ -35,20 +38,14 @@ const transformPermissionToMenu = (permissions: SysPermission[]): MenuOption[] =
       label: item.permissionName,
       key: item.permissionCode,
       icon: renderAsyncIcon(item.icon),
-      children: visibleChildren.length > 0
-        ? transformPermissionToMenu(visibleChildren)
-        : undefined,
+      children: visibleChildren.length > 0 ? transformPermissionToMenu(visibleChildren) : undefined,
     }
 
     // 设置路由跳转 (通常只有叶子节点需要 RouterLink)
     // 只要没有子菜单了，就加上跳转
     if (item.permissionType === 2 && item.permissionCode && visibleChildren.length === 0) {
       menuOption.label = () =>
-        h(
-          RouterLink,
-          { to: item.permissionCode },
-          { default: () => item.permissionName },
-        )
+        h(RouterLink, { to: item.permissionCode }, { default: () => item.permissionName })
     }
 
     result.push(menuOption)
@@ -68,7 +65,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div h-screen>
+  <n-scrollbar h-screen>
     <header flex items-center gap-3 p-3>
       <n-image width="66" height="66" :src="userStore.avatar" />
       <n-gradient-text size="20">{{ userStore.realName }}</n-gradient-text>
@@ -80,7 +77,8 @@ onMounted(async () => {
       :collapsed-icon-size="22"
       :options="menuOptions"
     />
-  </div>
+  </n-scrollbar>
+
 </template>
 
 <style scoped></style>

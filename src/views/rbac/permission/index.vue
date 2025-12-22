@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div>USER</div>
+  <div>PERMISSION</div>
 </template>
 
 <style scoped></style>
