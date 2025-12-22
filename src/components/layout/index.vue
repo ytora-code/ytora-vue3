@@ -15,11 +15,14 @@ import Sider from './sider/index.vue'
 
     <n-layout>
       <n-layout-header bordered>
-        <div h="[50px]"></div>
+        <div h="[50px]">
+        </div>
       </n-layout-header>
 
       <n-layout-content>
-        <div h="[calc(100vh-60px)]"></div>
+        <div h="[calc(100vh-60px)]">
+          <router-view></router-view>
+        </div>
       </n-layout-content>
     </n-layout>
   </n-layout>

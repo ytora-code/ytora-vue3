@@ -48,7 +48,7 @@ const toRoutes = (permissions: SysPermission[]): RouteRecordRaw[] => {
         //没找到，在根据路由寻找
         if (!component) {
           component =
-            viewComponents[`/src/view${normalizePath(permission.permissionCode)}/index.vue`]
+            viewComponents[`/src/views${normalizePath(permission.permissionCode)}/index.vue`]
         }
         //没找到，则直接使用组件地址
         if (!component) {

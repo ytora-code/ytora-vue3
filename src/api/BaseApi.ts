@@ -1,5 +1,5 @@
 import { type AxiosInstance, type AxiosResponse } from 'axios'
-import axiosInstance from '@/utils/request'
+import axiosInstance from '@/api/request.ts'
 import type IBaseResp from '@/types/BaseResp.ts'
 import responseHandler from './RespHandler.ts'
 
@@ -32,11 +32,11 @@ export default abstract class BaseApi {
    * resultHandler会统一处理响应值IResp
    * 返回值为Promise的表达式，如果加了await，返回值就变成Promise里装的值
    */
-  protected get = async <R = unknown, P extends Record<string, unknown> = Record<string, unknown>>(
+  protected get = async <R = unknown, P extends object = object>(
     uri: string,
     params?: P,
   ): Promise<R> => {
-    this.handlerParam<P>(params)
+    this.handlerParam(params)
     // 注意：此处假设你的 axiosInstance 经过拦截器处理后，.get 直接返回了 IBaseResp<R>
     const response = await this.request.get<never, IBaseResp<R>>(`${this.prefix}${uri}`, { params })
     return responseHandler<R>(response)
@@ -52,16 +52,13 @@ export default abstract class BaseApi {
    * @template T post请求的请求体参数类型
    * @template P post请求的请求行参数类型
    */
-  protected post = async <
-    R = unknown,
-    T extends Record<string, unknown> = Record<string, unknown>,
-    P extends Record<string, unknown> = Record<string, unknown>,
-  >(
+  protected post = async <R = unknown, T extends object = object, P extends object = object>(
     uri: string,
     data?: T,
     params?: P,
   ): Promise<R> => {
-    this.handlerParam<P>(params)
+    this.handlerParam(data)
+    this.handlerParam(params)
     const response = await this.request.post<never, IBaseResp<R>>(`${this.prefix}${uri}`, data, {
       params,
     })
@@ -78,16 +75,13 @@ export default abstract class BaseApi {
    * @template T put请求的请求体参数类型
    * @template P put请求的请求行参数类型
    */
-  protected put = async <
-    R = unknown,
-    T extends Record<string, unknown> = Record<string, unknown>,
-    P extends Record<string, unknown> = Record<string, unknown>,
-  >(
+  protected put = async <R = unknown, T extends object = object, P extends object = object>(
     uri: string,
     data?: T,
     params?: P,
   ): Promise<R> => {
-    this.handlerParam<P>(params)
+    this.handlerParam(data)
+    this.handlerParam(params)
     const response = await this.request.put<never, IBaseResp<R>>(`${this.prefix}${uri}`, data, {
       params,
     })
@@ -109,7 +103,7 @@ export default abstract class BaseApi {
       )
       return responseHandler<R>(response)
     }
-    return Promise.reject('delete请求必须指定id参数')
+    return Promise.reject(new Error('delete请求必须指定id参数'))
   }
 
   /**上面的函数，只能用于返回值为IResp的一般接口，对于非一般接口(比如文件下载接口，响应体装的是二进制流)，需要额外处理*/
@@ -118,7 +112,7 @@ export default abstract class BaseApi {
     // 预留占位
   }
 
-  protected download = async <P extends Record<string, unknown> = Record<string, unknown>>(
+  protected download = async <P extends object = object>(
     uri: string,
     params?: P,
   ): Promise<void> => {
@@ -135,8 +129,7 @@ export default abstract class BaseApi {
       // 支持两种写法：filename= 或 filename*=UTF-8''
       const match = disposition.match(/filename\*=UTF-8''(.+)|filename="?([^"]+)"?/)
       if (match) {
-        // 解决 Argument of type string | undefined 报错：
-        // 先通过逻辑或合并结果，再确认非空后传入
+        // 解决 Argument of type string | undefined 报错
         const rawFileName = match[1] || match[2]
         if (rawFileName) {
           fileName = decodeURIComponent(rawFileName)
@@ -160,10 +153,12 @@ export default abstract class BaseApi {
    * eg: {name:"zs", age:null, hobbies: []} -> {name:"zs"}
    * @param params
    */
-  private handlerParam = <T extends Record<string, unknown>>(params?: T): T | undefined => {
+  private handlerParam = <T extends object>(params?: T): T | undefined => {
     if (!params || typeof params !== 'object') return params
 
-    const obj = params as Record<string, unknown>
+    // 关键点：使用双重断言将 object 转换为可操作的 Record
+    // 这样既符合外部 interface 传入的要求，也满足内部 delete/赋值 的需求
+    const obj = params as unknown as Record<string, unknown>
 
     Object.keys(obj).forEach((k) => {
       const v = obj[k]

@@ -22,7 +22,7 @@ const home: SysPermission = {
   component: '/components/layout/index.vue',
   redirect: '/home',
   visible: true,
-  icon: 'home',
+  icon: 'HomeOutline',
   sort: 1,
   children: [
     {
@@ -31,9 +31,9 @@ const home: SysPermission = {
       permissionCode: '/home',
       permissionName: '首页',
       permissionType: 2,
-      component: '/view/home/index.vue',
+      component: '/views/home/index.vue',
       visible: true,
-      icon: 'Avatar',
+      icon: 'HomeOutline',
       sort: 1,
       children: [],
     },
@@ -55,6 +55,6 @@ const notFound: SysPermission = {
   children: [],
 }
 
-const constantRoutes: SysPermission[] = [login, home, notFound]
+const constantRoutes: SysPermission[] = [login, home, ]
 
 export default constantRoutes

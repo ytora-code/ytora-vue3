@@ -1,9 +1,15 @@
 import { nextTick } from 'vue'
+import { createDiscreteApi } from 'naive-ui'
 import type IBaseResp from '@/types/BaseResp.ts'
 import { removeCookie } from '@/utils/cookies.ts'
-import router from '@/router/index'
+import router from '@/router'
 
-const message = useMessage()
+const { message, notification, dialog, loadingBar } = createDiscreteApi([
+  'message',
+  'notification',
+  'dialog',
+  'loadingBar',
+])
 
 /**
  * 因为存在约定，所以对应一般的请求，接口返回值肯定是CommonResponse类型(例外：文件下载接口)
@@ -16,14 +22,14 @@ const RespHandler = async <R = unknown>(response: IBaseResp<R>): Promise<R> => {
   if (response.code === 0) {
     //弹出正常提示
     if (response.message) {
-      message.success(response.message)
+      notification.success({ title: response.message, duration: 3000 })
     }
     return response.data
   }
   //除此之外的其他情况都视为请求失败
   else {
     //弹出错误提示
-    message.success(response.message)
+    notification.error({ title: response.message, duration: 3000 })
 
     //响应码为1或2表示需要重新登录
     if (response.code === 1 || response.code === 2) {

@@ -1,16 +1,16 @@
 import 'virtual:uno.css'
 import '@/assets/reset.css'
-
+import App from './App.vue'
+import router from './router'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
-import App from './App.vue'
-import router from './router'
-
+// 创建App
 const app = createApp(App)
-
-app.use(createPinia())
+// 注册路由
 app.use(router)
+// 注册pinia
+app.use(createPinia())
 
 app.mount('#app')
 

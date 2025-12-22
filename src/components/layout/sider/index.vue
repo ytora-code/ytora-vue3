@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import type { MenuOption } from 'naive-ui'
-import { NIcon } from 'naive-ui'
-import { CaretDownOutline } from '@vicons/ionicons5'
 import { h, onMounted, ref } from 'vue'
 import { renderAsyncIcon } from '@/utils/icon'
 import type SysPermission from '@/views/rbac/permission/type/resp/SysPermission.ts'
@@ -14,125 +12,55 @@ const menuOptions = ref<MenuOption[]>([])
 
 const collapsed = ref(false)
 
-function expandIcon() {
-  return h(NIcon, null, { default: () => h(CaretDownOutline) })
-}
-
 const transformPermissionToMenu = (permissions: SysPermission[]): MenuOption[] => {
-  return permissions
-    .filter((item) => item.visible !== false) // 过滤掉隐藏菜单
-    .map((item) => {
-      const menuOption: MenuOption = {
-        label: item.permissionName,
-        key: item.permissionCode, // 或者 item.id
-        // 如果有子项，递归调用
-        children:
-          item.children && item.children.length > 0
-            ? transformPermissionToMenu(item.children)
-            : undefined,
-        // 存储图标（这里可以直接存渲染函数，也可以存字符串等 renderIcon 处理）
-        icon: renderAsyncIcon(item.icon),
-      }
+  // 1. 先过滤掉不可见的
+  const visibleItems = permissions.filter((item) => item.visible !== false)
 
-      //设置路由跳转
-      // 同样可以在 render-label 里处理逻辑
-      if (item.permissionType === 2 && item.permissionCode) {
-        menuOption.label = () =>
-          h(
-            RouterLink,
-            { to: { name: item.permissionCode } },
-            { default: () => item.permissionName },
-          )
-      }
+  const result: MenuOption[] = []
 
-      return menuOption
-    })
+  visibleItems.forEach((item) => {
+    // 获取当前项的可见子项
+    const visibleChildren = item.children?.filter(c => c.visible !== false) || []
+
+    // 如果菜单只有一个子菜单
+    if (visibleChildren.length === 1) {
+      // 如果只有一个子项，递归处理这个子项，并将其结果直接放入当前层级
+      // 注意：这里用 spread (...) 是因为递归可能返回数组
+      result.push(...transformPermissionToMenu(visibleChildren))
+      return // 跳过当前父级的渲染
+    }
+
+    // 0个或多个子菜单
+    const menuOption: MenuOption = {
+      label: item.permissionName,
+      key: item.permissionCode,
+      icon: renderAsyncIcon(item.icon),
+      children: visibleChildren.length > 0
+        ? transformPermissionToMenu(visibleChildren)
+        : undefined,
+    }
+
+    // 设置路由跳转 (通常只有叶子节点需要 RouterLink)
+    // 只要没有子菜单了，就加上跳转
+    if (item.permissionType === 2 && item.permissionCode && visibleChildren.length === 0) {
+      menuOption.label = () =>
+        h(
+          RouterLink,
+          { to: item.permissionCode },
+          { default: () => item.permissionName },
+        )
+    }
+
+    result.push(menuOption)
+  })
+
+  return result
 }
-
-const a: SysPermission[] = [
-  {
-    id: '1',
-    permissionName: '控制台',
-    permissionCode: '/login',
-    permissionType: 2,
-    icon: 'SpeedometerOutline',
-    component: '/views/dashboard/index.vue',
-    visible: true,
-    sort: 1,
-  },
-  {
-    id: '2',
-    permissionName: '系统管理',
-    permissionCode: '/home',
-    permissionType: 1,
-    icon: 'SettingsOutline',
-    visible: true,
-    sort: 2,
-    children: [
-      {
-        id: '3',
-        permissionName: '用户管理',
-        permissionCode: '/home',
-        permissionType: 2,
-        icon: 'PeopleOutline',
-        component: '/views/rbac/user/index.vue',
-        visible: true,
-      },
-      {
-        id: '4',
-        permissionName: '角色管理',
-        permissionCode: '/home',
-        permissionType: 2,
-        icon: 'ShieldCheckmarkOutline',
-        component: '/views/rbac/role/index.vue',
-        visible: true,
-      },
-      {
-        id: '5',
-        permissionName: '权限菜单',
-        permissionCode: '/home',
-        permissionType: 2,
-        icon: 'KeyOutline',
-        component: '/views/rbac/permission/index.vue',
-        visible: true,
-      },
-    ],
-  },
-  {
-    id: '6',
-    permissionName: '内容管理',
-    permissionCode: '/home',
-    permissionType: 1,
-    icon: 'BookOutline',
-    visible: true,
-    sort: 3,
-    children: [
-      {
-        id: '7',
-        permissionName: '文章列表',
-        permissionCode: '/home',
-        permissionType: 2,
-        icon: 'DocumentTextOutline',
-        component: '/views/content/article/index.vue',
-        visible: true,
-      },
-    ],
-  },
-  {
-    id: '8',
-    permissionName: '隐藏测试',
-    permissionCode: '/home',
-    permissionType: 2,
-    icon: 'EyeOffOutline',
-    component: '/views/test/index.vue',
-    visible: false,
-  },
-]
 
 onMounted(async () => {
   try {
     // 转换并赋值给菜单组件
-    menuOptions.value = transformPermissionToMenu(a)
+    menuOptions.value = transformPermissionToMenu(userStore.permissions)
   } catch (error) {
     console.error('获取菜单失败:', error)
   }
@@ -151,7 +79,6 @@ onMounted(async () => {
       :collapsed-width="64"
       :collapsed-icon-size="22"
       :options="menuOptions"
-      :expand-icon="expandIcon"
     />
   </div>
 </template>
