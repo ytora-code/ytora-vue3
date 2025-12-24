@@ -16,19 +16,19 @@ const formRef = ref<FormInst | null>(null)
 
 const formValue = ref<LoginReq>({
   username: '',
-  password: '',
+  password: ''
 })
 
 const loading = ref(false)
 
 const rules = {
   username: { required: true, message: '输入用户名', trigger: 'blur' },
-  password: { required: true, message: '输入密码', trigger: 'blur' },
+  password: { required: true, message: '输入密码', trigger: 'blur' }
 }
 
 const loginError = ref({
   status: undefined as 'error' | undefined,
-  msg: '',
+  msg: ''
 })
 
 const doLogin = async () => {
@@ -72,7 +72,7 @@ const doLogin = async () => {
 
 const doRegister = () => {
   message.info('暂未开放', {
-    keepAliveOnHover: true,
+    keepAliveOnHover: true
   })
 }
 
@@ -86,10 +86,10 @@ const clearError = () => {
   <div bg="[#EFEFEF]" flex justify-center h="100%" w="100%">
     <div
       bg-white
-      mt="[10%]"
+      mt="[12%]"
       px="[50px]"
       w="[350px]"
-      h="[320px]"
+      h="[280px]"
       pt="[50px]"
       rounded="[3px]"
       shadow-xl
@@ -101,6 +101,8 @@ const clearError = () => {
         :rules="rules"
         @submit.prevent="doLogin"
         autocomplete="on"
+        action="javascript:void(0);"
+        method="post"
       >
         <n-form-item label="用户名" path="username" :validation-status="loginError.status">
           <n-input
@@ -108,8 +110,10 @@ const clearError = () => {
             v-model:value="formValue.username"
             placeholder="输入用户名"
             @input="clearError"
-            name="username"
-            autocomplete="username"
+            :input-props="{
+              name: 'username',
+              autocomplete: 'username'
+            }"
           />
         </n-form-item>
 
@@ -125,9 +129,11 @@ const clearError = () => {
             placeholder="输入密码"
             @input="clearError"
             type="password"
-            name="password"
-            autocomplete="current-password"
             show-password-on="mousedown"
+            :input-props="{
+              name: 'password',
+              autocomplete: 'current-password'
+            }"
           />
         </n-form-item>
 
@@ -143,7 +149,8 @@ const clearError = () => {
               登 录
             </n-button>
             <n-button type="primary" ghost w="[47%]" @click="doRegister" :disabled="loading"
-              >注 册</n-button
+            >注 册
+            </n-button
             >
           </div>
         </n-form-item>

@@ -1,6 +1,6 @@
 import { nextTick } from 'vue'
 import { createDiscreteApi } from 'naive-ui'
-import type IBaseResp from '@/types/BaseResp.ts'
+import type IBaseResp from '@/types/resp/BaseResp.ts'
 import { removeCookie } from '@/utils/cookies.ts'
 import router from '@/router'
 

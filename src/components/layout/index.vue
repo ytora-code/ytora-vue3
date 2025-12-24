@@ -2,6 +2,8 @@
 import Sider from './sider/index.vue'
 import Header from './header/index.vue'
 import Content from './content/index.vue'
+
+const isCollapsed = ref(false)
 </script>
 
 <template>
@@ -11,8 +13,9 @@ import Content from './content/index.vue'
       collapse-mode="width"
       :collapsed-width="90"
       show-trigger="arrow-circle"
+      v-model:collapsed="isCollapsed"
     >
-      <Sider></Sider>
+      <Sider :collapsed="isCollapsed"></Sider>
     </n-layout-sider>
 
     <n-layout>

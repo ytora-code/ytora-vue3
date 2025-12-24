@@ -1,4 +1,4 @@
-import type BaseResp from '@/types/BaseResp.ts'
+import type BaseResp from '@/types/resp/BaseResp.ts'
 
 /**
  * created by yangtong on 2024/3/24 11:21

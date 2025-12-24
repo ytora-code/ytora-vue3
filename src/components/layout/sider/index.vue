@@ -10,7 +10,9 @@ const userStore = useUserStore()
 
 const menuOptions = ref<MenuOption[]>([])
 
-const collapsed = ref(false)
+defineProps<{
+  collapsed: boolean
+}>()
 
 const transformPermissionToMenu = (permissions: SysPermission[] | undefined): MenuOption[] => {
   if (!permissions) {
@@ -67,7 +69,7 @@ onMounted(async () => {
 <template>
   <n-scrollbar h-screen>
     <header flex items-center gap-3 p-3>
-      <n-image width="66" height="66" :src="userStore.avatar" />
+      <n-image width="64" height="64" :src="userStore.avatar" />
       <n-gradient-text size="20">{{ userStore.realName }}</n-gradient-text>
     </header>
 
