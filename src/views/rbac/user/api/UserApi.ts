@@ -2,6 +2,7 @@ import BaseApi from '@/api/BaseApi'
 import type LoginReq from '@/types/req/LoginReq.ts'
 import type SysUserResp from '@/views/rbac/user/type/resp/SysUserResp.ts'
 import type PageResp from '@/types/resp/PageResp.ts'
+import type SysUserReq from '@/views/rbac/user/type/req/SysUserReq.ts'
 
 class UserApi extends BaseApi {
   constructor() {
@@ -9,11 +10,10 @@ class UserApi extends BaseApi {
   }
 
   /**
-   * 登录
-   * @param loginReq 登录时携带的数据
+   * 分页请求
    */
-  page = () => {
-    return this.get<PageResp<SysUserResp>>('page')
+  page = (params: SysUserReq) => {
+    return this.get<PageResp<SysUserResp>, SysUserReq>('page', params)
   }
 
 }
