@@ -5,26 +5,26 @@
  */
 export default interface BaseEntity {
   /** 主键id */
-  id: string;
+  id: string
 
   /** 创建时间 */
-  createTime?: string;
+  createTime?: string
 
   /** 创建人 */
-  createBy?: string;
+  createBy?: string
 
   /** 更新时间 */
-  updateTime?: string;
+  updateTime?: string
 
   /** 更新人 */
-  updateBy?: string;
+  updateBy?: string
 
   /** 创建者所属部门 */
-  departCode?: string;
+  departCode?: string
 
   /** 数据备注 */
-  remark?: string | undefined;
+  remark?: string | undefined
 
   /** 数据状态 */
-  status?: number | undefined;
+  status?: number | undefined
 }

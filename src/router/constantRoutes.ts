@@ -40,21 +40,6 @@ const home: SysPermission = {
   ],
 }
 
-/**
- * 防止控制台报警告：No match found for location with path "xxx"
- */
-const notFound: SysPermission = {
-  id: '4',
-  pid: '0',
-  permissionCode: '/:catchAll(.*)',
-  permissionName: '404',
-  permissionType: 2,
-  redirect: '/home',
-  component: '/layouts/404/index.vue',
-  visible: false,
-  children: [],
-}
-
 const constantRoutes: SysPermission[] = [login, home]
 
 export default constantRoutes

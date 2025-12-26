@@ -80,7 +80,6 @@ onMounted(async () => {
       :options="menuOptions"
     />
   </n-scrollbar>
-
 </template>
 
 <style scoped></style>

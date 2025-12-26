@@ -2,14 +2,8 @@ import { nextTick } from 'vue'
 import { createDiscreteApi } from 'naive-ui'
 import type IBaseResp from '@/types/resp/BaseResp.ts'
 import { removeCookie } from '@/utils/cookies.ts'
-import router from '@/router'
 
-const { message, notification, dialog, loadingBar } = createDiscreteApi([
-  'message',
-  'notification',
-  'dialog',
-  'loadingBar',
-])
+const { notification } = createDiscreteApi(['message', 'notification', 'dialog', 'loadingBar'])
 
 /**
  * 因为存在约定，所以对应一般的请求，接口返回值肯定是CommonResponse类型(例外：文件下载接口)
@@ -34,6 +28,10 @@ const RespHandler = async <R = unknown>(response: IBaseResp<R>): Promise<R> => {
     //响应码为1或2表示需要重新登录
     if (response.code === 1 || response.code === 2) {
       removeCookie('Authorization')
+
+      // 2. 将router的import推迟到函数执行时，防止偶尔出现的循环依赖造成的 ReferenceError: Cannot access 'BaseApi' before initialization
+      const router = (await import('@/router')).default
+
       await nextTick(() => {
         router.replace({
           path: '/login',

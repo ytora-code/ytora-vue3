@@ -5,9 +5,9 @@ export default interface PageReq {
   /**
    * 当前分页数
    */
-  pageNo?: number,
+  pageNo?: number
   /**
    * 每页存储
    */
-  pageSize?: number,
+  pageSize?: number
 }

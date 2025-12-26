@@ -5,20 +5,20 @@ export default interface PageResp<T> {
   /**
    * 当前分页数
    */
-  pageNo: number,
+  pageNo: number
   /**
    * 每页尺寸
    */
-  pageSize: number,
+  pageSize: number
 
   /**
    * 总分页数
    */
-  pages?: number,
+  pages?: number
   /**
    * 总记录数
    */
-  total?: number,
+  total?: number
   /**
    * 数据区域
    */

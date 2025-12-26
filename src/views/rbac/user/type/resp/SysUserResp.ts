@@ -4,35 +4,45 @@ export default interface SysUserResp extends BaseResp<SysUserResp> {
   /**
    * 用户名
    */
-  userName: string;
+  userName: string
   /**
    * 真实姓名
    */
-  realName: string;
+  realName: string
   /**
    * 密码
    */
-  password: string;
+  password: string
   /**
    * 头像
    */
-  avatar: string;
+  avatar: string
   /**
    * 电话
    */
-  phone: string;
+  phone: string
   /**
    * 邮箱
    */
-  email: string;
+  email: string
 
   /**
    * 生日
    */
-  birthday: string;
+  birthday: string
 
   /**
    * 证件号
    */
-  idCard: string;
+  idCard: string
+
+  /**
+   * 状态
+   */
+  status: number
+
+  /**
+   * 备注
+   */
+  remark: string
 }

@@ -1,4 +1,7 @@
 import axios from 'axios'
+import { createDiscreteApi } from 'naive-ui'
+
+const { message } = createDiscreteApi(['message', 'notification', 'dialog', 'loadingBar'])
 
 /**
  * 创建axios实例，整个项目都将会使用该实例发送请求
@@ -32,6 +35,7 @@ request.interceptors.response.use(
     return res.data
   },
   (err) => {
+    message.error(err.message)
     return Promise.reject(err)
   },
 )

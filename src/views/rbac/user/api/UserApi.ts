@@ -1,5 +1,4 @@
 import BaseApi from '@/api/BaseApi'
-import type LoginReq from '@/types/req/LoginReq.ts'
 import type SysUserResp from '@/views/rbac/user/type/resp/SysUserResp.ts'
 import type PageResp from '@/types/resp/PageResp.ts'
 import type SysUserReq from '@/views/rbac/user/type/req/SysUserReq.ts'
@@ -15,7 +14,6 @@ class UserApi extends BaseApi {
   page = (params: SysUserReq) => {
     return this.get<PageResp<SysUserResp>, SysUserReq>('page', params)
   }
-
 }
 
 // 导出单例
