@@ -1,6 +1,6 @@
 import { type AxiosInstance, type AxiosResponse } from 'axios'
 import axiosInstance from '@/api/request.ts'
-import type BaseResp from '@/types/resp/BaseResp.ts'
+import type Result from '@/types/resp/Result.ts'
 import responseHandler from './RespHandler.ts'
 
 /**
@@ -38,7 +38,7 @@ export default abstract class BaseApi {
   ): Promise<R> => {
     this.handlerParam(params)
     // 注意：此处假设你的 axiosInstance 经过拦截器处理后，.get 直接返回了 BaseResp<R>
-    const response = await this.request.get<never, BaseResp<R>>(`${this.prefix}${uri}`, { params })
+    const response = await this.request.get<never, Result<R>>(`${this.prefix}${uri}`, { params })
     return responseHandler<R>(response)
   }
 
@@ -59,8 +59,8 @@ export default abstract class BaseApi {
   ): Promise<R> => {
     this.handlerParam(data)
     this.handlerParam(params)
-    const response = await this.request.post<never, BaseResp<R>>(`${this.prefix}${uri}`, data, {
-      params,
+    const response = await this.request.post<never, Result<R>>(`${this.prefix}${uri}`, data, {
+      params
     })
     return responseHandler<R>(response)
   }
@@ -82,8 +82,8 @@ export default abstract class BaseApi {
   ): Promise<R> => {
     this.handlerParam(data)
     this.handlerParam(params)
-    const response = await this.request.put<never, BaseResp<R>>(`${this.prefix}${uri}`, data, {
-      params,
+    const response = await this.request.put<never, Result<R>>(`${this.prefix}${uri}`, data, {
+      params:params,
     })
     return responseHandler<R>(response)
   }
@@ -98,7 +98,7 @@ export default abstract class BaseApi {
    */
   protected delete = async <R = unknown>(uri: string, params: string[]): Promise<R> => {
     if (params && params.length > 0) {
-      const response = await this.request.delete<never, BaseResp<R>>(
+      const response = await this.request.delete<never, Result<R>>(
         `${this.prefix}${uri}/${params.join(',')}`,
       )
       return responseHandler<R>(response)

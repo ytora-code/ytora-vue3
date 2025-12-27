@@ -6,8 +6,9 @@ import {
   NButton,
   NFlex,
   NPopconfirm,
-  NSwitch,
-  type PaginationInfo
+  NTag,
+  type PaginationInfo,
+  type UploadCustomRequestOptions
 } from 'naive-ui'
 import type PageResp from '@/types/resp/PageResp.ts'
 import type SysUserResp from '@/views/rbac/user/type/resp/SysUserResp.ts'
@@ -15,13 +16,14 @@ import type PageReq from '@/types/req/PageReq.ts'
 import type SysUserReq from '@/views/rbac/user/type/req/SysUserReq.ts'
 import { renderAsyncIcon } from '@/utils/icon.ts'
 import resetDefault from '@/utils/resetDefault.ts'
+import { getDefaultAvatar } from '@/utils/image.ts'
 
 /**
  * 分页数据
  */
 const pageModel = reactive<PageReq>({
   pageNo: 1,
-  pageSize: 10
+  pageSize: 10,
 })
 
 /**
@@ -57,7 +59,7 @@ const columns: DataTableColumns<SysUserResp> = [
       const pageNo = tableModel.value?.pageNo ?? pageModel.pageNo ?? 1
       const pageSize = tableModel.value?.pageSize ?? pageModel.pageSize ?? 10
       return (pageNo - 1) * pageSize + index + 1
-    }
+    },
   },
   { title: '用户名', key: 'userName', align: 'center', width: 150, ellipsis: { tooltip: true } },
   { title: '真实姓名', key: 'realName', align: 'center', width: 150, ellipsis: { tooltip: true } },
@@ -66,12 +68,18 @@ const columns: DataTableColumns<SysUserResp> = [
   { title: '生日', key: 'birthday', align: 'center', width: 180, ellipsis: { tooltip: true } },
   { title: '证件号', key: 'idCard', align: 'center', width: 200, ellipsis: { tooltip: true } },
   {
-    title: '状态', key: 'status', align: 'center', width: 100, render(row) {
+    title: '状态',
+    key: 'status',
+    align: 'center',
+    width: 100,
+    render(row) {
+      const isNormal = row.status === '1'
       return h(
-        NSwitch,
-        { checkedValue: '1', uncheckedValue: '0', value: row.status }
+        NTag,
+        { type: isNormal ? 'success' : 'error' },
+        { default: () => (isNormal ? '正常' : '冻结') },
       )
-    }
+    },
   },
   { title: '备注', key: 'remark', align: 'center', width: 200, ellipsis: { tooltip: true } },
   {
@@ -88,35 +96,35 @@ const columns: DataTableColumns<SysUserResp> = [
             h(
               NButton,
               { size: 'small', type: 'primary', ghost: true, onClick: () => edit(row) },
-              { default: () => '角色' }
+              { default: () => '角色' },
             ),
             h(
               NButton,
               { size: 'small', type: 'success', ghost: true, onClick: () => edit(row) },
-              { default: () => '编辑' }
+              { default: () => '编辑' },
             ),
             h(
               NPopconfirm,
               {
                 onPositiveClick: () => del(row),
                 negativeText: '取消',
-                positiveText: '确定'
+                positiveText: '确定',
               },
               {
                 trigger: () =>
                   h(
                     NButton,
                     { size: 'small', type: 'error', ghost: true },
-                    { default: () => '删除' }
+                    { default: () => '删除' },
                   ),
-                default: () => `确定删除用户「${row.userName}」吗？`
-              }
-            )
-          ]
-        }
+                default: () => `确定删除用户「${row.userName}」吗？`,
+              },
+            ),
+          ],
+        },
       )
-    }
-  }
+    },
+  },
 ]
 
 const pagination = computed(() => ({
@@ -138,7 +146,7 @@ const pagination = computed(() => ({
   onUpdatePageSize: (size: number) => {
     pageModel.pageSize = size
     page()
-  }
+  },
 }))
 
 const page = async () => {
@@ -157,12 +165,41 @@ const reset = () => {
   page()
 }
 
+const add = () => {
+  resetDefault(currentModel.value)
+  drawShowStatus.value = true
+}
+
 const edit = (row: SysUserResp) => {
+  Object.assign(currentModel.value, row)
   drawShowStatus.value = true
 }
 
 const del = (row: SysUserResp) => {
   console.log(row)
+}
+
+const uploading = ref(false)
+
+const handleCustomUpload = async ({
+  file,
+  onFinish,
+  onError,
+  onProgress,
+}: UploadCustomRequestOptions) => {
+  uploading.value = true
+  if (!file.file) return
+  const formData = new FormData()
+  formData.append('file', file.file)
+  try {
+    console.log(file)
+    onFinish()
+  } catch (err) {
+    console.log(err)
+    onError()
+  } finally {
+    uploading.value = false
+  }
 }
 
 onMounted(() => {
@@ -202,7 +239,7 @@ onMounted(() => {
         size="small"
         ghost
         :render-icon="renderAsyncIcon('AddOutline')"
-        @click="drawShowStatus = !drawShowStatus"
+        @click="add"
       >
         新增
       </n-button>
@@ -211,7 +248,7 @@ onMounted(() => {
         size="small"
         ghost
         :render-icon="renderAsyncIcon('CloudUploadOutline')"
-      >导入
+        >导入
       </n-button>
       <n-button type="primary" size="small" ghost :render-icon="renderAsyncIcon('DownloadOutline')">
         导出
@@ -229,14 +266,62 @@ onMounted(() => {
     />
 
     <!-- 侧边栏抽屉 -->
-    <n-drawer v-model:show="drawShowStatus" :default-width="502" resizable>
-      <n-drawer-content>
+    <n-drawer v-model:show="drawShowStatus" :default-width="502" :mask-closable="false" resizable>
+      <n-drawer-content :native-scrollbar="false">
         <template #header>
           {{ currentModel.id ? '编辑' : '新增' }}
         </template>
+
+        <n-form :model="currentModel" label-placement="left" :label-width="100">
+          <n-form-item label="头像" path="avatar" style="align-items: center">
+            <n-flex w="[100%]" h="[120px]" align="center" inline>
+              <n-image
+                height="120px"
+                object-fit="contain"
+                :src="currentModel.avatar || getDefaultAvatar()"
+              />
+              <n-upload
+                :show-file-list="false"
+                accept="image/*"
+                w-auto
+                :custom-request="handleCustomUpload"
+              >
+                <n-button type="primary" ghost :loading="uploading">更换头像</n-button>
+              </n-upload>
+            </n-flex>
+          </n-form-item>
+          <n-form-item label="用户名" path="userName">
+            <n-input placeholder="用户名" v-model:value="currentModel.userName" />
+          </n-form-item>
+          <n-form-item label="真实姓名" path="realName">
+            <n-input placeholder="真实姓名" v-model:value="currentModel.realName" />
+          </n-form-item>
+          <n-form-item label="电话" path="phone">
+            <n-input placeholder="电话" v-model:value="currentModel.phone" />
+          </n-form-item>
+          <n-form-item label="邮箱" path="email">
+            <n-input placeholder="邮箱" v-model:value="currentModel.email" />
+          </n-form-item>
+          <n-form-item label="生日" path="birthday">
+            <n-input placeholder="生日" v-model:value="currentModel.birthday" />
+          </n-form-item>
+          <n-form-item label="证件号" path="idCard">
+            <n-input placeholder="证件号" v-model:value="currentModel.idCard" />
+          </n-form-item>
+          <n-form-item label="状态" path="status">
+            <n-switch checked-value="1" unchecked-value="2" v-model:value="currentModel.status">
+              <template #checked> 正常 </template>
+              <template #unchecked> 冻结 </template>
+            </n-switch>
+          </n-form-item>
+          <n-form-item label="备注" path="remark">
+            <n-input type="textarea" placeholder="备注" v-model:value="currentModel.remark" />
+          </n-form-item>
+        </n-form>
+
         <template #footer>
           <n-flex>
-            <n-button type="primary" ghost>退　出</n-button>
+            <n-button type="primary" ghost @click="drawShowStatus = false">退　出</n-button>
             <n-button type="primary">提　交</n-button>
           </n-flex>
         </template>

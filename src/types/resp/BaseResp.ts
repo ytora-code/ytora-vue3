@@ -1,24 +1,16 @@
-/**
- * 约定对于一般请求，响应体json数据的结构由CommonResponse限制(非一般请求，下载文件接口)
- */
-export default interface BaseResp<T = unknown> {
+export default interface BaseResp {
   /**
-   * 此次请求的状态码
+   * 主键ID
    */
-  code: number
+  id?: string
+
   /**
-   * 此次请求是否成功
+   * 状态
    */
-  success: boolean
+  status?: string
+
   /**
-   * 此次请求的提示信息
+   * 备注
    */
-  message: string
-  /**耗时
-   */
-  time: number
-  /**
-   * 此次请求真正的返回数据
-   */
-  data: T
+  remark?: string
 }

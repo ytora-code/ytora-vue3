@@ -1,6 +1,6 @@
 import type BaseResp from '@/types/resp/BaseResp.ts'
 
-export default interface SysUserResp extends BaseResp<SysUserResp> {
+export default interface SysUserResp extends BaseResp {
   /**
    * 用户名
    */
@@ -35,14 +35,4 @@ export default interface SysUserResp extends BaseResp<SysUserResp> {
    * 证件号
    */
   idCard: string
-
-  /**
-   * 状态
-   */
-  status: number
-
-  /**
-   * 备注
-   */
-  remark: string
 }
