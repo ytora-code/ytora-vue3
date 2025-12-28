@@ -1,4 +1,3 @@
-import { nextTick } from 'vue'
 import { createDiscreteApi } from 'naive-ui'
 import type Result from '@/types/resp/Result.ts'
 import { removeCookie } from '@/utils/cookies.ts'

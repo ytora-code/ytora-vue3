@@ -1,4 +1,4 @@
-import { type AxiosInstance, type AxiosResponse } from 'axios'
+import { type AxiosInstance, type AxiosProgressEvent, type AxiosResponse } from 'axios'
 import axiosInstance from '@/api/request.ts'
 import type Result from '@/types/resp/Result.ts'
 import responseHandler from './RespHandler.ts'
@@ -60,7 +60,7 @@ export default abstract class BaseApi {
     this.handlerParam(data)
     this.handlerParam(params)
     const response = await this.request.post<never, Result<R>>(`${this.prefix}${uri}`, data, {
-      params
+      params,
     })
     return responseHandler<R>(response)
   }
@@ -83,7 +83,7 @@ export default abstract class BaseApi {
     this.handlerParam(data)
     this.handlerParam(params)
     const response = await this.request.put<never, Result<R>>(`${this.prefix}${uri}`, data, {
-      params:params,
+      params: params,
     })
     return responseHandler<R>(response)
   }
@@ -96,26 +96,33 @@ export default abstract class BaseApi {
    * @return {R} delete请求返回值，将响应对象IResp的data参数抽取出来，封装成Promise对象返回
    * @template R delete请求返回值类型
    */
-  protected delete = async <R = unknown>(uri: string, params: string[]): Promise<R> => {
-    if (params && params.length > 0) {
-      const response = await this.request.delete<never, Result<R>>(
-        `${this.prefix}${uri}/${params.join(',')}`,
-      )
-      return responseHandler<R>(response)
-    }
-    return Promise.reject(new Error('delete请求必须指定id参数'))
+  protected delete = async <R = unknown, P extends object = object>(uri: string, params: P): Promise<R> => {
+    this.handlerParam(params)
+    const response = await this.request.delete<never, Result<R>>(`${this.prefix}${uri}`, { params })
+    return responseHandler<R>(response)
   }
 
-  /**上面的函数，只能用于返回值为IResp的一般接口，对于非一般接口(比如文件下载接口，响应体装的是二进制流)，需要额外处理*/
-
-  protected upload = (): void => {
-    // 预留占位
-  }
-
-  protected download = async <P extends object = object>(
+  /**
+   * 文件上传
+   */
+  protected upload = async <R = unknown>(
     uri: string,
-    params?: P,
-  ): Promise<void> => {
+    formData: FormData,
+    onUploadProgress?: (progressEvent: AxiosProgressEvent) => void,
+  ): Promise<R> => {
+    const response = await this.request.post<never, Result<R>>(`${this.prefix}${uri}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress,
+    })
+    return responseHandler<R>(response)
+  }
+
+  /**
+   * 文件下载
+   */
+  protected download = async <P>(uri: string, params?: P): Promise<void> => {
     // axios 拦截器逻辑：responseType 为 blob 时返回的是原始响应 res
     const res = await this.request.get<never, AxiosResponse<Blob>>(`${this.prefix}${uri}`, {
       params,

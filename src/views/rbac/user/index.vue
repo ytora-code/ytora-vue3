@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue'
 import { userApi } from './api/UserApi.ts'
+import { fileApi } from '@/api/FileApi.ts'
 import {
   type DataTableColumns,
   NButton,
@@ -17,13 +18,14 @@ import type SysUserReq from '@/views/rbac/user/type/req/SysUserReq.ts'
 import { renderAsyncIcon } from '@/utils/icon.ts'
 import resetDefault from '@/utils/resetDefault.ts'
 import { getDefaultAvatar } from '@/utils/image.ts'
+import type { AxiosProgressEvent } from 'axios'
 
 /**
  * 分页数据
  */
 const pageModel = reactive<PageReq>({
   pageNo: 1,
-  pageSize: 10,
+  pageSize: 10
 })
 
 /**
@@ -59,7 +61,7 @@ const columns: DataTableColumns<SysUserResp> = [
       const pageNo = tableModel.value?.pageNo ?? pageModel.pageNo ?? 1
       const pageSize = tableModel.value?.pageSize ?? pageModel.pageSize ?? 10
       return (pageNo - 1) * pageSize + index + 1
-    },
+    }
   },
   { title: '用户名', key: 'userName', align: 'center', width: 150, ellipsis: { tooltip: true } },
   { title: '真实姓名', key: 'realName', align: 'center', width: 150, ellipsis: { tooltip: true } },
@@ -77,9 +79,9 @@ const columns: DataTableColumns<SysUserResp> = [
       return h(
         NTag,
         { type: isNormal ? 'success' : 'error' },
-        { default: () => (isNormal ? '正常' : '冻结') },
+        { default: () => (isNormal ? '正常' : '冻结') }
       )
-    },
+    }
   },
   { title: '备注', key: 'remark', align: 'center', width: 200, ellipsis: { tooltip: true } },
   {
@@ -96,35 +98,35 @@ const columns: DataTableColumns<SysUserResp> = [
             h(
               NButton,
               { size: 'small', type: 'primary', ghost: true, onClick: () => edit(row) },
-              { default: () => '角色' },
+              { default: () => '角色' }
             ),
             h(
               NButton,
               { size: 'small', type: 'success', ghost: true, onClick: () => edit(row) },
-              { default: () => '编辑' },
+              { default: () => '编辑' }
             ),
             h(
               NPopconfirm,
               {
                 onPositiveClick: () => del(row),
                 negativeText: '取消',
-                positiveText: '确定',
+                positiveText: '确定'
               },
               {
                 trigger: () =>
                   h(
                     NButton,
                     { size: 'small', type: 'error', ghost: true },
-                    { default: () => '删除' },
+                    { default: () => '删除' }
                   ),
-                default: () => `确定删除用户「${row.userName}」吗？`,
-              },
-            ),
-          ],
-        },
+                default: () => `确定删除用户「${row.userName}」吗？`
+              }
+            )
+          ]
+        }
       )
-    },
-  },
+    }
+  }
 ]
 
 const pagination = computed(() => ({
@@ -146,7 +148,7 @@ const pagination = computed(() => ({
   onUpdatePageSize: (size: number) => {
     pageModel.pageSize = size
     page()
-  },
+  }
 }))
 
 const page = async () => {
@@ -175,27 +177,44 @@ const edit = (row: SysUserResp) => {
   drawShowStatus.value = true
 }
 
-const del = (row: SysUserResp) => {
-  console.log(row)
+const doAddOrEdit = () => {
+  userApi.insertOrUpdate(currentModel.value).then(() => {
+    page()
+  }).finally(() => {
+    drawShowStatus.value = false
+  })
+}
+
+const del = async (row: SysUserResp) => {
+  await userApi.remove(row.id)
+  await page()
 }
 
 const uploading = ref(false)
 
 const handleCustomUpload = async ({
-  file,
-  onFinish,
-  onError,
-  onProgress,
-}: UploadCustomRequestOptions) => {
-  uploading.value = true
+                                    file,
+                                    onFinish,
+                                    onError,
+                                    onProgress
+                                  }: UploadCustomRequestOptions) => {
   if (!file.file) return
+
+  uploading.value = true
   const formData = new FormData()
   formData.append('file', file.file)
+
   try {
-    console.log(file)
+    const fileId = await fileApi.fileUpload(formData, (progressEvent: AxiosProgressEvent) => {
+      if (progressEvent.total) {
+        const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+        onProgress({ percent })
+      }
+    })
+    currentModel.value.avatar = `${import.meta.env.VITE_REQUEST_BASE_URL}sys/file/download?fileId=${fileId}`
     onFinish()
-  } catch (err) {
-    console.log(err)
+  } catch (err: unknown) {
+    console.error('上传失败:', err)
     onError()
   } finally {
     uploading.value = false
@@ -248,7 +267,7 @@ onMounted(() => {
         size="small"
         ghost
         :render-icon="renderAsyncIcon('CloudUploadOutline')"
-        >导入
+      >导入
       </n-button>
       <n-button type="primary" size="small" ghost :render-icon="renderAsyncIcon('DownloadOutline')">
         导出
@@ -293,6 +312,9 @@ onMounted(() => {
           <n-form-item label="用户名" path="userName">
             <n-input placeholder="用户名" v-model:value="currentModel.userName" />
           </n-form-item>
+          <n-form-item label="密码" path="password">
+            <n-input placeholder="密码" v-model:value="currentModel.password" />
+          </n-form-item>
           <n-form-item label="真实姓名" path="realName">
             <n-input placeholder="真实姓名" v-model:value="currentModel.realName" />
           </n-form-item>
@@ -310,8 +332,8 @@ onMounted(() => {
           </n-form-item>
           <n-form-item label="状态" path="status">
             <n-switch checked-value="1" unchecked-value="2" v-model:value="currentModel.status">
-              <template #checked> 正常 </template>
-              <template #unchecked> 冻结 </template>
+              <template #checked> 正常</template>
+              <template #unchecked> 冻结</template>
             </n-switch>
           </n-form-item>
           <n-form-item label="备注" path="remark">
@@ -322,7 +344,7 @@ onMounted(() => {
         <template #footer>
           <n-flex>
             <n-button type="primary" ghost @click="drawShowStatus = false">退　出</n-button>
-            <n-button type="primary">提　交</n-button>
+            <n-button type="primary" @click="doAddOrEdit">提　交</n-button>
           </n-flex>
         </template>
       </n-drawer-content>

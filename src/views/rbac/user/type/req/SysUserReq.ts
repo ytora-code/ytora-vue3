@@ -8,6 +8,7 @@ export default interface SysUserReq extends BaseReq {
    * 用户名
    */
   userName?: string
+  password?: string
   /**
    * 真实姓名
    */

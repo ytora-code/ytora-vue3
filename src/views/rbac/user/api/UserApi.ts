@@ -14,6 +14,21 @@ class UserApi extends BaseApi {
   page = (params: SysUserReq) => {
     return this.get<PageResp<SysUserResp>, SysUserReq>('page', params)
   }
+
+  /**
+   * 新增或编辑
+   */
+  insertOrUpdate = (data: SysUserReq) => {
+    return this.post<unknown, SysUserReq>('insertOrUpdate', data)
+  }
+
+  /**
+   * 删除数据
+   */
+  remove = (id: string | undefined) => {
+    return this.delete<unknown, { id: String }>('delete', { id })
+  }
+
 }
 
 // 导出单例
