@@ -8,10 +8,9 @@ export default interface SysRole extends BaseReq {
   /**
    * 角色名称
    */
-  roleName: string
+  roleName?: string
   /**
    * 角色编码
    */
   roleCode?: string
-
 }

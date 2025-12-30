@@ -1,7 +1,7 @@
 import BaseApi from '@/api/BaseApi'
-import type SysUserResp from '@/views/rbac/user/type/resp/SysUserResp.ts'
 import type PageResp from '@/types/resp/PageResp.ts'
-import type SysUserReq from '@/views/rbac/user/type/req/SysUserReq.ts'
+import type SysRole from '../type/resp/SysRole.ts'
+import type SysRoleReq from '../type/req/SysRoleReq.ts'
 
 class RoleApi extends BaseApi {
   constructor() {
@@ -11,15 +11,15 @@ class RoleApi extends BaseApi {
   /**
    * 分页请求
    */
-  page = (params: SysUserReq) => {
-    return this.get<PageResp<SysUserResp>, SysUserReq>('page', params)
+  page = (params: SysRoleReq) => {
+    return this.get<PageResp<SysRole>, SysRoleReq>('page', params)
   }
 
   /**
    * 新增或编辑
    */
-  insertOrUpdate = (data: SysUserReq) => {
-    return this.post<unknown, SysUserReq>('insertOrUpdate', data)
+  insertOrUpdate = (data: SysRoleReq) => {
+    return this.post<unknown, SysRoleReq>('insertOrUpdate', data)
   }
 
   /**
@@ -28,7 +28,6 @@ class RoleApi extends BaseApi {
   remove = (id: string | undefined) => {
     return this.delete<unknown, { id: string | undefined }>('delete', { id })
   }
-
 }
 
 // 导出单例

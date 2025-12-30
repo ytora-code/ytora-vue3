@@ -28,7 +28,6 @@ class UserApi extends BaseApi {
   remove = (id: string | undefined) => {
     return this.delete<unknown, { id: string | undefined }>('delete', { id })
   }
-
 }
 
 // 导出单例

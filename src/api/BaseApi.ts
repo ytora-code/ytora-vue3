@@ -96,7 +96,10 @@ export default abstract class BaseApi {
    * @return {R} delete请求返回值，将响应对象IResp的data参数抽取出来，封装成Promise对象返回
    * @template R delete请求返回值类型
    */
-  protected delete = async <R = unknown, P extends object = object>(uri: string, params: P): Promise<R> => {
+  protected delete = async <R = unknown, P extends object = object>(
+    uri: string,
+    params: P,
+  ): Promise<R> => {
     this.handlerParam(params)
     const response = await this.request.delete<never, Result<R>>(`${this.prefix}${uri}`, { params })
     return responseHandler<R>(response)

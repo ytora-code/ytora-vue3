@@ -9,7 +9,7 @@ import {
   NPopconfirm,
   NTag,
   type PaginationInfo,
-  type UploadCustomRequestOptions
+  type UploadCustomRequestOptions,
 } from 'naive-ui'
 import type PageResp from '@/types/resp/PageResp.ts'
 import type SysUserResp from '@/views/rbac/user/type/resp/SysUserResp.ts'
@@ -25,7 +25,7 @@ import type { AxiosProgressEvent } from 'axios'
  */
 const pageModel = reactive<PageReq>({
   pageNo: 1,
-  pageSize: 10
+  pageSize: 10,
 })
 
 /**
@@ -61,7 +61,7 @@ const columns: DataTableColumns<SysUserResp> = [
       const pageNo = tableModel.value?.pageNo ?? pageModel.pageNo ?? 1
       const pageSize = tableModel.value?.pageSize ?? pageModel.pageSize ?? 10
       return (pageNo - 1) * pageSize + index + 1
-    }
+    },
   },
   { title: '用户名', key: 'userName', align: 'center', width: 150, ellipsis: { tooltip: true } },
   { title: '真实姓名', key: 'realName', align: 'center', width: 150, ellipsis: { tooltip: true } },
@@ -79,9 +79,9 @@ const columns: DataTableColumns<SysUserResp> = [
       return h(
         NTag,
         { type: isNormal ? 'success' : 'error' },
-        { default: () => (isNormal ? '正常' : '冻结') }
+        { default: () => (isNormal ? '正常' : '冻结') },
       )
-    }
+    },
   },
   { title: '备注', key: 'remark', align: 'center', width: 200, ellipsis: { tooltip: true } },
   {
@@ -97,36 +97,41 @@ const columns: DataTableColumns<SysUserResp> = [
           default: () => [
             h(
               NButton,
-              { size: 'small', type: 'primary', ghost: true, onClick: () => edit(row) },
-              { default: () => '角色' }
+              {
+                size: 'small',
+                type: 'primary',
+                ghost: true,
+                onClick: () => (roleModal.value = true),
+              },
+              { default: () => '角色' },
             ),
             h(
               NButton,
               { size: 'small', type: 'success', ghost: true, onClick: () => edit(row) },
-              { default: () => '编辑' }
+              { default: () => '编辑' },
             ),
             h(
               NPopconfirm,
               {
                 onPositiveClick: () => del(row),
                 negativeText: '取消',
-                positiveText: '确定'
+                positiveText: '确定',
               },
               {
                 trigger: () =>
                   h(
                     NButton,
                     { size: 'small', type: 'error', ghost: true },
-                    { default: () => '删除' }
+                    { default: () => '删除' },
                   ),
-                default: () => `确定删除用户「${row.userName}」吗？`
-              }
-            )
-          ]
-        }
+                default: () => `确定删除用户「${row.userName}」吗？`,
+              },
+            ),
+          ],
+        },
       )
-    }
-  }
+    },
+  },
 ]
 
 const pagination = computed(() => ({
@@ -148,7 +153,7 @@ const pagination = computed(() => ({
   onUpdatePageSize: (size: number) => {
     pageModel.pageSize = size
     page()
-  }
+  },
 }))
 
 const page = async () => {
@@ -178,11 +183,14 @@ const edit = (row: SysUserResp) => {
 }
 
 const doAddOrEdit = () => {
-  userApi.insertOrUpdate(currentModel.value).then(() => {
-    page()
-  }).finally(() => {
-    drawShowStatus.value = false
-  })
+  userApi
+    .insertOrUpdate(currentModel.value)
+    .then(() => {
+      page()
+    })
+    .finally(() => {
+      drawShowStatus.value = false
+    })
 }
 
 const del = async (row: SysUserResp) => {
@@ -192,12 +200,15 @@ const del = async (row: SysUserResp) => {
 
 const uploading = ref(false)
 
+/*======================= 角色 ==================*/
+const roleModal = ref(false)
+
 const handleCustomUpload = async ({
-                                    file,
-                                    onFinish,
-                                    onError,
-                                    onProgress
-                                  }: UploadCustomRequestOptions) => {
+  file,
+  onFinish,
+  onError,
+  onProgress,
+}: UploadCustomRequestOptions) => {
   if (!file.file) return
 
   uploading.value = true
@@ -267,7 +278,7 @@ onMounted(() => {
         size="small"
         ghost
         :render-icon="renderAsyncIcon('CloudUploadOutline')"
-      >导入
+        >导入
       </n-button>
       <n-button type="primary" size="small" ghost :render-icon="renderAsyncIcon('DownloadOutline')">
         导出
@@ -349,6 +360,29 @@ onMounted(() => {
         </template>
       </n-drawer-content>
     </n-drawer>
+
+    <!-- 弹出框 -->
+    <n-modal
+      w="[800px]"
+      h="[500px]"
+      v-model:show="roleModal"
+      :mask-closable="false"
+      preset="card"
+      title="分配角色"
+      draggable
+    >
+      <n-data-table
+        w="[100%]"
+        h="[400px]"
+        remote
+        :loading="tableLoading"
+        :columns="columns"
+        :data="tableModel?.records"
+        :pagination="pagination"
+        :single-line="false"
+        :scroll-x="1900"
+      />
+    </n-modal>
   </div>
 </template>
 
