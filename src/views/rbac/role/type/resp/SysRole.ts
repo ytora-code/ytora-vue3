@@ -1,10 +1,9 @@
-import type Result from '@/types/resp/Result.ts'
+import type BaseResp from '@/types/resp/BaseResp.ts'
 
 /**
- * created by yangtong on 2024/3/24 11:21
- * 用户的实体类型
+ * 角色的实体类型
  */
-export default interface SysRole extends Result<SysRole> {
+export default interface SysRole extends BaseResp {
   /**
    * 角色名称
    */

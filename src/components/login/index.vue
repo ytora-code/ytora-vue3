@@ -15,8 +15,8 @@ const userStore = useUserStore()
 const formRef = ref<FormInst | null>(null)
 
 const formValue = ref<LoginReq>({
-  username: '',
-  password: '',
+  username: 'ytora',
+  password: '1',
 })
 
 const loading = ref(false)

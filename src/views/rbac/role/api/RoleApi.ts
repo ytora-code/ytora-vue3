@@ -3,9 +3,9 @@ import type SysUserResp from '@/views/rbac/user/type/resp/SysUserResp.ts'
 import type PageResp from '@/types/resp/PageResp.ts'
 import type SysUserReq from '@/views/rbac/user/type/req/SysUserReq.ts'
 
-class UserApi extends BaseApi {
+class RoleApi extends BaseApi {
   constructor() {
-    super('/rbac/user')
+    super('/rbac/role')
   }
 
   /**
@@ -32,4 +32,4 @@ class UserApi extends BaseApi {
 }
 
 // 导出单例
-export const userApi = new UserApi()
+export const roleApi = new RoleApi()
