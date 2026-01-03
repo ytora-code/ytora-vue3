@@ -1,31 +1,31 @@
 <script setup lang="ts">
-import { onMounted, reactive } from 'vue'
+import { type CSSProperties, onMounted, reactive } from 'vue'
 import { userApi } from './api/UserApi.ts'
+import { roleApi } from '@/views/rbac/role/api/RoleApi.ts'
 import { fileApi } from '@/api/FileApi.ts'
-import {
-  type DataTableColumns,
-  NButton,
-  NFlex,
-  NPopconfirm,
-  NTag,
-  type PaginationInfo,
-  type UploadCustomRequestOptions,
-} from 'naive-ui'
+import { NButton, NFlex, NSwitch, type UploadCustomRequestOptions } from 'naive-ui'
 import type PageResp from '@/types/resp/PageResp.ts'
 import type SysUserResp from '@/views/rbac/user/type/resp/SysUserResp.ts'
 import type PageReq from '@/types/req/PageReq.ts'
 import type SysUserReq from '@/views/rbac/user/type/req/SysUserReq.ts'
+import type SysRoleReq from '@/views/rbac/role/type/req/SysRoleReq.ts'
 import { renderAsyncIcon } from '@/utils/icon.ts'
 import resetDefault from '@/utils/resetDefault.ts'
 import { getDefaultAvatar } from '@/utils/image.ts'
+import DynamicTable from '@/components/table/index.vue'
 import type { AxiosProgressEvent } from 'axios'
+import type SysRole from '@/views/rbac/role/type/resp/SysRole.ts'
+import { useUserStore } from '@/stores/userStore.ts'
+import type SysRoleUserReq from '@/views/rbac/role/type/req/SysRoleUserReq.ts'
+
+const userStore = useUserStore()
 
 /**
  * 分页数据
  */
 const pageModel = reactive<PageReq>({
   pageNo: 1,
-  pageSize: 10,
+  pageSize: 10
 })
 
 /**
@@ -50,111 +50,15 @@ const currentModel = ref<SysUserReq>({})
 
 const tableModel = ref<PageResp<SysUserResp>>()
 
-const columns: DataTableColumns<SysUserResp> = [
-  {
-    title: '序号',
-    key: 'index',
-    align: 'center',
-    width: 70,
-    fixed: 'left',
-    render: (_row, index) => {
-      const pageNo = tableModel.value?.pageNo ?? pageModel.pageNo ?? 1
-      const pageSize = tableModel.value?.pageSize ?? pageModel.pageSize ?? 10
-      return (pageNo - 1) * pageSize + index + 1
-    },
-  },
-  { title: '用户名', key: 'userName', align: 'center', width: 150, ellipsis: { tooltip: true } },
-  { title: '真实姓名', key: 'realName', align: 'center', width: 150, ellipsis: { tooltip: true } },
-  { title: '电话', key: 'phone', align: 'center', width: 200, ellipsis: { tooltip: true } },
-  { title: '邮箱', key: 'email', align: 'center', width: 200, ellipsis: { tooltip: true } },
-  { title: '生日', key: 'birthday', align: 'center', width: 180, ellipsis: { tooltip: true } },
-  { title: '证件号', key: 'idCard', align: 'center', width: 200, ellipsis: { tooltip: true } },
-  {
-    title: '状态',
-    key: 'status',
-    align: 'center',
-    width: 100,
-    render(row) {
-      const isNormal = row.status === '1'
-      return h(
-        NTag,
-        { type: isNormal ? 'success' : 'error' },
-        { default: () => (isNormal ? '正常' : '冻结') },
-      )
-    },
-  },
-  { title: '备注', key: 'remark', align: 'center', width: 200, ellipsis: { tooltip: true } },
-  {
-    title: '操作',
-    key: 'actions',
-    width: 220,
-    fixed: 'right',
-    render(row) {
-      return h(
-        NFlex,
-        { size: 8, justify: 'center', wrap: false },
-        {
-          default: () => [
-            h(
-              NButton,
-              {
-                size: 'small',
-                type: 'primary',
-                ghost: true,
-                onClick: () => (roleModal.value = true),
-              },
-              { default: () => '角色' },
-            ),
-            h(
-              NButton,
-              { size: 'small', type: 'success', ghost: true, onClick: () => edit(row) },
-              { default: () => '编辑' },
-            ),
-            h(
-              NPopconfirm,
-              {
-                onPositiveClick: () => del(row),
-                negativeText: '取消',
-                positiveText: '确定',
-              },
-              {
-                trigger: () =>
-                  h(
-                    NButton,
-                    { size: 'small', type: 'error', ghost: true },
-                    { default: () => '删除' },
-                  ),
-                default: () => `确定删除用户「${row.userName}」吗？`,
-              },
-            ),
-          ],
-        },
-      )
-    },
-  },
-]
-
-const pagination = computed(() => ({
-  page: tableModel.value?.pageNo || 1,
-  pageSize: tableModel.value?.pageSize || 10,
-  itemCount: tableModel.value?.total || 0,
-  showSizePicker: true,
-  pageSizes: [10, 20, 50],
-  prefix: (info: PaginationInfo) => {
-    return `共 ${info.itemCount} 条记录 / 共 ${tableModel.value?.pages || 0} 页`
-  },
-  showQuickJumper: true,
-  // 当用户点击页码切换时触发
-  onChange: (p: number) => {
-    pageModel.pageNo = p
-    page()
-  },
-  // 当用户切换每页显示数量时触发
-  onUpdatePageSize: (size: number) => {
-    pageModel.pageSize = size
-    page()
-  },
-}))
+const pageChange = (pageNo: number, pageSize: number) => {
+  if (tableModel.value) {
+    tableModel.value.pageNo = pageNo
+    tableModel.value.pageSize = pageSize
+  }
+  pageModel.pageNo = pageNo
+  pageModel.pageSize = pageSize
+  page()
+}
 
 const page = async () => {
   tableLoading.value = true
@@ -167,17 +71,79 @@ const page = async () => {
   }
 }
 
+/**
+ * ROLE
+ */
+const rolePageModel = reactive<PageReq>({
+  pageNo: 1,
+  pageSize: 10
+})
+const roleSearchModel = reactive<SysRoleReq>({})
+
+const roleTableModel = ref<PageResp<SysRole>>()
+
+const rolePage = async () => {
+  roleTableModel.value = await roleApi.page({ ...toRaw(roleSearchModel), ...toRaw(rolePageModel) })
+  rolePageModel.pageNo = roleTableModel.value.pageNo
+  rolePageModel.pageSize = roleTableModel.value.pageSize
+}
+
+const roleAction = (payload: { eventKey: string; row: SysRole }) => {
+  console.log(payload)
+}
+
+/**
+ * 判断当前行角色是否被用户拥有
+ */
+const isRoleOwned = (roleCode: string | undefined) => {
+  if (!roleCode) {
+    return false
+  }
+  // 假设 userStore.roles 是一个对象数组，每个对象包含 roleCode 属性
+  return userStore.roles?.some((role) => role.roleCode === roleCode) ?? false
+}
+
+/**
+ * 处理 Switch 切换事件
+ */
+const handleToggleRole = async (status: boolean, row: SysRole) => {
+  const roleId = row.id as string
+  const userId = currentModel.value.id as string
+  await roleApi.refreshUserRoleMapper({userId, roleId, add: status})
+  if (status) {
+    if (!userStore.roles.some(r => r.id === roleId)) userStore.roles.push(row)
+  } else {
+    userStore.roles = userStore.roles.filter(r => r.id !== roleId)
+  }
+  await rolePage()
+}
+
 const reset = () => {
   resetDefault(searchModel)
   page()
 }
 
-const add = () => {
+const action = (payload: { eventKey: string; row: SysUserResp }) => {
+  console.log(payload)
+  if (payload.eventKey === 'user-table::action::role') {
+    roleModal.value = true
+    Object.assign(currentModel.value, payload.row)
+    rolePage()
+  }
+  if (payload.eventKey === 'user-table::action::edit') {
+    openEditDraw(payload.row)
+  }
+  if (payload.eventKey === 'user-table::action::delete-popconfirm') {
+    doDel(payload.row)
+  }
+}
+
+const openAddDraw = () => {
   resetDefault(currentModel.value)
   drawShowStatus.value = true
 }
 
-const edit = (row: SysUserResp) => {
+const openEditDraw = (row: SysUserResp) => {
   Object.assign(currentModel.value, row)
   drawShowStatus.value = true
 }
@@ -193,22 +159,38 @@ const doAddOrEdit = () => {
     })
 }
 
-const del = async (row: SysUserResp) => {
+const doDel = async (row: SysUserResp) => {
   await userApi.remove(row.id)
   await page()
 }
 
 const uploading = ref(false)
 
+function railStyle({ focused, checked }: { focused: boolean; checked: boolean }) {
+  const style: CSSProperties = {}
+  if (!checked) {
+    style.background = '#d03050'
+    if (focused) {
+      style.boxShadow = '0 0 0 2px #d0305040'
+    }
+  } else {
+    style.background = '#2080f0'
+    if (focused) {
+      style.boxShadow = '0 0 0 2px #2080f040'
+    }
+  }
+  return style
+}
+
 /*======================= 角色 ==================*/
 const roleModal = ref(false)
 
 const handleCustomUpload = async ({
-  file,
-  onFinish,
-  onError,
-  onProgress,
-}: UploadCustomRequestOptions) => {
+                                    file,
+                                    onFinish,
+                                    onError,
+                                    onProgress
+                                  }: UploadCustomRequestOptions) => {
   if (!file.file) return
 
   uploading.value = true
@@ -242,16 +224,16 @@ onMounted(() => {
     <div>
       <n-form :model="searchModel" label-placement="left" inline flex flex-wrap gap-2>
         <n-form-item label="用户名" path="userName">
-          <n-input placeholder="用户名" v-model:value="searchModel.userName" />
+          <n-input placeholder="用户名" v-model:value="searchModel.userName" clearable />
         </n-form-item>
         <n-form-item label="真实姓名" path="realName">
-          <n-input placeholder="真实姓名" v-model:value="searchModel.realName" />
+          <n-input placeholder="真实姓名" v-model:value="searchModel.realName" clearable />
         </n-form-item>
         <n-form-item label="电话" path="phone">
-          <n-input placeholder="电话" v-model:value="searchModel.phone" />
+          <n-input placeholder="电话" v-model:value="searchModel.phone" clearable />
         </n-form-item>
         <n-form-item label="状态" path="status">
-          <n-input placeholder="状态" v-model:value="searchModel.status" />
+          <n-input placeholder="状态" v-model:value="searchModel.status" clearable />
         </n-form-item>
 
         <n-button type="primary" :render-icon="renderAsyncIcon('SearchOutline')" @click="page">
@@ -269,7 +251,7 @@ onMounted(() => {
         size="small"
         ghost
         :render-icon="renderAsyncIcon('AddOutline')"
-        @click="add"
+        @click="openAddDraw"
       >
         新增
       </n-button>
@@ -278,21 +260,30 @@ onMounted(() => {
         size="small"
         ghost
         :render-icon="renderAsyncIcon('CloudUploadOutline')"
-        >导入
+      >导入
       </n-button>
-      <n-button type="primary" size="small" ghost :render-icon="renderAsyncIcon('DownloadOutline')">
+      <n-button
+        type="primary"
+        size="small"
+        ghost
+        :render-icon="renderAsyncIcon('CloudDownloadOutline')"
+      >
         导出
+      </n-button>
+      <n-button type="error" size="small" ghost :render-icon="renderAsyncIcon('TrashOutline')">
+        回收站
       </n-button>
     </div>
 
-    <n-data-table
-      remote
+    <DynamicTable
       :loading="tableLoading"
-      :columns="columns"
       :data="tableModel?.records"
-      :pagination="pagination"
-      :single-line="false"
-      :scroll-x="1800"
+      @onAction="action"
+      tableCode="user-table"
+      :page-no="tableModel?.pageNo"
+      :page-size="tableModel?.pageSize"
+      :total="tableModel?.total"
+      @pageChange="pageChange"
     />
 
     <!-- 侧边栏抽屉 -->
@@ -336,15 +327,25 @@ onMounted(() => {
             <n-input placeholder="邮箱" v-model:value="currentModel.email" />
           </n-form-item>
           <n-form-item label="生日" path="birthday">
-            <n-input placeholder="生日" v-model:value="currentModel.birthday" />
+            <n-date-picker
+              placeholder="生日"
+              v-model:formatted-value="currentModel.birthday"
+              value-format="yyyy-MM-dd"
+              type="date"
+            />
           </n-form-item>
           <n-form-item label="证件号" path="idCard">
             <n-input placeholder="证件号" v-model:value="currentModel.idCard" />
           </n-form-item>
           <n-form-item label="状态" path="status">
-            <n-switch checked-value="1" unchecked-value="2" v-model:value="currentModel.status">
-              <template #checked> 正常</template>
-              <template #unchecked> 冻结</template>
+            <n-switch
+              checked-value="1"
+              unchecked-value="2"
+              v-model:value="currentModel.status"
+              :rail-style="railStyle"
+            >
+              <template #checked>正常</template>
+              <template #unchecked>禁用</template>
             </n-switch>
           </n-form-item>
           <n-form-item label="备注" path="remark">
@@ -364,24 +365,32 @@ onMounted(() => {
     <!-- 弹出框 -->
     <n-modal
       w="[800px]"
-      h="[500px]"
+      h="[800px]"
       v-model:show="roleModal"
-      :mask-closable="false"
       preset="card"
       title="分配角色"
+      flex-height
       draggable
     >
-      <n-data-table
-        w="[100%]"
-        h="[400px]"
-        remote
-        :loading="tableLoading"
-        :columns="columns"
-        :data="tableModel?.records"
-        :pagination="pagination"
-        :single-line="false"
-        :scroll-x="1900"
-      />
+      <DynamicTable
+        flex-height
+        h="[100%]"
+        tableCode="user-role-table"
+        :data="roleTableModel?.records"
+        :page-no="roleTableModel?.pageNo"
+        :page-size="roleTableModel?.pageSize"
+        :total="roleTableModel?.total"
+        @pageChange="pageChange"
+        @onAction="roleAction"
+      >
+        <template #abc="{ row }">
+          <n-switch :value="isRoleOwned(row.roleCode)" @update:value="(val: boolean) => handleToggleRole(val, row)" >
+            <template #checked>拥有</template>
+            <template #unchecked>未拥有</template>
+          </n-switch>
+        </template>
+      </DynamicTable>
+
     </n-modal>
   </div>
 </template>

@@ -49,8 +49,9 @@ const doLogin = async () => {
     userStore.departCode = data.departCode
     userStore.departName = data.departName
     userStore.remark = data.remark
-    userStore.permissions = data.permissions
-    userStore.updatePermission(data.permissions)
+    userStore.menus = data.menus
+    userStore.components = data.components
+    userStore.updatePermission(data.menus)
 
     // 3. 登录成功，跳转
     console.log('登录成功', data)

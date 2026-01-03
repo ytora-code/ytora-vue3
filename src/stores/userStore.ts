@@ -4,6 +4,7 @@ import $router from '@/router'
 import constantRoutes from '@/router/constantRoutes.ts'
 import toRoutes from '@/router/toRoutes.ts'
 import type SysPermission from '@/views/rbac/permission/type/resp/SysPermission.ts'
+import type SysRole from '@/views/rbac/role/type/resp/SysRole.ts'
 export const useUserStore = defineStore('user', () => {
   /**
    * 用户ID
@@ -42,9 +43,17 @@ export const useUserStore = defineStore('user', () => {
    */
   const remark = ref('')
   /**
-   * 当前用户的拥有的资源
+   * 角色
    */
-  const permissions = ref<SysPermission[]>()
+  const roles = ref<SysRole[]>([])
+  /**
+   * 当前用户的拥有的菜单，不能赋予初始值，每次路由跳转通过menus是否为空来判断是否刷新，如果赋予了初始值，那么就无法判断是否刷新了
+   */
+  const menus = ref<SysPermission[]>()
+  /**
+   * 该用户拥有页面组件
+   */
+  const components = ref<SysPermission[]>([])
 
   /**
    * 更新权限的函数，单独抽取出来作为一个方法，是因为当权限更新时，需要同步更新动态路由
@@ -54,7 +63,7 @@ export const useUserStore = defineStore('user', () => {
     const allPermissions: SysPermission[] = []
     allPermissions.push(...constantRoutes)
     allPermissions.push(...dynamicPermissions)
-    permissions.value = allPermissions
+    menus.value = allPermissions
     const routes = toRoutes(dynamicPermissions)
     //constantRoutes静态路由已经被注册过了，这里仅需注册动态路由
     if (routes) {
@@ -74,7 +83,9 @@ export const useUserStore = defineStore('user', () => {
     departCode,
     departName,
     remark,
-    permissions,
+    roles,
+    menus,
+    components,
     updatePermission,
   }
 })

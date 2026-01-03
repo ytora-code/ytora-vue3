@@ -46,7 +46,12 @@ export default interface LoginUserDetail {
    */
   roles: SysRole[]
   /**
-   * 该用户拥有资源
+   * 该用户拥有菜单
    */
-  permissions: SysPermission[]
+  menus: SysPermission[]
+
+  /**
+   * 该用户拥有页面组件
+   */
+  components: SysPermission[]
 }

@@ -39,7 +39,7 @@ export function setupRouterGuard(router: Router) {
         //访问其他页面时
         else {
           //如果刷新了浏览器，则pinia数据会清空，此时需要重新给获取用户数据并保持到pinia
-          if (!userStore.permissions) {
+          if (!userStore.menus) {
             console.log('用户数据被刷新，重新请求授权')
             loginApi
               .getUserDetailByToken()
@@ -51,10 +51,11 @@ export function setupRouterGuard(router: Router) {
                 userStore.phone = userDetail.phone
                 userStore.email = userDetail.email
                 userStore.remark = userDetail.remark
-                // userStore.roles = userDetail.roles
+                userStore.roles = userDetail.roles
                 userStore.departCode = userDetail.departCode
                 userStore.departName = userDetail.departName
-                userStore.updatePermission(userDetail.permissions)
+                userStore.components = userDetail.components
+                userStore.updatePermission(userDetail.menus)
 
                 //next()会造成刷新后白屏
                 next({ ...to, replace: true })

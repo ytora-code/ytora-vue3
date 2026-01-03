@@ -1,12 +1,9 @@
-/**
- * 系统资源
- */
-export default interface SysPermission {
-  /**
-   * 主键ID
-   */
-  id: string
+import type BaseReq from '@/types/req/BaseReq.ts'
 
+/**
+ * 系统资源请求
+ */
+export default interface SysPermission extends BaseReq {
   /**
    * 父资源id
    */
@@ -15,12 +12,12 @@ export default interface SysPermission {
   /**
    * 资源名称
    */
-  permissionName: string
+  permissionName?: string
 
   /**
    * 资源唯一编码
    */
-  permissionCode: string
+  permissionCode?: string
 
   /**
    * 资源类型，1-接口、2-页面、3-页面元素
@@ -56,9 +53,4 @@ export default interface SysPermission {
    * 重定向
    */
   redirect?: string
-
-  /**
-   * 子资源
-   */
-  children?: Array<SysPermission>
 }

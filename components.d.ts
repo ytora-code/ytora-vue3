@@ -11,14 +11,18 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    CellComponentRenderer: typeof import('./src/components/table/CellComponentRenderer.vue')['default']
+    ComponentCellRenderer: typeof import('./src/components/table/ComponentCellRenderer.vue')['default']
     Content: typeof import('./src/components/layout/content/index.vue')['default']
     Header: typeof import('./src/components/layout/header/index.vue')['default']
     Layout: typeof import('./src/components/layout/index.vue')['default']
     Login: typeof import('./src/components/login/index.vue')['default']
     NAvatar: typeof import('naive-ui')['NAvatar']
     NButton: typeof import('naive-ui')['NButton']
+    NCard: typeof import('naive-ui')['NCard']
     NConfigProvider: typeof import('naive-ui')['NConfigProvider']
     NDataTable: typeof import('naive-ui')['NDataTable']
+    NDatePicker: typeof import('naive-ui')['NDatePicker']
     NDrawer: typeof import('naive-ui')['NDrawer']
     NDrawerContent: typeof import('naive-ui')['NDrawerContent']
     NFlex: typeof import('naive-ui')['NFlex']
@@ -35,12 +39,15 @@ declare module 'vue' {
     NMenu: typeof import('naive-ui')['NMenu']
     NMessageProvider: typeof import('naive-ui')['NMessageProvider']
     NModal: typeof import('naive-ui')['NModal']
+    NPopconfirm: typeof import('naive-ui')['NPopconfirm']
     NScrollbar: typeof import('naive-ui')['NScrollbar']
     NSwitch: typeof import('naive-ui')['NSwitch']
+    NTag: typeof import('naive-ui')['NTag']
     NText: typeof import('naive-ui')['NText']
     NUpload: typeof import('naive-ui')['NUpload']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Sider: typeof import('./src/components/layout/sider/index.vue')['default']
+    Table: typeof import('./src/components/table/index.vue')['default']
   }
 }

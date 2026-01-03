@@ -75,7 +75,9 @@ const syncMenuState = () => {
 const transformPermissionToMenu = (permissions: SysPermission[] | undefined): MenuOption[] => {
   if (!permissions) return []
 
-  const visibleItems = permissions.filter((item) => item.visible !== false)
+  const visibleItems = permissions.filter(
+    (item) => item.visible !== false && item.permissionType === 2,
+  )
   const result: MenuOption[] = []
 
   visibleItems.forEach((item) => {
@@ -109,7 +111,7 @@ const transformPermissionToMenu = (permissions: SysPermission[] | undefined): Me
 onMounted(async () => {
   try {
     // 1. 初始化菜单树
-    menuOptions.value = transformPermissionToMenu(userStore.permissions)
+    menuOptions.value = transformPermissionToMenu(userStore.menus)
     // 2. 初始加载时，根据当前 URL 定位并展开菜单
     syncMenuState()
   } catch (error) {
