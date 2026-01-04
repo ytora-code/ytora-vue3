@@ -3,6 +3,7 @@ import type PageResp from '@/types/resp/PageResp.ts'
 import type SysRole from '../type/resp/SysRole.ts'
 import type SysRoleReq from '../type/req/SysRoleReq.ts'
 import type SysRoleUserReq from '@/views/rbac/role/type/req/SysRoleUserReq.ts'
+import type SysUserRole from '@/views/rbac/role/type/resp/SysUserRole.ts'
 
 class RoleApi extends BaseApi {
   constructor() {
@@ -28,6 +29,25 @@ class RoleApi extends BaseApi {
    */
   remove = (id: string | undefined) => {
     return this.delete<unknown, { id: string | undefined }>('delete', { id })
+  }
+
+  listUserRoleMapper = (params: {
+    userId?: string
+    roleName?: string
+    roleCode?: string
+    pageNo: number
+    pageSize: number
+  }) => {
+    return this.get<
+      PageResp<SysUserRole>,
+      {
+        userId?: string
+        roleName?: string
+        roleCode?: string
+        pageNo: number
+        pageSize: number
+      }
+    >('listUserRoleMapper', params)
   }
 
   refreshUserRoleMapper = (data: SysRoleUserReq) => {

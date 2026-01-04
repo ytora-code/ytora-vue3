@@ -58,7 +58,7 @@ const getTagConfig = (child: TableColumn) => {
   }
 }
 
-const RenderVNode = (props: { vnode: unknown }) => props.vnode;
+const RenderVNode = (props: { vnode: unknown }) => props.vnode
 </script>
 
 <template>

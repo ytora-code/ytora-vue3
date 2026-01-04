@@ -39,7 +39,7 @@ const RespHandler = async <R = unknown>(response: Result<R>): Promise<R> => {
       }
 
       // 走到这，router一定不为null
-      router!.replace({
+      await router!.replace({
         path: '/login',
         query: {
           redirect: router!.currentRoute.value.path,

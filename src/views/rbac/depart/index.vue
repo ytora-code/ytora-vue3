@@ -185,6 +185,7 @@ onMounted(() => {
       :total="tableModel?.total"
       @pageChange="pageChange"
       @onAction="action"
+      :single-line="false"
     />
 
     <!-- 侧边栏抽屉 -->

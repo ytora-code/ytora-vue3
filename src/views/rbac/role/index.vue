@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { type CSSProperties, onMounted, reactive } from 'vue'
 import { roleApi } from './api/RoleApi.ts'
+import { permissionApi } from '../permission/api/PermissionApi.ts'
 import { NButton, NFlex } from 'naive-ui'
 import DynamicTable from '@/components/table/index.vue'
 import type PageResp from '@/types/resp/PageResp.ts'
@@ -9,6 +10,7 @@ import { renderAsyncIcon } from '@/utils/icon.ts'
 import resetDefault from '@/utils/resetDefault.ts'
 import type SysRoleReq from './type/req/SysRoleReq.ts'
 import type SysRole from './type/resp/SysRole.ts'
+import type { SysRolePermissionResp } from '@/views/rbac/permission/type/resp/SysRolePermissionResp.ts'
 
 /**
  * 分页数据
@@ -68,20 +70,24 @@ const pageChange = (pageNo: number, pageSize: number) => {
 
 const action = (payload: { eventKey: string; row: SysRole }) => {
   console.log(payload)
+  if (payload.eventKey === 'role-table::action::permission') {
+    currentRoleId = payload.row.id
+    openPermissionDraw()
+  }
   if (payload.eventKey === 'role-table::action::edit') {
-    edit(payload.row)
+    openEditDraw(payload.row)
   }
   if (payload.eventKey === 'role-table::action::delete-popconfirm') {
     del(payload.row)
   }
 }
 
-const add = () => {
+const openAddDraw = () => {
   resetDefault(currentModel.value)
   drawShowStatus.value = true
 }
 
-const edit = (row: SysRole) => {
+const openEditDraw = (row: SysRole) => {
   Object.assign(currentModel.value, row)
   drawShowStatus.value = true
 }
@@ -118,6 +124,59 @@ function railStyle({ focused, checked }: { focused: boolean; checked: boolean })
   return style
 }
 
+// PERMISSION
+const rolePermission = reactive<SysRolePermissionResp>({
+  tree: [],
+  permissionIds: [],
+})
+// 当前被勾选的权限 ID
+const checkedKeys = ref<string[]>([])
+// 半选状态（父节点部分子节点被选）
+const indeterminateKeys = ref<string[]>([])
+const permissionDrawShowStatus = ref(false)
+let currentRoleId: string | undefined
+
+const openPermissionDraw = async () => {
+  if (!currentRoleId) {
+    return
+  }
+  permissionDrawShowStatus.value = true
+  const result: SysRolePermissionResp = await permissionApi.treePermissionByRoleId(currentRoleId)
+  rolePermission.tree = result.tree
+  rolePermission.permissionIds = result.permissionIds
+  checkedKeys.value = [...result.permissionIds]
+  console.log(result)
+}
+
+const closePermissionDraw = async () => {
+  permissionDrawShowStatus.value = false
+  rolePermission.permissionIds = []
+  checkedKeys.value = []
+}
+
+const onCheckedChange = (
+  keys: string[],
+  options: {
+    node: unknown
+    action: 'check' | 'uncheck'
+    checkedKeys: string[]
+    indeterminateKeys: string[]
+  },
+) => {
+  console.log(keys)
+  checkedKeys.value = keys
+  indeterminateKeys.value = options.indeterminateKeys
+}
+
+const doUploadPermission = async () => {
+  await permissionApi.refreshRolePermission({
+    roleId: currentRoleId,
+    originPermissionIds: rolePermission.permissionIds,
+    currentPermissionIds: checkedKeys.value,
+  })
+  permissionDrawShowStatus.value = false
+}
+
 onMounted(() => {
   page()
 })
@@ -149,7 +208,7 @@ onMounted(() => {
         size="small"
         ghost
         :render-icon="renderAsyncIcon('AddOutline')"
-        @click="add"
+        @click="openAddDraw"
       >
         新增
       </n-button>
@@ -191,6 +250,7 @@ onMounted(() => {
       :total="tableModel?.total"
       @pageChange="pageChange"
       @onAction="action"
+      :single-line="false"
     />
 
     <!-- 侧边栏抽屉 -->
@@ -227,6 +287,38 @@ onMounted(() => {
           <n-flex>
             <n-button type="primary" ghost @click="drawShowStatus = false">退　出</n-button>
             <n-button type="primary" @click="doAddOrEdit">提　交</n-button>
+          </n-flex>
+        </template>
+      </n-drawer-content>
+    </n-drawer>
+
+    <!-- 角色-资源抽屉 -->
+    <n-drawer
+      v-model:show="permissionDrawShowStatus"
+      :default-width="502"
+      :mask-closable="false"
+      resizable
+    >
+      <n-drawer-content :native-scrollbar="false">
+        <template #header> 资源 </template>
+
+        <n-tree
+          :data="rolePermission.tree"
+          checkable
+          check-strategy="all"
+          key-field="id"
+          label-field="permissionName"
+          :checked-keys="checkedKeys"
+          :indeterminate-keys="indeterminateKeys"
+          @update:checked-keys="onCheckedChange"
+        />
+
+        <template #footer>
+          <n-flex>
+            <n-button type="primary" ghost @click="closePermissionDraw"
+              >退　出
+            </n-button>
+            <n-button type="primary" @click="doUploadPermission">提　交</n-button>
           </n-flex>
         </template>
       </n-drawer-content>

@@ -8,24 +8,19 @@ import type PageResp from '@/types/resp/PageResp.ts'
 import type SysUserResp from '@/views/rbac/user/type/resp/SysUserResp.ts'
 import type PageReq from '@/types/req/PageReq.ts'
 import type SysUserReq from '@/views/rbac/user/type/req/SysUserReq.ts'
-import type SysRoleReq from '@/views/rbac/role/type/req/SysRoleReq.ts'
 import { renderAsyncIcon } from '@/utils/icon.ts'
 import resetDefault from '@/utils/resetDefault.ts'
 import { getDefaultAvatar } from '@/utils/image.ts'
 import DynamicTable from '@/components/table/index.vue'
 import type { AxiosProgressEvent } from 'axios'
-import type SysRole from '@/views/rbac/role/type/resp/SysRole.ts'
-import { useUserStore } from '@/stores/userStore.ts'
-import type SysRoleUserReq from '@/views/rbac/role/type/req/SysRoleUserReq.ts'
-
-const userStore = useUserStore()
+import type SysUserRole from '@/views/rbac/role/type/resp/SysUserRole.ts'
 
 /**
  * 分页数据
  */
 const pageModel = reactive<PageReq>({
   pageNo: 1,
-  pageSize: 10
+  pageSize: 10,
 })
 
 /**
@@ -74,48 +69,52 @@ const page = async () => {
 /**
  * ROLE
  */
-const rolePageModel = reactive<PageReq>({
-  pageNo: 1,
-  pageSize: 10
-})
-const roleSearchModel = reactive<SysRoleReq>({})
+let currentUser: string | undefined = undefined
 
-const roleTableModel = ref<PageResp<SysRole>>()
+const roleSearchModel = reactive<{
+  userId?: string
+  roleName?: string
+  roleCode?: string
+  pageNo: number
+  pageSize: number
+}>({
+  pageNo: 1,
+  pageSize: 10,
+})
+
+const roleTableModel = ref<PageResp<SysUserRole>>()
 
 const rolePage = async () => {
-  roleTableModel.value = await roleApi.page({ ...toRaw(roleSearchModel), ...toRaw(rolePageModel) })
-  rolePageModel.pageNo = roleTableModel.value.pageNo
-  rolePageModel.pageSize = roleTableModel.value.pageSize
+  roleSearchModel.userId = currentUser
+  roleTableModel.value = await roleApi.listUserRoleMapper({ ...toRaw(roleSearchModel) })
+  roleSearchModel.pageNo = roleTableModel.value.pageNo
+  roleSearchModel.pageSize = roleTableModel.value.pageSize
 }
 
-const roleAction = (payload: { eventKey: string; row: SysRole }) => {
-  console.log(payload)
+const roleReset = () => {
+  resetDefault(roleSearchModel)
+  roleSearchModel.pageNo = 1
+  roleSearchModel.pageSize = 10
+  rolePage()
 }
 
-/**
- * 判断当前行角色是否被用户拥有
- */
-const isRoleOwned = (roleCode: string | undefined) => {
-  if (!roleCode) {
-    return false
-  }
-  // 假设 userStore.roles 是一个对象数组，每个对象包含 roleCode 属性
-  return userStore.roles?.some((role) => role.roleCode === roleCode) ?? false
-}
-
-/**
- * 处理 Switch 切换事件
- */
-const handleToggleRole = async (status: boolean, row: SysRole) => {
-  const roleId = row.id as string
+const handleToggleRole = async (status: boolean, row: SysUserRole) => {
+  const roleId = row.roleId as string
   const userId = currentModel.value.id as string
-  await roleApi.refreshUserRoleMapper({userId, roleId, add: status})
-  if (status) {
-    if (!userStore.roles.some(r => r.id === roleId)) userStore.roles.push(row)
-  } else {
-    userStore.roles = userStore.roles.filter(r => r.id !== roleId)
-  }
+  console.log(userId, roleId, status)
+  await roleApi.refreshUserRoleMapper({ userId, roleId, add: status })
   await rolePage()
+}
+
+const rolePageChange = (pageNo: number, pageSize: number) => {
+  console.log(pageNo, pageSize)
+  if (roleTableModel.value) {
+    roleTableModel.value.pageNo = pageNo
+    roleTableModel.value.pageSize = pageSize
+  }
+  roleSearchModel.pageNo = pageNo
+  roleSearchModel.pageSize = pageSize
+  rolePage()
 }
 
 const reset = () => {
@@ -124,11 +123,9 @@ const reset = () => {
 }
 
 const action = (payload: { eventKey: string; row: SysUserResp }) => {
-  console.log(payload)
+  currentUser = payload.row.id!
   if (payload.eventKey === 'user-table::action::role') {
-    roleModal.value = true
-    Object.assign(currentModel.value, payload.row)
-    rolePage()
+    openAssignRoleModal(payload.row)
   }
   if (payload.eventKey === 'user-table::action::edit') {
     openEditDraw(payload.row)
@@ -141,6 +138,12 @@ const action = (payload: { eventKey: string; row: SysUserResp }) => {
 const openAddDraw = () => {
   resetDefault(currentModel.value)
   drawShowStatus.value = true
+}
+
+const openAssignRoleModal = (row: SysUserResp) => {
+  roleModal.value = true
+  Object.assign(currentModel.value, row)
+  rolePage()
 }
 
 const openEditDraw = (row: SysUserResp) => {
@@ -186,11 +189,11 @@ function railStyle({ focused, checked }: { focused: boolean; checked: boolean })
 const roleModal = ref(false)
 
 const handleCustomUpload = async ({
-                                    file,
-                                    onFinish,
-                                    onError,
-                                    onProgress
-                                  }: UploadCustomRequestOptions) => {
+  file,
+  onFinish,
+  onError,
+  onProgress,
+}: UploadCustomRequestOptions) => {
   if (!file.file) return
 
   uploading.value = true
@@ -260,7 +263,7 @@ onMounted(() => {
         size="small"
         ghost
         :render-icon="renderAsyncIcon('CloudUploadOutline')"
-      >导入
+        >导入
       </n-button>
       <n-button
         type="primary"
@@ -284,6 +287,7 @@ onMounted(() => {
       :page-size="tableModel?.pageSize"
       :total="tableModel?.total"
       @pageChange="pageChange"
+      :single-line="false"
     />
 
     <!-- 侧边栏抽屉 -->
@@ -372,25 +376,55 @@ onMounted(() => {
       flex-height
       draggable
     >
+      <n-form :model="roleSearchModel" label-placement="left" inline flex flex-wrap gap-2>
+        <n-form-item label="角色名称" path="roleName">
+          <n-input
+            style="width: 160px"
+            placeholder="角色名称"
+            v-model:value="roleSearchModel.roleName"
+            clearable
+          />
+        </n-form-item>
+        <n-form-item label="角色编码" path="roleCode">
+          <n-input
+            style="width: 160px"
+            placeholder="角色编码"
+            v-model:value="roleSearchModel.roleCode"
+            clearable
+          />
+        </n-form-item>
+
+        <n-button type="primary" :render-icon="renderAsyncIcon('SearchOutline')" @click="rolePage">
+          搜索
+        </n-button>
+        <n-button
+          type="primary"
+          ghost
+          :render-icon="renderAsyncIcon('SyncOutline')"
+          @click="roleReset"
+        >
+          重置
+        </n-button>
+      </n-form>
       <DynamicTable
         flex-height
-        h="[100%]"
+        class="h-[90%]"
         tableCode="user-role-table"
         :data="roleTableModel?.records"
         :page-no="roleTableModel?.pageNo"
         :page-size="roleTableModel?.pageSize"
         :total="roleTableModel?.total"
-        @pageChange="pageChange"
-        @onAction="roleAction"
+        @pageChange="rolePageChange"
+        :single-line="false"
+        :bordered="false"
       >
         <template #abc="{ row }">
-          <n-switch :value="isRoleOwned(row.roleCode)" @update:value="(val: boolean) => handleToggleRole(val, row)" >
+          <n-switch :value="row.owner" @update:value="(val: boolean) => handleToggleRole(val, row)">
             <template #checked>拥有</template>
             <template #unchecked>未拥有</template>
           </n-switch>
         </template>
       </DynamicTable>
-
     </n-modal>
   </div>
 </template>

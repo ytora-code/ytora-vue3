@@ -148,6 +148,7 @@ onMounted(() => {
       :data="tableModel"
       @onAction="action"
       @load="loadChild"
+      :single-line="false"
     />
 
     <!-- 侧边栏抽屉 -->

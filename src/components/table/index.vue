@@ -24,11 +24,9 @@ const emit = defineEmits<{
 /**
  * 定义插槽
  */
-defineSlots<Record<string, (props: {
-  row: T
-  column: TableColumn
-  child: TableColumn
-}) => unknown>>()
+defineSlots<
+  Record<string, (props: { row: T; column: TableColumn; child: TableColumn }) => unknown>
+>()
 
 const slots = useSlots()
 
@@ -160,7 +158,7 @@ const pagination = computed(() => {
     pageSize: props.pageSize,
     itemCount: props.total,
     showSizePicker: true,
-    pageSizes: [10, 20, 50],
+    pageSizes: [5, 10, 20, 50],
     showQuickJumper: true,
     // 完善 prefix 展示
     prefix: (info: PaginationInfo) => {
@@ -187,7 +185,6 @@ const pagination = computed(() => {
       v-bind="$attrs"
       :columns="columns"
       :data="data ?? []"
-      :single-line="false"
       :pagination="pagination"
       :scroll-x="scrollX"
       :style="{ minWidth: '80%' }"

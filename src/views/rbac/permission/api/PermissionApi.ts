@@ -1,6 +1,8 @@
 import BaseApi from '@/api/BaseApi.ts'
 import type SysPermissionReq from '../type/req/SysPermissionReq.ts'
 import type SysPermission from '@/views/rbac/permission/type/resp/SysPermission.ts'
+import type { SysRolePermissionResp } from '@/views/rbac/permission/type/resp/SysRolePermissionResp.ts'
+import type SysRolePermissionReq from '@/views/rbac/permission/type/req/SysRolePermissionReq.ts'
 
 class PermissionApi extends BaseApi {
   constructor() {
@@ -26,6 +28,20 @@ class PermissionApi extends BaseApi {
    */
   remove = (id: string | undefined) => {
     return this.delete<unknown, { id: string | undefined }>('delete', { id })
+  }
+
+  /**
+   * 获取指定角色的资源树
+   */
+  treePermissionByRoleId = (roleId: string) => {
+    return this.get<SysRolePermissionResp, { roleId: string }>('treePermissionByRoleId', { roleId })
+  }
+
+  /**
+   * refreshRolePermission
+   */
+  refreshRolePermission = (data: SysRolePermissionReq) => {
+    return this.post<unknown, SysRolePermissionReq>('refreshRolePermission', data)
   }
 }
 
