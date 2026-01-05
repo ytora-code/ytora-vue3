@@ -6,6 +6,10 @@ export default interface SysDepartResp extends BaseResp {
    */
   pid: string
   /**
+   * 父资源名称
+   */
+  pname?: string
+  /**
    * 部门名称
    */
   departName: string

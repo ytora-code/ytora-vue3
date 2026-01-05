@@ -71,6 +71,7 @@ const openAddSubDraw = (row: SysDepart) => {
   drawStatus = 2
   resetDefault(currentModel.value)
   currentModel.value.pid = row.id
+  currentModel.value.pname = row.departName
   currentModel.value.departCode = '自动产生'
   drawShowStatus.value = true
 }
@@ -202,6 +203,9 @@ onMounted(() => {
         </template>
 
         <n-form :model="currentModel" label-placement="left" :label-width="100">
+          <n-form-item v-if="drawStatus === 2" label="父级名称" path="pname">
+            <n-input placeholder="-" :value="currentModel.pname" disabled />
+          </n-form-item>
           <n-form-item label="部门名称" path="departName">
             <n-input placeholder="部门名称" v-model:value="currentModel.departName" clearable />
           </n-form-item>

@@ -13,6 +13,11 @@ export default interface SysPermission {
   pid?: string
 
   /**
+   * 父资源名称
+   */
+  pname?: string
+
+  /**
    * 资源名称
    */
   permissionName: string

@@ -2,7 +2,7 @@
 import { type CSSProperties, onMounted, reactive } from 'vue'
 import { roleApi } from './api/RoleApi.ts'
 import { permissionApi } from '../permission/api/PermissionApi.ts'
-import { NButton, NFlex } from 'naive-ui'
+import { NButton, NFlex, type TreeOption } from 'naive-ui'
 import DynamicTable from '@/components/table/index.vue'
 import type PageResp from '@/types/resp/PageResp.ts'
 import type PageReq from '@/types/req/PageReq.ts'
@@ -135,6 +135,30 @@ const checkedKeys = ref<string[]>([])
 const indeterminateKeys = ref<string[]>([])
 const permissionDrawShowStatus = ref(false)
 let currentRoleId: string | undefined
+
+const renderTreeSuffix = ({ option }: { option: TreeOption }) => {
+  const id = option.id
+
+  // id 是奇数才显示按钮
+  if (Number(id) % 2 === 1) {
+    return h(
+      NButton,
+      {
+        size: 'tiny',
+        type: 'primary',
+        ghost: true,
+        onClick: (e: MouseEvent) => {
+          e.stopPropagation()
+          console.log('点击节点', option)
+        },
+      },
+      { default: () => '操作' },
+    )
+  }
+
+  // 偶数：不显示后缀
+  return null
+}
 
 const openPermissionDraw = async () => {
   if (!currentRoleId) {
@@ -305,11 +329,13 @@ onMounted(() => {
         <n-tree
           :data="rolePermission.tree"
           checkable
+          block-line
           check-strategy="all"
           key-field="id"
           label-field="permissionName"
           :checked-keys="checkedKeys"
           :indeterminate-keys="indeterminateKeys"
+          :render-suffix="renderTreeSuffix"
           @update:checked-keys="onCheckedChange"
         />
 

@@ -12,8 +12,8 @@ class PermissionApi extends BaseApi {
   /**
    * 查询资源
    */
-  list = (params: SysPermissionReq) => {
-    return this.get<Array<SysPermission>, SysPermissionReq>('list', params)
+  tree = (params: SysPermissionReq) => {
+    return this.get<Array<SysPermission>, SysPermissionReq>('tree', params)
   }
 
   /**

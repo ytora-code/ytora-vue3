@@ -9,6 +9,10 @@ export default interface SysUserReq extends BaseReq {
    */
   pid?: string
   /**
+   * 父资源名称
+   */
+  pname?: string
+  /**
    * 部门名称
    */
   departName?: string

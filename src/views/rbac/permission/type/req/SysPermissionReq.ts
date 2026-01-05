@@ -10,6 +10,11 @@ export default interface SysPermission extends BaseReq {
   pid?: string
 
   /**
+   * 父资源名称
+   */
+  pname?: string
+
+  /**
    * 资源名称
    */
   permissionName?: string
@@ -47,7 +52,7 @@ export default interface SysPermission extends BaseReq {
   /**
    * 排序
    */
-  sort?: number
+  index?: number
 
   /**
    * 重定向
