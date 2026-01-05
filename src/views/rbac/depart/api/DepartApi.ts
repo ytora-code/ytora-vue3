@@ -16,6 +16,13 @@ class DepartApi extends BaseApi {
   }
 
   /**
+   * 查询部门树
+   */
+  tree = (departName: string | undefined) => {
+    return this.get<Array<SysDepartResp>, { departName: string | undefined }>('tree', { departName })
+  }
+
+  /**
    * 新增或编辑
    */
   insertOrUpdate = (data: SysDepartReq) => {

@@ -11,7 +11,7 @@ const isCollapsed = ref(false)
     <n-layout-sider
       bordered
       collapse-mode="width"
-      :collapsed-width="90"
+      :collapsed-width="64"
       show-trigger="arrow-circle"
       v-model:collapsed="isCollapsed"
     >
