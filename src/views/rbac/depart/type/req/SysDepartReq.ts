@@ -3,7 +3,7 @@ import type BaseReq from '@/types/req/BaseReq.ts'
 /**
  * created by YT on 2025/12/25 下午10:34
  */
-export default interface SysUserReq extends BaseReq {
+export default interface SysDepartReq extends BaseReq {
   /**
    * 上级部门id
    */

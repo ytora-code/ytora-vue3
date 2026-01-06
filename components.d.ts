@@ -13,6 +13,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     ComponentCellRenderer: typeof import('./src/components/table/ComponentCellRenderer.vue')['default']
     Content: typeof import('./src/components/layout/content/index.vue')['default']
+    Dict: typeof import('./src/components/dict/index.vue')['default']
     Header: typeof import('./src/components/layout/header/index.vue')['default']
     Layout: typeof import('./src/components/layout/index.vue')['default']
     Login: typeof import('./src/components/login/index.vue')['default']

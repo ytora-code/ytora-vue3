@@ -210,7 +210,11 @@ onMounted(() => {
             <n-input placeholder="部门名称" v-model:value="currentModel.departName" clearable />
           </n-form-item>
           <n-form-item label="部门编码" path="departCode">
-            <n-input placeholder="部门编码" v-model:value="currentModel.departCode" :disabled="drawStatus !== 1" />
+            <n-input
+              placeholder="部门编码"
+              v-model:value="currentModel.departCode"
+              :disabled="drawStatus !== 1"
+            />
           </n-form-item>
           <n-form-item label="部门类型" path="type">
             <n-select
