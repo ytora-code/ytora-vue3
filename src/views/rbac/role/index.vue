@@ -10,14 +10,26 @@ import { renderAsyncIcon } from '@/utils/icon.ts'
 import resetDefault from '@/utils/resetDefault.ts'
 import type SysRoleReq from './type/req/SysRoleReq.ts'
 import type SysRole from './type/resp/SysRole.ts'
-import type { SysRolePermissionResp } from '@/views/rbac/permission/type/resp/SysRolePermissionResp.ts'
+import type {
+  SysRolePermissionResp
+} from '@/views/rbac/permission/type/resp/SysRolePermissionResp.ts'
+import RecycleBin from '@/views/sys/recyclebin/index.vue'
+
+/**
+ * 数据库表名称
+ */
+const tableName = 'sys_role'
+/**
+ * 数据库表CODE
+ */
+const tableCode = 'role-table'
 
 /**
  * 分页数据
  */
 const pageModel = reactive<PageReq>({
   pageNo: 1,
-  pageSize: 10,
+  pageSize: 10
 })
 
 /**
@@ -127,7 +139,7 @@ function railStyle({ focused, checked }: { focused: boolean; checked: boolean })
 // PERMISSION
 const rolePermission = reactive<SysRolePermissionResp>({
   tree: [],
-  permissionIds: [],
+  permissionIds: []
 })
 // 当前被勾选的权限 ID
 const checkedKeys = ref<string[]>([])
@@ -150,9 +162,9 @@ const renderTreeSuffix = ({ option }: { option: TreeOption }) => {
         onClick: (e: MouseEvent) => {
           e.stopPropagation()
           console.log('点击节点', option)
-        },
+        }
       },
-      { default: () => '操作' },
+      { default: () => '操作' }
     )
   }
 
@@ -185,7 +197,7 @@ const onCheckedChange = (
     action: 'check' | 'uncheck'
     checkedKeys: string[]
     indeterminateKeys: string[]
-  },
+  }
 ) => {
   console.log(keys)
   checkedKeys.value = keys
@@ -196,10 +208,12 @@ const doUploadPermission = async () => {
   await permissionApi.refreshRolePermission({
     roleId: currentRoleId,
     originPermissionIds: rolePermission.permissionIds,
-    currentPermissionIds: checkedKeys.value,
+    currentPermissionIds: checkedKeys.value
   })
   permissionDrawShowStatus.value = false
 }
+
+const recycleBinShowStatus = ref(false)
 
 onMounted(() => {
   page()
@@ -241,7 +255,7 @@ onMounted(() => {
         size="small"
         ghost
         :render-icon="renderAsyncIcon('CloudUploadOutline')"
-        >导入
+      >导入
       </n-button>
       <n-button
         type="primary"
@@ -251,23 +265,15 @@ onMounted(() => {
       >
         导出
       </n-button>
-      <n-button type="error" size="small" ghost :render-icon="renderAsyncIcon('TrashOutline')">
+      <n-button type="error" size="small" ghost :render-icon="renderAsyncIcon('TrashOutline')"
+                @click="recycleBinShowStatus = true">
         回收站
       </n-button>
     </div>
 
-    <!--    <n-data-table-->
-    <!--      remote-->
-    <!--      :loading="tableLoading"-->
-    <!--      :columns="columns"-->
-    <!--      :data="tableModel?.records"-->
-    <!--      :pagination="pagination"-->
-    <!--      :single-line="false"-->
-    <!--      :scroll-x="1000"-->
-    <!--    />-->
     <DynamicTable
       :loading="tableLoading"
-      tableCode="role-table"
+      :tableCode="tableCode"
       :data="tableModel?.records"
       :page-no="tableModel?.pageNo"
       :page-size="tableModel?.pageSize"
@@ -324,7 +330,7 @@ onMounted(() => {
       resizable
     >
       <n-drawer-content :native-scrollbar="false">
-        <template #header> 资源 </template>
+        <template #header> 资源</template>
 
         <n-tree
           :data="rolePermission.tree"
@@ -342,13 +348,26 @@ onMounted(() => {
         <template #footer>
           <n-flex>
             <n-button type="primary" ghost @click="closePermissionDraw"
-              >退　出
+            >退　出
             </n-button>
             <n-button type="primary" @click="doUploadPermission">提　交</n-button>
           </n-flex>
         </template>
       </n-drawer-content>
     </n-drawer>
+
+    <!-- 回收站弹出框 -->
+    <n-modal
+      w="[70%]"
+      min-w="[500px]"
+      v-model:show="recycleBinShowStatus"
+      preset="card"
+      title="回收站"
+      flex-height
+      draggable
+    >
+      <RecycleBin :table-name="tableName" :table-code="tableCode" @restore="page" />
+    </n-modal>
   </div>
 </template>
 

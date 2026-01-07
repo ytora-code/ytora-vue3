@@ -12,15 +12,25 @@ import { renderAsyncIcon } from '@/utils/icon.ts'
 import resetDefault from '@/utils/resetDefault.ts'
 import { getDefaultAvatar } from '@/utils/image.ts'
 import DynamicTable from '@/components/table/index.vue'
+import RecycleBin from '@/views/sys/recyclebin/index.vue'
 import type { AxiosProgressEvent } from 'axios'
 import type SysUserRole from '@/views/rbac/role/type/resp/SysUserRole.ts'
+
+/**
+ * 数据库表名称
+ */
+const tableName = 'sys_user'
+/**
+ * 数据库表CODE
+ */
+const tableCode = 'user-table'
 
 /**
  * 分页数据
  */
 const pageModel = reactive<PageReq>({
   pageNo: 1,
-  pageSize: 10,
+  pageSize: 10
 })
 
 /**
@@ -29,7 +39,7 @@ const pageModel = reactive<PageReq>({
 const searchModel = reactive<SysUserReq>({})
 
 /**
- * 表格数据
+ * 表格Loading
  */
 const tableLoading = ref(false)
 
@@ -79,7 +89,7 @@ const roleSearchModel = reactive<{
   pageSize: number
 }>({
   pageNo: 1,
-  pageSize: 10,
+  pageSize: 10
 })
 
 const roleTableModel = ref<PageResp<SysUserRole>>()
@@ -189,11 +199,11 @@ function railStyle({ focused, checked }: { focused: boolean; checked: boolean })
 const roleModal = ref(false)
 
 const handleCustomUpload = async ({
-  file,
-  onFinish,
-  onError,
-  onProgress,
-}: UploadCustomRequestOptions) => {
+                                    file,
+                                    onFinish,
+                                    onError,
+                                    onProgress
+                                  }: UploadCustomRequestOptions) => {
   if (!file.file) return
 
   uploading.value = true
@@ -216,6 +226,8 @@ const handleCustomUpload = async ({
     uploading.value = false
   }
 }
+
+const recycleBinShowStatus = ref(false)
 
 onMounted(() => {
   page()
@@ -263,7 +275,7 @@ onMounted(() => {
         size="small"
         ghost
         :render-icon="renderAsyncIcon('CloudUploadOutline')"
-        >导入
+      >导入
       </n-button>
       <n-button
         type="primary"
@@ -273,7 +285,8 @@ onMounted(() => {
       >
         导出
       </n-button>
-      <n-button type="error" size="small" ghost :render-icon="renderAsyncIcon('TrashOutline')">
+      <n-button type="error" size="small" ghost :render-icon="renderAsyncIcon('TrashOutline')"
+                @click="recycleBinShowStatus = true">
         回收站
       </n-button>
     </div>
@@ -282,7 +295,7 @@ onMounted(() => {
       :loading="tableLoading"
       :data="tableModel?.records"
       @onAction="action"
-      tableCode="user-table"
+      :tableCode="tableCode"
       :page-no="tableModel?.pageNo"
       :page-size="tableModel?.pageSize"
       :total="tableModel?.total"
@@ -366,9 +379,10 @@ onMounted(() => {
       </n-drawer-content>
     </n-drawer>
 
-    <!-- 弹出框 -->
+    <!-- 分配角色弹出框 -->
     <n-modal
-      w="[800px]"
+      w="[50%]"
+      min-w="[500px]"
       h="[800px]"
       v-model:show="roleModal"
       preset="card"
@@ -425,6 +439,19 @@ onMounted(() => {
           </n-switch>
         </template>
       </DynamicTable>
+    </n-modal>
+
+    <!-- 回收站弹出框 -->
+    <n-modal
+      w="[70%]"
+      min-w="[500px]"
+      v-model:show="recycleBinShowStatus"
+      preset="card"
+      title="回收站"
+      flex-height
+      draggable
+    >
+      <RecycleBin :table-name="tableName" :table-code="tableCode" @restore="page" />
     </n-modal>
   </div>
 </template>

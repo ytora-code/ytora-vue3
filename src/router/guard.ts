@@ -81,7 +81,6 @@ export function setupRouterGuard(router: Router) {
   )
 
   router.afterEach((to: RouteLocationNormalized, from: RouteLocationNormalized) => {
-    console.log('目标路由', from)
     if (typeof to.meta.title === 'string') {
       document.title = to.meta.title
     }
