@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import { createTheme } from './utils/theme'
+import AppProvider from '@/components/provider/AppProvider.vue'
+import GlobalContextMenu from '@/components/contextmenu/GlobalContextMenu.vue'
+import { setupGlobalContextMenu } from '@/utils/contextMenuHandler'
 
-const themeOverrides = createTheme('#1890ff')
+onMounted(() => {
+  // 全局监听右键点击
+  setupGlobalContextMenu()
+})
 </script>
 
 <template>
-  <n-config-provider :theme-overrides="themeOverrides">
-    <n-message-provider>
-      <router-view></router-view>
-    </n-message-provider>
-  </n-config-provider>
+  <AppProvider>
+    <router-view></router-view>
+    <GlobalContextMenu />
+  </AppProvider>
 </template>
 
 <style scoped>
-.n-config-provider {
-  width: 100%;
-  height: 100%;
-}
+
 </style>

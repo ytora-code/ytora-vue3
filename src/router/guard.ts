@@ -2,6 +2,15 @@ import type { NavigationGuardNext, RouteLocationNormalized, Router } from 'vue-r
 import { loginApi } from '@/api/LoginApi.ts'
 import { getCookie, removeCookie } from '@/utils/cookies.ts'
 import { useUserStore } from '@/stores/userStore.ts'
+import { createDiscreteApi } from 'naive-ui'
+import { defaultTheme } from '@/utils/theme.ts'
+
+const { loadingBar } = createDiscreteApi(['loadingBar'], {
+    configProviderProps: {
+      themeOverrides: defaultTheme
+    }
+  }
+)
 
 /**
  * 注册路由守卫
@@ -15,6 +24,7 @@ export function setupRouterGuard(router: Router) {
    */
   router.beforeEach(
     (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+      loadingBar.start()
       const userStore = useUserStore()
       const token = getCookie('Authorization')
       //未登录
@@ -77,12 +87,13 @@ export function setupRouterGuard(router: Router) {
           }
         }
       }
-    },
+    }
   )
 
   router.afterEach((to: RouteLocationNormalized, from: RouteLocationNormalized) => {
     if (typeof to.meta.title === 'string') {
       document.title = to.meta.title
     }
+    loadingBar.finish()
   })
 }

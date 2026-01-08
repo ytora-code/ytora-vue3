@@ -5,6 +5,7 @@ import type PageResp from '@/types/resp/PageResp.ts'
 import type PageReq from '@/types/req/PageReq.ts'
 import DynamicTable from '@/components/table/index.vue'
 import { type DataTableColumn, NButton, NFlex, NPopconfirm } from 'naive-ui'
+import { renderAsyncIcon } from '@/utils/icon.ts'
 
 const props = defineProps<{
   tableName: string
@@ -26,6 +27,25 @@ const emit = defineEmits<{
    */
   (e: 'deleteCompletely', row: Record<string, unknown>): void
 }>()
+
+const dialog = useDialog()
+
+const clearConfirm = () => {
+  dialog.warning({
+    title: '警告',
+    content: '当前操作不可逆，是否继续？',
+    positiveText: '确认',
+    negativeText: '算了',
+    draggable: true,
+    onPositiveClick: async () => {
+      await recycleBinApi.clear(props.tableName)
+      await pageData()
+    },
+    onNegativeClick: () => {
+
+    }
+  })
+}
 
 /**
  * 分页数据
@@ -126,18 +146,31 @@ watch(() => props.tableName, pageData)
 </script>
 
 <template>
-  <DynamicTable
-    :loading="tableLoading"
-    :data="tableModel?.records"
-    :exclude="[tableCode + '::action']"
-    :colCallback="columnArr => [...columnArr, flexCol]"
-    :tableCode="tableCode"
-    :page-no="tableModel?.pageNo"
-    :page-size="tableModel?.pageSize"
-    :total="tableModel?.total"
-    @pageChange="pageChange"
-    :single-line="false"
-  />
+  <div>
+    <div m-y="[5px]">
+      <n-button
+        type="error"
+        size="small"
+        ghost
+        :render-icon="renderAsyncIcon('RemoveCircleOutline')"
+        @click="clearConfirm">
+        全部清空
+      </n-button>
+    </div>
+
+    <DynamicTable
+      :loading="tableLoading"
+      :data="tableModel?.records"
+      :exclude="[tableCode + '::action']"
+      :colCallback="columnArr => [...columnArr, flexCol]"
+      :tableCode="tableCode"
+      :page-no="tableModel?.pageNo"
+      :page-size="tableModel?.pageSize"
+      :total="tableModel?.total"
+      @pageChange="pageChange"
+      :single-line="false"
+    />
+  </div>
 </template>
 
 <style scoped>

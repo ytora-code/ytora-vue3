@@ -37,7 +37,6 @@ export default abstract class BaseApi {
     params?: P,
   ): Promise<R> => {
     this.handlerParam(params)
-    // 注意：此处假设你的 axiosInstance 经过拦截器处理后，.get 直接返回了 BaseResp<R>
     const response = await this.request.get<never, Result<R>>(`${this.prefix}${uri}`, { params })
     return responseHandler<R>(response)
   }

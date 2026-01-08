@@ -230,8 +230,8 @@ onMounted(() => {
   <div flex flex-col gap-1 px-6 py-3>
     <div>
       <n-form :model="searchModel" label-placement="left" inline flex flex-wrap gap-2>
-        <n-form-item label="资源编码" path="permissionCode">
-          <n-input placeholder="资源编码" v-model:value="searchModel.permissionCode" clearable />
+        <n-form-item label="资源名称" path="permissionName">
+          <n-input placeholder="资源名称" v-model:value="searchModel.permissionName" clearable />
         </n-form-item>
 
         <n-button type="primary" :render-icon="renderAsyncIcon('SearchOutline')" @click="list()">

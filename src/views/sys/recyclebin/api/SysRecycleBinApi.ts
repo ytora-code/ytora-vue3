@@ -25,7 +25,14 @@ class SysRecycleBinApi extends BaseApi {
    * 彻底删除
    */
   deleteCompletely = (ids: unknown) => {
-    return this.get<unknown, { ids: unknown }>('deleteCompletely', { ids })
+    return this.delete<unknown, { ids: unknown }>('deleteCompletely', { ids })
+  }
+
+  /**
+   * 清空回收站数据
+   */
+  clear = (table: unknown) => {
+    return this.delete<unknown, { table: unknown }>('clear', { table })
   }
 }
 

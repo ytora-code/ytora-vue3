@@ -78,3 +78,5 @@ export const createTheme = (mainColor: string): GlobalThemeOverrides => {
     },
   }
 }
+
+export const defaultTheme = createTheme('#1890ff')
