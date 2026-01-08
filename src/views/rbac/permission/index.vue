@@ -7,6 +7,16 @@ import { renderAsyncIcon } from '@/utils/icon.ts'
 import resetDefault from '@/utils/resetDefault.ts'
 import type SysPermissionReq from './type/req/SysPermissionReq.ts'
 import type SysPermission from './type/resp/SysPermission.ts'
+import RecycleBin from '@/views/sys/recyclebin/index.vue'
+
+/**
+ * 数据库表名称
+ */
+const tableName = 'sys_permission'
+/**
+ * 数据库表CODE
+ */
+const tableCode = 'permission-table'
 
 /**
  * search表单数据
@@ -66,6 +76,9 @@ let drawStatus: 1 | 2 | 3
 const openAddDraw = () => {
   drawStatus = 1
   resetDefault(currentModel.value)
+
+  currentModel.value.visible = true
+  currentModel.value.pid = "0"
   drawShowStatus.value = true
 }
 
@@ -190,6 +203,9 @@ watch(
   },
   { immediate: true }
 )
+
+const recycleBinShowStatus = ref(false)
+
 // attrList 变化时 → 回写 meta.attr
 watch(
   attrList,
@@ -252,14 +268,15 @@ onMounted(() => {
       >
         导出
       </n-button>
-      <n-button type="error" size="small" ghost :render-icon="renderAsyncIcon('TrashOutline')">
+      <n-button type="error" size="small" ghost :render-icon="renderAsyncIcon('TrashOutline')"
+                @click="recycleBinShowStatus = true">
         回收站
       </n-button>
     </div>
 
     <DynamicTable
       :loading="tableLoading"
-      tableCode="permission-table"
+      :tableCode="tableCode"
       :data="tableModel"
       @onAction="action"
       @load="loadChild"
@@ -324,10 +341,11 @@ onMounted(() => {
               />
             </n-form-item>
             <n-form-item label="组件key" path="meta.key">
-              <n-input placeholder="组件key" v-model:value="currentModel.meta.key" />
+              <n-input placeholder="组件key" v-model:value="currentModel.meta.key" clearable />
             </n-form-item>
             <n-form-item label="宽度" path="meta.width">
-              <n-input placeholder="宽度" v-model:value="currentModel.meta.width" />
+              <n-input-number placeholder="宽度" v-model:value="currentModel.meta.width"
+                              clearable />
             </n-form-item>
             <!-- attr 属性是灵活的，可以有很多自定义属性 -->
             <n-form-item label="属性" path="meta.attr">
@@ -389,6 +407,19 @@ onMounted(() => {
         </template>
       </n-drawer-content>
     </n-drawer>
+
+    <!-- 回收站弹出框 -->
+    <n-modal
+      w="[70%]"
+      min-w="[500px]"
+      v-model:show="recycleBinShowStatus"
+      preset="card"
+      title="回收站"
+      flex-height
+      draggable
+    >
+      <RecycleBin :table-name="tableName" :table-code="tableCode" @restore="list" />
+    </n-modal>
   </div>
 </template>
 

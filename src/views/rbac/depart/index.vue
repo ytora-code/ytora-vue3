@@ -7,6 +7,16 @@ import { renderAsyncIcon } from '@/utils/icon.ts'
 import resetDefault from '@/utils/resetDefault.ts'
 import type SysDepartReq from './type/req/SysDepartReq.ts'
 import type SysDepart from './type/resp/SysDepartResp.ts'
+import RecycleBin from '@/views/sys/recyclebin/index.vue'
+
+/**
+ * 数据库表名称
+ */
+const tableName = 'sys_depart'
+/**
+ * 数据库表CODE
+ */
+const tableCode = 'depart-table'
 
 /**
  * search表单数据
@@ -30,7 +40,7 @@ const currentModel = ref<SysDepartReq>({})
 
 const tableModel = ref<Array<SysDepart>>([])
 
-const tree = async () => {
+const list = async () => {
   tableLoading.value = true
   try {
     tableModel.value = await departApi.tree(searchModel.departName)
@@ -41,7 +51,7 @@ const tree = async () => {
 
 const reset = () => {
   resetDefault(searchModel)
-  tree()
+  list()
 }
 
 const action = (payload: { eventKey: string; row: SysDepart }) => {
@@ -92,7 +102,7 @@ const doAddOrEdit = () => {
   departApi
     .insertOrUpdate(currentModel.value)
     .then(() => {
-      tree()
+      list()
     })
     .finally(() => {
       drawShowStatus.value = false
@@ -101,22 +111,22 @@ const doAddOrEdit = () => {
 
 const del = async (row: SysDepart) => {
   await departApi.remove(row.id)
-  await tree()
+  await list()
 }
 
 const options = [
   {
     label: '公司',
-    value: '1',
+    value: '1'
   },
   {
     label: '部门',
-    value: '2',
+    value: '2'
   },
   {
     label: '小组',
-    value: '3',
-  },
+    value: '3'
+  }
 ]
 
 function railStyle({ focused, checked }: { focused: boolean; checked: boolean }) {
@@ -135,8 +145,10 @@ function railStyle({ focused, checked }: { focused: boolean; checked: boolean })
   return style
 }
 
+const recycleBinShowStatus = ref(false)
+
 onMounted(() => {
-  tree()
+  list()
 })
 </script>
 
@@ -148,7 +160,7 @@ onMounted(() => {
           <n-input placeholder="部门名称" v-model:value="searchModel.departName" clearable />
         </n-form-item>
 
-        <n-button type="primary" :render-icon="renderAsyncIcon('SearchOutline')" @click="tree">
+        <n-button type="primary" :render-icon="renderAsyncIcon('SearchOutline')" @click="list">
           搜索
         </n-button>
         <n-button type="primary" ghost :render-icon="renderAsyncIcon('SyncOutline')" @click="reset">
@@ -172,7 +184,7 @@ onMounted(() => {
         size="small"
         ghost
         :render-icon="renderAsyncIcon('CloudUploadOutline')"
-        >导入
+      >导入
       </n-button>
       <n-button
         type="primary"
@@ -182,14 +194,15 @@ onMounted(() => {
       >
         导出
       </n-button>
-      <n-button type="error" size="small" ghost :render-icon="renderAsyncIcon('TrashOutline')">
+      <n-button type="error" size="small" ghost :render-icon="renderAsyncIcon('TrashOutline')"
+                @click="recycleBinShowStatus = true">
         回收站
       </n-button>
     </div>
 
     <DynamicTable
       :loading="tableLoading"
-      tableCode="depart-table"
+      :tableCode="tableCode"
       :data="tableModel"
       @onAction="action"
       :single-line="false"
@@ -260,6 +273,19 @@ onMounted(() => {
         </template>
       </n-drawer-content>
     </n-drawer>
+
+    <!-- 回收站弹出框 -->
+    <n-modal
+      w="[70%]"
+      min-w="[500px]"
+      v-model:show="recycleBinShowStatus"
+      preset="card"
+      title="回收站"
+      flex-height
+      draggable
+    >
+      <RecycleBin :table-name="tableName" :table-code="tableCode" @restore="list" />
+    </n-modal>
   </div>
 </template>
 
