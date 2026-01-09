@@ -41,9 +41,7 @@ const clearConfirm = () => {
       await recycleBinApi.clear(props.tableName)
       await pageData()
     },
-    onNegativeClick: () => {
-
-    }
+    onNegativeClick: () => {},
   })
 }
 
@@ -52,7 +50,7 @@ const clearConfirm = () => {
  */
 const pageModel = reactive<PageReq>({
   pageNo: 1,
-  pageSize: 10
+  pageSize: 10,
 })
 
 /**
@@ -82,29 +80,29 @@ const flexCol: DataTableColumn<Record<string, unknown>> = {
           h(
             NButton,
             { size: 'small', type: 'primary', ghost: true, onClick: () => restore(row) },
-            { default: () => '还原' }
+            { default: () => '还原' },
           ),
           h(
             NPopconfirm,
             {
               onPositiveClick: () => deleteCompletely(row),
               negativeText: '取消',
-              positiveText: '确定'
+              positiveText: '确定',
             },
             {
               trigger: () =>
                 h(
                   NButton,
                   { size: 'small', type: 'error', ghost: true },
-                  { default: () => '彻底删除' }
+                  { default: () => '彻底删除' },
                 ),
-              default: () => `确定彻底删除吗？`
-            }
-          )
-        ]
-      }
+              default: () => `确定彻底删除吗？`,
+            },
+          ),
+        ],
+      },
     )
-  }
+  },
 }
 
 const pageChange = (pageNo: number, pageSize: number) => {
@@ -117,11 +115,13 @@ const pageChange = (pageNo: number, pageSize: number) => {
   pageData()
 }
 
-
 const pageData = async () => {
   tableLoading.value = true
   try {
-    tableModel.value = await recycleBinApi.page({ originalTable: props.tableName, ...toRaw(pageModel) })
+    tableModel.value = await recycleBinApi.page({
+      originalTable: props.tableName,
+      ...toRaw(pageModel),
+    })
     pageModel.pageNo = tableModel.value.pageNo
     pageModel.pageSize = tableModel.value.pageSize
   } finally {
@@ -153,7 +153,8 @@ watch(() => props.tableName, pageData)
         size="small"
         ghost
         :render-icon="renderAsyncIcon('RemoveCircleOutline')"
-        @click="clearConfirm">
+        @click="clearConfirm"
+      >
         全部清空
       </n-button>
     </div>
@@ -162,7 +163,7 @@ watch(() => props.tableName, pageData)
       :loading="tableLoading"
       :data="tableModel?.records"
       :exclude="[tableCode + '::action']"
-      :colCallback="columnArr => [...columnArr, flexCol]"
+      :colCallback="(columnArr) => [...columnArr, flexCol]"
       :tableCode="tableCode"
       :page-no="tableModel?.pageNo"
       :page-size="tableModel?.pageSize"
@@ -173,6 +174,4 @@ watch(() => props.tableName, pageData)
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

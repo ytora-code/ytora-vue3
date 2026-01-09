@@ -78,7 +78,8 @@ const openAddDraw = () => {
   resetDefault(currentModel.value)
 
   currentModel.value.visible = true
-  currentModel.value.pid = "0"
+  currentModel.value.pid = '0'
+  currentModel.value.permissionType = undefined
   drawShowStatus.value = true
 }
 
@@ -94,6 +95,7 @@ const openAddSubDraw = (row: SysPermission) => {
   currentModel.value.visible = true
   currentModel.value.pname = row.permissionName
   currentModel.value.pid = row.id
+  currentModel.value.permissionType = undefined
   drawShowStatus.value = true
 }
 
@@ -126,55 +128,71 @@ const del = async (row: SysPermission) => {
 const options = [
   {
     label: '接口',
-    value: '1'
+    value: 1,
   },
   {
     label: '页面',
-    value: '2'
+    value: 2,
   },
   {
-    label: '页面元素',
-    value: '3'
-  }
+    label: '组件',
+    value: 3,
+  },
+  {
+    label: '表格',
+    value: 4,
+  },
+  {
+    label: '表格字段',
+    value: 5,
+  },
+  {
+    label: '表单',
+    value: 6,
+  },
 ]
 
 const componentType = [
   {
+    label: '表格',
+    value: 'table',
+  },
+  {
     label: '表格列-索引',
-    value: 'table-col::index'
+    value: 'table-col::index',
   },
   {
     label: '表格列-普通文本',
-    value: 'table-col::normal'
+    value: 'table-col::normal',
   },
   {
     label: '表格列-按钮',
-    value: 'table-col::button'
+    value: 'table-col::button',
   },
   {
     label: '表格列-二次确认按钮',
-    value: 'table-col::popconfirm'
+    value: 'table-col::popconfirm',
   },
   {
     label: '表格列-标签',
-    value: 'table-col::tag'
+    value: 'table-col::tag',
   },
   {
     label: '表格列-图标',
-    value: 'table-col::icon'
+    value: 'table-col::icon',
   },
   {
     label: '表格列-插槽',
-    value: 'table-col::slot'
+    value: 'table-col::slot',
   },
   {
     label: '表格列-组件',
-    value: 'table-col::flex'
-  }
+    value: 'table-col::flex',
+  },
 ]
 
 // 元数据里面的attr列表
-const attrList = ref<{ key: string, value: string }[]>([])
+const attrList = ref<{ key: string; value: string }[]>([])
 const addAttrRow = (index?: number) => {
   const newItem = { key: '', value: '' }
 
@@ -191,17 +209,17 @@ const removeAttrRow = (index: number) => {
 // 当 meta.attr 存在时 → 初始化 attrList
 watch(
   () => currentModel.value.meta,
-  meta => {
+  (meta) => {
     if (meta?.attr) {
       attrList.value = Object.entries(meta.attr).map(([key, value]) => ({
         key,
-        value: String(value)
+        value: String(value),
       }))
     } else {
       attrList.value = []
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 const recycleBinShowStatus = ref(false)
@@ -212,14 +230,16 @@ watch(
   (list) => {
     if (!currentModel.value.meta) return
     currentModel.value.meta.attr = list
-      .filter(item => item.key)
+      .filter((item) => item.key)
       .reduce<Record<string, string>>((acc, cur) => {
         acc[cur.key] = cur.value
         return acc
       }, {})
   },
-  { deep: true }
+  { deep: true },
 )
+
+const dataPermissionShowStatus = ref(false)
 
 onMounted(() => {
   list()
@@ -254,22 +274,12 @@ onMounted(() => {
         新增
       </n-button>
       <n-button
-        type="primary"
+        type="error"
         size="small"
         ghost
-        :render-icon="renderAsyncIcon('CloudUploadOutline')"
-      >导入
-      </n-button>
-      <n-button
-        type="primary"
-        size="small"
-        ghost
-        :render-icon="renderAsyncIcon('CloudDownloadOutline')"
+        :render-icon="renderAsyncIcon('TrashOutline')"
+        @click="recycleBinShowStatus = true"
       >
-        导出
-      </n-button>
-      <n-button type="error" size="small" ghost :render-icon="renderAsyncIcon('TrashOutline')"
-                @click="recycleBinShowStatus = true">
         回收站
       </n-button>
     </div>
@@ -324,8 +334,13 @@ onMounted(() => {
             <n-input type="textarea" placeholder="备注" v-model:value="currentModel.remark" />
           </n-form-item>
           <n-form-item v-if="!currentModel.meta" label=" ">
-            <n-button size="small" type="primary" :render-icon="renderAsyncIcon('Add')" ghost
-                      @click="currentModel.meta = {}">
+            <n-button
+              size="small"
+              type="primary"
+              :render-icon="renderAsyncIcon('Add')"
+              ghost
+              @click="currentModel.meta = {}"
+            >
               添加元数据
             </n-button>
           </n-form-item>
@@ -344,18 +359,16 @@ onMounted(() => {
               <n-input placeholder="组件key" v-model:value="currentModel.meta.key" clearable />
             </n-form-item>
             <n-form-item label="宽度" path="meta.width">
-              <n-input-number placeholder="宽度" v-model:value="currentModel.meta.width"
-                              clearable />
+              <n-input-number
+                placeholder="宽度"
+                v-model:value="currentModel.meta.width"
+                clearable
+              />
             </n-form-item>
             <!-- attr 属性是灵活的，可以有很多自定义属性 -->
             <n-form-item label="属性" path="meta.attr">
               <div flex="~ col gap-2" w="100%">
-                <div
-                  v-for="(item, index) in attrList"
-                  :key="index"
-                  flex="~ gap-2"
-                  items-center
-                >
+                <div v-for="(item, index) in attrList" :key="index" flex="~ gap-2" items-center>
                   <!-- key -->
                   <n-input placeholder="属性名" v-model:value="item.key" style="width: 35%" />
 
@@ -364,11 +377,17 @@ onMounted(() => {
 
                   <!-- 操作按钮 -->
                   <div flex="~ gap-1">
-                    <n-button size="small" tertiary type="primary" @click="addAttrRow(index)"> +
+                    <n-button size="small" tertiary type="primary" @click="addAttrRow(index)">
+                      +
                     </n-button>
 
-                    <n-button size="small" tertiary type="error" @click="removeAttrRow(index)"
-                              :disabled="attrList.length === 1">
+                    <n-button
+                      size="small"
+                      tertiary
+                      type="error"
+                      @click="removeAttrRow(index)"
+                      :disabled="attrList.length === 1"
+                    >
                       −
                     </n-button>
                   </div>
@@ -382,8 +401,13 @@ onMounted(() => {
             </n-form-item>
 
             <n-form-item label=" ">
-              <n-button size="small" type="error" :render-icon="renderAsyncIcon('Add')" ghost
-                        @click="currentModel.meta = undefined">
+              <n-button
+                size="small"
+                type="error"
+                :render-icon="renderAsyncIcon('Add')"
+                ghost
+                @click="currentModel.meta = undefined"
+              >
                 取消元数据
               </n-button>
             </n-form-item>
@@ -392,7 +416,13 @@ onMounted(() => {
           <div v-if="currentModel.meta?.type === 'table'">
             <n-divider />
             <n-form-item label=" ">
-              <n-button size="small" type="success" :render-icon="renderAsyncIcon('Add')" ghost>
+              <n-button
+                size="small"
+                type="success"
+                :render-icon="renderAsyncIcon('Add')"
+                ghost
+                @click="dataPermissionShowStatus = true"
+              >
                 数据权限
               </n-button>
             </n-form-item>
@@ -419,6 +449,32 @@ onMounted(() => {
       draggable
     >
       <RecycleBin :table-name="tableName" :table-code="tableCode" @restore="list" />
+    </n-modal>
+
+    <!-- 数据权限弹出框 -->
+    <n-modal
+      w="[30%]"
+      min-w="[500px]"
+      v-model:show="dataPermissionShowStatus"
+      preset="card"
+      title="数据权限"
+      flex-height
+      draggable
+    >
+      <n-button
+        type="success"
+        size="small"
+        ghost
+        :render-icon="renderAsyncIcon('AddOutline')"
+      >
+        新增
+      </n-button>
+
+      <DynamicTable
+        tableCode="data-permission-table"
+        :data="[]"
+        :single-line="false"
+      />
     </n-modal>
   </div>
 </template>

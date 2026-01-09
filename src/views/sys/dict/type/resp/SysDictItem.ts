@@ -1,7 +1,6 @@
 import type BaseResp from '@/types/resp/BaseResp.ts'
 
 export default interface SysDictItem extends BaseResp {
-
   /**
    * 字典项值
    */
@@ -14,5 +13,4 @@ export default interface SysDictItem extends BaseResp {
    * 字典排序
    */
   index: string
-
 }

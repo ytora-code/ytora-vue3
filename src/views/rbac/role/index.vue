@@ -2,7 +2,7 @@
 import { type CSSProperties, onMounted, reactive } from 'vue'
 import { roleApi } from './api/RoleApi.ts'
 import { permissionApi } from '../permission/api/PermissionApi.ts'
-import { NButton, NFlex, type TreeOption } from 'naive-ui'
+import { NButton, NFlex, type TreeOption, type UploadCustomRequestOptions } from 'naive-ui'
 import DynamicTable from '@/components/table/index.vue'
 import type PageResp from '@/types/resp/PageResp.ts'
 import type PageReq from '@/types/req/PageReq.ts'
@@ -10,9 +10,7 @@ import { renderAsyncIcon } from '@/utils/icon.ts'
 import resetDefault from '@/utils/resetDefault.ts'
 import type SysRoleReq from './type/req/SysRoleReq.ts'
 import type SysRole from './type/resp/SysRole.ts'
-import type {
-  SysRolePermissionResp
-} from '@/views/rbac/permission/type/resp/SysRolePermissionResp.ts'
+import type { SysRolePermissionResp } from '@/views/rbac/permission/type/resp/SysRolePermissionResp.ts'
 import RecycleBin from '@/views/sys/recyclebin/index.vue'
 
 /**
@@ -24,12 +22,14 @@ const tableName = 'sys_role'
  */
 const tableCode = 'role-table'
 
+const dialog = useDialog()
+
 /**
  * 分页数据
  */
 const pageModel = reactive<PageReq>({
   pageNo: 1,
-  pageSize: 10
+  pageSize: 10,
 })
 
 /**
@@ -139,7 +139,7 @@ function railStyle({ focused, checked }: { focused: boolean; checked: boolean })
 // PERMISSION
 const rolePermission = reactive<SysRolePermissionResp>({
   tree: [],
-  permissionIds: []
+  permissionIds: [],
 })
 // 当前被勾选的权限 ID
 const checkedKeys = ref<string[]>([])
@@ -149,22 +149,20 @@ const permissionDrawShowStatus = ref(false)
 let currentRoleId: string | undefined
 
 const renderTreeSuffix = ({ option }: { option: TreeOption }) => {
-  const id = option.id
-
   // id 是奇数才显示按钮
-  if (Number(id) % 2 === 1) {
+  if (option.permissionType === 4) {
     return h(
       NButton,
       {
         size: 'tiny',
+        text: true,
         type: 'primary',
-        ghost: true,
         onClick: (e: MouseEvent) => {
           e.stopPropagation()
           console.log('点击节点', option)
-        }
+        },
       },
-      { default: () => '操作' }
+      { default: () => '数据权限' },
     )
   }
 
@@ -197,7 +195,7 @@ const onCheckedChange = (
     action: 'check' | 'uncheck'
     checkedKeys: string[]
     indeterminateKeys: string[]
-  }
+  },
 ) => {
   console.log(keys)
   checkedKeys.value = keys
@@ -208,9 +206,55 @@ const doUploadPermission = async () => {
   await permissionApi.refreshRolePermission({
     roleId: currentRoleId,
     originPermissionIds: rolePermission.permissionIds,
-    currentPermissionIds: checkedKeys.value
+    currentPermissionIds: checkedKeys.value,
   })
   permissionDrawShowStatus.value = false
+}
+
+const importBoxShowStatus = ref(false)
+const percentage = ref(0)
+const uploading = ref(false)
+
+const downloadTemplate = async () => {
+  await roleApi.downloadTemplate()
+}
+
+const importXlsx = async ({ file, onFinish, onError }: UploadCustomRequestOptions) => {
+  if (!file.file) return
+
+  try {
+    const formData = new FormData()
+    formData.append('file', file.file)
+    uploading.value = true
+    await roleApi.import(formData, (loaded, total, percent) => {
+      percentage.value = percent
+    })
+    onFinish()
+  } catch (err: unknown) {
+    console.error('上传失败:', err)
+    onError()
+  } finally {
+    importBoxShowStatus.value = false
+    uploading.value = false
+    await page()
+  }
+}
+
+const openExportXlsxConfirmDialog = () => {
+  dialog.info({
+    title: '下载',
+    content: '即将导出符合查询条件的所有数据，是否继续?',
+    positiveText: '确认',
+    negativeText: '算了',
+    draggable: true,
+    onPositiveClick: async () => {
+      exportXlsx()
+    },
+    onNegativeClick: () => {},
+  })
+}
+const exportXlsx = () => {
+  roleApi.export({ ...toRaw(searchModel) })
 }
 
 const recycleBinShowStatus = ref(false)
@@ -255,18 +299,25 @@ onMounted(() => {
         size="small"
         ghost
         :render-icon="renderAsyncIcon('CloudUploadOutline')"
-      >导入
+        @click="importBoxShowStatus = true"
+        >导入
       </n-button>
       <n-button
         type="primary"
         size="small"
         ghost
         :render-icon="renderAsyncIcon('CloudDownloadOutline')"
+        @click="openExportXlsxConfirmDialog"
       >
         导出
       </n-button>
-      <n-button type="error" size="small" ghost :render-icon="renderAsyncIcon('TrashOutline')"
-                @click="recycleBinShowStatus = true">
+      <n-button
+        type="error"
+        size="small"
+        ghost
+        :render-icon="renderAsyncIcon('TrashOutline')"
+        @click="recycleBinShowStatus = true"
+      >
         回收站
       </n-button>
     </div>
@@ -322,6 +373,34 @@ onMounted(() => {
       </n-drawer-content>
     </n-drawer>
 
+    <!-- 数据导入弹出框 -->
+    <n-modal
+      w="[30%]"
+      min-w="[300px]"
+      h="[300px]"
+      v-model:show="importBoxShowStatus"
+      preset="card"
+      title="数据导入"
+      flex-height
+      draggable
+    >
+      <n-button text type="primary" @click.stop="downloadTemplate">下载导入模板</n-button>
+      <n-upload v-if="!uploading" :custom-request="importXlsx" accept=".xlsx,.xls">
+        <n-upload-dragger>
+          <div mb="[12px]">
+            <n-icon size="48" :depth="3">
+              <component :is="renderAsyncIcon('CloudUploadOutline')" />
+            </n-icon>
+          </div>
+          <n-text style="font-size: 16px">点击或者拖动文件到该区域来上传</n-text>
+        </n-upload-dragger>
+      </n-upload>
+
+      <div flex justify-center v-else>
+        <n-progress type="circle" :percentage="percentage" />
+      </div>
+    </n-modal>
+
     <!-- 角色-资源抽屉 -->
     <n-drawer
       v-model:show="permissionDrawShowStatus"
@@ -347,9 +426,7 @@ onMounted(() => {
 
         <template #footer>
           <n-flex>
-            <n-button type="primary" ghost @click="closePermissionDraw"
-            >退　出
-            </n-button>
+            <n-button type="primary" ghost @click="closePermissionDraw">退　出 </n-button>
             <n-button type="primary" @click="doUploadPermission">提　交</n-button>
           </n-flex>
         </template>

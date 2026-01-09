@@ -6,11 +6,10 @@ import { createDiscreteApi } from 'naive-ui'
 import { defaultTheme } from '@/utils/theme.ts'
 
 const { loadingBar } = createDiscreteApi(['loadingBar'], {
-    configProviderProps: {
-      themeOverrides: defaultTheme
-    }
-  }
-)
+  configProviderProps: {
+    themeOverrides: defaultTheme,
+  },
+})
 
 /**
  * 注册路由守卫
@@ -87,7 +86,7 @@ export function setupRouterGuard(router: Router) {
           }
         }
       }
-    }
+    },
   )
 
   router.afterEach((to: RouteLocationNormalized, from: RouteLocationNormalized) => {

@@ -9,13 +9,13 @@ class FileApi extends BaseApi {
   /**
    * 文件上传
    * @param formData 文件
-   * @param onUploadProgress 进度回调函数
+   * @param progress 进度回调函数
    */
   fileUpload = (
     formData: FormData,
-    onUploadProgress?: (progressEvent: AxiosProgressEvent) => void,
+    progress?: (loaded: number, total: number, percent: number) => void,
   ) => {
-    return this.upload<string>('upload', formData, onUploadProgress)
+    return this.upload<string>('upload', formData, progress)
   }
 
   /**

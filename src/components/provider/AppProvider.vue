@@ -22,5 +22,8 @@ const dateLocale = ref<NDateLocale | null>(dateZhCN)
 </template>
 
 <style scoped>
-
+.n-config-provider {
+  width: 100%;
+  height: 100%;
+}
 </style>

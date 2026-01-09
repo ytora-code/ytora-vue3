@@ -6,15 +6,18 @@ import type TableColumn from './type/TableColumn.ts'
 import { useUserStore } from '@/stores/userStore.ts'
 import type SysPermission from '@/views/rbac/permission/type/resp/SysPermission.ts'
 
-const props = withDefaults(defineProps<{
-  tableCode: string
-  exclude?: string[]
-  colCallback?: (columnArr: DataTableColumn<T>[]) => DataTableColumn<T>[]
-  data?: T[]
-  pageNo?: number
-  pageSize?: number
-  total?: number
-}>(), { colCallback: (columnArr: DataTableColumn<T>[]) => columnArr })
+const props = withDefaults(
+  defineProps<{
+    tableCode: string
+    exclude?: string[]
+    colCallback?: (columnArr: DataTableColumn<T>[]) => DataTableColumn<T>[]
+    data?: T[]
+    pageNo?: number
+    pageSize?: number
+    total?: number
+  }>(),
+  { colCallback: (columnArr: DataTableColumn<T>[]) => columnArr },
+)
 
 const emit = defineEmits<{
   (e: 'onAction', payload: { eventKey: string; row: T }): void
@@ -48,8 +51,8 @@ const convertPermissionToColumn = (permissions: SysPermission[] | undefined): Ta
       name: item.permissionName,
       permissionCode: item.permissionCode,
       attr: (item.meta?.attr as Record<string, unknown>) || {},
-      children: convertPermissionToColumn(item.children)
-    })
+      children: convertPermissionToColumn(item.children),
+    }),
   )
 }
 
@@ -85,7 +88,7 @@ const columns = computed(() => {
         key: colKey,
         align: (attr.align as 'left' | 'center' | 'right') || 'center',
         width: (meta.width as number) || 80,
-        fixed: attr.fixed as 'left' | 'right' | undefined
+        fixed: attr.fixed as 'left' | 'right' | undefined,
       }
 
       // 索引列
@@ -98,7 +101,7 @@ const columns = computed(() => {
               return ((props.pageNo ?? 1) - 1) * (props.pageSize ?? 10) + index + 1
             }
             return index + 1
-          }
+          },
         }
       }
 
@@ -112,7 +115,7 @@ const columns = computed(() => {
           name: item.permissionName,
           permissionCode: item.permissionCode,
           attr: attr,
-          children: convertPermissionToColumn(item.children)
+          children: convertPermissionToColumn(item.children),
         }
 
         return {
@@ -122,16 +125,16 @@ const columns = computed(() => {
               column: config,
               row,
               slots,
-              onAction: (payload) => emit('onAction', payload)
+              onAction: (payload) => emit('onAction', payload),
             })
-          }
+          },
         }
       }
 
       // 普通列
       return {
         ...baseCol,
-        ellipsis: attr.ellipsis ? { tooltip: true } : undefined
+        ellipsis: attr.ellipsis ? { tooltip: true } : undefined,
       }
     })
   return props.colCallback(columns)
@@ -175,7 +178,7 @@ const pagination = computed(() => {
     onUpdatePageSize: (size: number) => {
       // 切换 pageSize 通常需要跳转回第一页
       emit('pageChange', 1, size)
-    }
+    },
   }
 })
 </script>

@@ -117,16 +117,16 @@ const del = async (row: SysDepart) => {
 const options = [
   {
     label: '公司',
-    value: '1'
+    value: '1',
   },
   {
     label: '部门',
-    value: '2'
+    value: '2',
   },
   {
     label: '小组',
-    value: '3'
-  }
+    value: '3',
+  },
 ]
 
 function railStyle({ focused, checked }: { focused: boolean; checked: boolean }) {
@@ -180,22 +180,12 @@ onMounted(() => {
         新增
       </n-button>
       <n-button
-        type="primary"
+        type="error"
         size="small"
         ghost
-        :render-icon="renderAsyncIcon('CloudUploadOutline')"
-      >导入
-      </n-button>
-      <n-button
-        type="primary"
-        size="small"
-        ghost
-        :render-icon="renderAsyncIcon('CloudDownloadOutline')"
+        :render-icon="renderAsyncIcon('TrashOutline')"
+        @click="recycleBinShowStatus = true"
       >
-        导出
-      </n-button>
-      <n-button type="error" size="small" ghost :render-icon="renderAsyncIcon('TrashOutline')"
-                @click="recycleBinShowStatus = true">
         回收站
       </n-button>
     </div>

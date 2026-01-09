@@ -13,7 +13,6 @@ import resetDefault from '@/utils/resetDefault.ts'
 import { getDefaultAvatar } from '@/utils/image.ts'
 import DynamicTable from '@/components/table/index.vue'
 import RecycleBin from '@/views/sys/recyclebin/index.vue'
-import type { AxiosProgressEvent } from 'axios'
 import type SysUserRole from '@/views/rbac/role/type/resp/SysUserRole.ts'
 
 /**
@@ -25,12 +24,14 @@ const tableName = 'sys_user'
  */
 const tableCode = 'user-table'
 
+const dialog = useDialog()
+
 /**
  * 分页数据
  */
 const pageModel = reactive<PageReq>({
   pageNo: 1,
-  pageSize: 10
+  pageSize: 10,
 })
 
 /**
@@ -89,7 +90,7 @@ const roleSearchModel = reactive<{
   pageSize: number
 }>({
   pageNo: 1,
-  pageSize: 10
+  pageSize: 10,
 })
 
 const roleTableModel = ref<PageResp<SysUserRole>>()
@@ -199,11 +200,11 @@ function railStyle({ focused, checked }: { focused: boolean; checked: boolean })
 const roleModal = ref(false)
 
 const handleCustomUpload = async ({
-                                    file,
-                                    onFinish,
-                                    onError,
-                                    onProgress
-                                  }: UploadCustomRequestOptions) => {
+  file,
+  onFinish,
+  onError,
+  onProgress,
+}: UploadCustomRequestOptions) => {
   if (!file.file) return
 
   uploading.value = true
@@ -211,11 +212,9 @@ const handleCustomUpload = async ({
   formData.append('file', file.file)
 
   try {
-    const fileId = await fileApi.fileUpload(formData, (progressEvent: AxiosProgressEvent) => {
-      if (progressEvent.total) {
-        const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-        onProgress({ percent })
-      }
+    const fileId = await fileApi.fileUpload(formData, (loaded, total, percent) => {
+      console.log('上传进度', percent, loaded, total)
+      onProgress({ percent })
     })
     currentModel.value.avatar = `${import.meta.env.VITE_REQUEST_BASE_URL}sys/file/download?fileId=${fileId}`
     onFinish()
@@ -227,6 +226,51 @@ const handleCustomUpload = async ({
   }
 }
 
+const importBoxShowStatus = ref(false)
+const percentage = ref(0)
+
+const downloadTemplate = async () => {
+  await userApi.downloadTemplate()
+}
+
+const importXlsx = async ({ file, onFinish, onError }: UploadCustomRequestOptions) => {
+  if (!file.file) return
+
+  try {
+    const formData = new FormData()
+    formData.append('file', file.file)
+    uploading.value = true
+    await userApi.import(formData, (loaded, total, percent) => {
+      percentage.value = percent
+    })
+    onFinish()
+  } catch (err: unknown) {
+    console.error('上传失败:', err)
+    onError()
+  } finally {
+    importBoxShowStatus.value = false
+    uploading.value = false
+    await page()
+  }
+}
+
+const openExportXlsxConfirmDialog = () => {
+  dialog.info({
+    title: '下载',
+    content: '即将导出符合查询条件的所有数据，是否继续?',
+    positiveText: '确认',
+    negativeText: '算了',
+    draggable: true,
+    onPositiveClick: async () => {
+      exportXlsx()
+    },
+    onNegativeClick: () => {},
+  })
+}
+const exportXlsx = () => {
+  userApi.export({ ...toRaw(searchModel) })
+}
+
 const recycleBinShowStatus = ref(false)
 
 onMounted(() => {
@@ -236,6 +280,7 @@ onMounted(() => {
 
 <template>
   <div flex flex-col gap-1 px-6 py-3>
+    <!-- 搜索条件 -->
     <div>
       <n-form :model="searchModel" label-placement="left" inline flex flex-wrap gap-2>
         <n-form-item label="用户名" path="userName">
@@ -260,6 +305,7 @@ onMounted(() => {
       </n-form>
     </div>
 
+    <!-- 操作按钮 -->
     <div flex gap-x="3px">
       <n-button
         type="success"
@@ -275,22 +321,30 @@ onMounted(() => {
         size="small"
         ghost
         :render-icon="renderAsyncIcon('CloudUploadOutline')"
-      >导入
+        @click="importBoxShowStatus = true"
+        >导入
       </n-button>
       <n-button
         type="primary"
         size="small"
         ghost
         :render-icon="renderAsyncIcon('CloudDownloadOutline')"
+        @click="openExportXlsxConfirmDialog"
       >
         导出
       </n-button>
-      <n-button type="error" size="small" ghost :render-icon="renderAsyncIcon('TrashOutline')"
-                @click="recycleBinShowStatus = true">
+      <n-button
+        type="error"
+        size="small"
+        ghost
+        :render-icon="renderAsyncIcon('TrashOutline')"
+        @click="recycleBinShowStatus = true"
+      >
         回收站
       </n-button>
     </div>
 
+    <!-- 数据表格 -->
     <DynamicTable
       :loading="tableLoading"
       :data="tableModel?.records"
@@ -379,11 +433,52 @@ onMounted(() => {
       </n-drawer-content>
     </n-drawer>
 
+    <!-- 数据导入弹出框 -->
+    <n-modal
+      w="[30%]"
+      min-w="[300px]"
+      h="[300px]"
+      v-model:show="importBoxShowStatus"
+      preset="card"
+      title="数据导入"
+      flex-height
+      draggable
+    >
+      <n-button text type="primary" @click.stop="downloadTemplate">下载导入模板</n-button>
+      <n-upload v-if="!uploading" :custom-request="importXlsx" accept=".xlsx,.xls">
+        <n-upload-dragger>
+          <div mb="[12px]">
+            <n-icon size="48" :depth="3">
+              <component :is="renderAsyncIcon('CloudUploadOutline')" />
+            </n-icon>
+          </div>
+          <n-text style="font-size: 16px"> 点击或者拖动文件到该区域来上传</n-text>
+        </n-upload-dragger>
+      </n-upload>
+
+      <div flex justify-center v-else>
+        <n-progress type="circle" :percentage="percentage" />
+      </div>
+    </n-modal>
+
+    <!-- 回收站弹出框 -->
+    <n-modal
+      w="[70%]"
+      min-w="[500px]"
+      v-model:show="recycleBinShowStatus"
+      preset="card"
+      title="回收站"
+      flex-height
+      draggable
+    >
+      <RecycleBin :table-name="tableName" :table-code="tableCode" @restore="page" />
+    </n-modal>
+
     <!-- 分配角色弹出框 -->
     <n-modal
-      w="[50%]"
+      w="[60%]"
       min-w="[500px]"
-      h="[800px]"
+      h="[550px]"
       v-model:show="roleModal"
       preset="card"
       title="分配角色"
@@ -439,19 +534,6 @@ onMounted(() => {
           </n-switch>
         </template>
       </DynamicTable>
-    </n-modal>
-
-    <!-- 回收站弹出框 -->
-    <n-modal
-      w="[70%]"
-      min-w="[500px]"
-      v-model:show="recycleBinShowStatus"
-      preset="card"
-      title="回收站"
-      flex-height
-      draggable
-    >
-      <RecycleBin :table-name="tableName" :table-code="tableCode" @restore="page" />
     </n-modal>
   </div>
 </template>

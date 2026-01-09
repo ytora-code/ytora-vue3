@@ -10,6 +10,8 @@ class RoleApi extends BaseApi {
     super('/rbac/role')
   }
 
+  // ============================== CRUD =================================>
+
   /**
    * 分页请求
    */
@@ -30,6 +32,34 @@ class RoleApi extends BaseApi {
   remove = (id: string | undefined) => {
     return this.delete<unknown, { id: string | undefined }>('delete', { id })
   }
+
+  // ============================== EXCEL =================================>
+
+  /**
+   * 下载导入模板
+   */
+  downloadTemplate = () => {
+    return this.download<unknown>('downloadTemplate')
+  }
+
+  /**
+   * 导入
+   */
+  import = (
+    formData: FormData,
+    progress?: (loaded: number, total: number, percent: number) => void,
+  ) => {
+    return this.upload<string>('import', formData, progress)
+  }
+
+  /**
+   * 导出
+   */
+  export = (params: SysRoleReq) => {
+    return this.download<SysRoleReq>('export', params)
+  }
+
+  // ============================== 其他 =================================>
 
   listUserRoleMapper = (params: {
     userId?: string

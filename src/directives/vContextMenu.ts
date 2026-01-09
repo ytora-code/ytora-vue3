@@ -16,7 +16,7 @@ export const contextMenuDirective = {
       },
       unmounted(el: HTMLElement) {
         customMenuMap.delete(el)
-      }
+      },
     })
-  }
+  },
 }

@@ -132,9 +132,7 @@ watch(
   <n-scrollbar h-screen>
     <header v-if="!collapsed" flex items-center gap-3 p-3>
       <n-image width="64" height="64" :src="userStore.avatar" />
-      <n-gradient-text size="20" font-bold>{{
-        userStore.realName
-      }}</n-gradient-text>
+      <n-gradient-text size="20" font-bold>{{ userStore.realName }}</n-gradient-text>
     </header>
 
     <n-menu

@@ -110,13 +110,20 @@ export default abstract class BaseApi {
   protected upload = async <R = unknown>(
     uri: string,
     formData: FormData,
-    onUploadProgress?: (progressEvent: AxiosProgressEvent) => void,
+    progress?: (loaded: number, total: number, percent: number) => void,
   ): Promise<R> => {
     const response = await this.request.post<never, Result<R>>(`${this.prefix}${uri}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-      onUploadProgress,
+      onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+        if (progressEvent.total) {
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          if (progress) {
+            progress(progressEvent.loaded, progressEvent.total, percent)
+          }
+        }
+      },
     })
     return responseHandler<R>(response)
   }

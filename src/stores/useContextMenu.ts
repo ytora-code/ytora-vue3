@@ -10,7 +10,11 @@ export const useContextMenuStore = defineStore('contextMenu', () => {
   const options = ref<DropdownOption[]>([])
   const currentHandler = ref<((key: MenuKey) => void) | null>(null)
 
-  const openMenu = async (event: MouseEvent, menuOptions: DropdownOption[], handler: (key: MenuKey) => void) => {
+  const openMenu = async (
+    event: MouseEvent,
+    menuOptions: DropdownOption[],
+    handler: (key: MenuKey) => void,
+  ) => {
     event.preventDefault()
     show.value = false
     currentHandler.value = null

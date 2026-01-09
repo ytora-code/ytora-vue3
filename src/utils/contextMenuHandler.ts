@@ -7,7 +7,7 @@ const defaultOptions: DropdownOption[] = [
   { label: '刷新页面', key: 'refresh' },
   { label: '返回首页', key: 'home' },
   { type: 'divider', key: 'd1' },
-  { label: '打印', key: 'print' }
+  { label: '打印', key: 'print' },
 ]
 
 // 默认处理函数
