@@ -12,6 +12,7 @@ import type SysRoleReq from './type/req/SysRoleReq.ts'
 import type SysRole from './type/resp/SysRole.ts'
 import type { SysRolePermissionResp } from '@/views/rbac/permission/type/resp/SysRolePermissionResp.ts'
 import RecycleBin from '@/views/sys/recyclebin/index.vue'
+import type SysDataRule from '@/views/rbac/permission/type/resp/SysDataRule.ts'
 
 /**
  * 数据库表名称
@@ -159,7 +160,7 @@ const renderTreeSuffix = ({ option }: { option: TreeOption }) => {
         type: 'primary',
         onClick: (e: MouseEvent) => {
           e.stopPropagation()
-          console.log('点击节点', option)
+          openDataRuleDialog(option.id as string)
         },
       },
       { default: () => '数据权限' },
@@ -258,6 +259,21 @@ const exportXlsx = () => {
 }
 
 const recycleBinShowStatus = ref(false)
+const citiesRef = ref<(string | number)[] | null>(null)
+const dataRuleShowStatus = ref(false)
+
+const dataRuleModel = ref<SysDataRule[]>([])
+
+const openDataRuleDialog = async (id: string) => {
+  dataRuleModel.value = []
+  dataRuleShowStatus.value = true
+  dataRuleModel.value = await permissionApi.listDataRule(id)
+}
+
+const handleUpdateValue = (value: (string | number)[]) => {
+  citiesRef.value = value
+  console.log(value)
+}
 
 onMounted(() => {
   page()
@@ -426,7 +442,7 @@ onMounted(() => {
 
         <template #footer>
           <n-flex>
-            <n-button type="primary" ghost @click="closePermissionDraw">退　出 </n-button>
+            <n-button type="primary" ghost @click="closePermissionDraw">退　出</n-button>
             <n-button type="primary" @click="doUploadPermission">提　交</n-button>
           </n-flex>
         </template>
@@ -444,6 +460,24 @@ onMounted(() => {
       draggable
     >
       <RecycleBin :table-name="tableName" :table-code="tableCode" @restore="page" />
+    </n-modal>
+
+    <!-- 数据权限弹出框 -->
+    <n-modal
+      w="[200px]"
+      v-model:show="dataRuleShowStatus"
+      preset="card"
+      title="数据权限"
+      flex-height
+      draggable
+    >
+      <n-checkbox-group :value="citiesRef" @update:value="handleUpdateValue">
+        <n-space vertical align="center">
+          <n-checkbox v-for="item in dataRuleModel" :key="item.id" :value="item.id" :label="item.ruleName" />
+        </n-space>
+      </n-checkbox-group>
+      <n-divider />
+      <n-button ml="[100px]" type="primary" size="small" ghost>提交</n-button>
     </n-modal>
   </div>
 </template>

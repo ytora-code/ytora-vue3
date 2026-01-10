@@ -2,6 +2,7 @@ import { createDiscreteApi } from 'naive-ui'
 import type Result from '@/types/resp/Result.ts'
 import { removeCookie } from '@/utils/cookies.ts'
 import type { Router } from 'vue-router'
+import { nextTick } from 'vue'
 
 const { notification } = createDiscreteApi(['message', 'notification', 'dialog', 'loadingBar'])
 
@@ -38,6 +39,7 @@ const RespHandler = async <R = unknown>(response: Result<R>): Promise<R> => {
         router = routerModule.default
       }
 
+      await nextTick()
       // 走到这，router一定不为null
       await router!.replace({
         path: '/login',

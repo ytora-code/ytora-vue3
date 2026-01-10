@@ -8,6 +8,8 @@ import resetDefault from '@/utils/resetDefault.ts'
 import type SysPermissionReq from './type/req/SysPermissionReq.ts'
 import type SysPermission from './type/resp/SysPermission.ts'
 import RecycleBin from '@/views/sys/recyclebin/index.vue'
+import type SysDataRule from '@/views/rbac/permission/type/resp/SysDataRule.ts'
+import type SysDataRuleReq from '@/views/rbac/permission/type/req/SysDataRuleReq.ts'
 
 /**
  * 数据库表名称
@@ -239,7 +241,45 @@ watch(
   { deep: true },
 )
 
-const dataPermissionShowStatus = ref(false)
+const dataRuleShowStatus = ref(false)
+const addUpdateDataRuleShowStatus = ref(false)
+
+const dataRuleModel = ref<SysDataRule[]>([])
+
+const currentDataRuleModel = ref<SysDataRuleReq>({})
+
+const openDataRuleDialog = async () => {
+  dataRuleShowStatus.value = true
+  dataRuleModel.value = await permissionApi.listDataRule(currentModel.value.id)
+  console.log(dataRuleModel.value)
+}
+
+const dataRuleAction = (payload: { eventKey: string; row: SysDataRule }) => {
+  if (payload.eventKey === 'data-permission-table::action::edit') {
+    openEditDataRuleDialog(payload.row)
+  } else if (payload.eventKey === 'data-permission-table::action::delete') {
+    doDelDataRule(payload.row!.id)
+  }
+}
+
+const openAddDataRuleDialog = () => {
+  resetDefault(currentDataRuleModel.value)
+  addUpdateDataRuleShowStatus.value = true
+}
+
+const openEditDataRuleDialog = (row: SysDataRule) => {
+  Object.assign(currentDataRuleModel.value, row)
+  addUpdateDataRuleShowStatus.value = true
+}
+
+const doAddOrUpdateDataRule = async () => {
+  await permissionApi.addOrUpdateDataRule(currentDataRuleModel.value)
+  dataRuleModel.value = await permissionApi.listDataRule(currentModel.value.id)
+}
+const doDelDataRule = async (id?: string) => {
+  await permissionApi.deleteDataRule(id)
+  dataRuleModel.value = await permissionApi.listDataRule(currentModel.value.id)
+}
 
 onMounted(() => {
   list()
@@ -318,7 +358,11 @@ onMounted(() => {
               clearable
             />
           </n-form-item>
-          <n-form-item label="图标" path="icon">
+          <n-form-item
+            v-if="!currentModel.permissionType || currentModel.permissionType <= 3"
+            label="图标"
+            path="icon"
+          >
             <n-input placeholder="图标" v-model:value="currentModel.icon" />
           </n-form-item>
           <n-form-item label="是否可见" path="visible">
@@ -369,12 +413,8 @@ onMounted(() => {
             <n-form-item label="属性" path="meta.attr">
               <div flex="~ col gap-2" w="100%">
                 <div v-for="(item, index) in attrList" :key="index" flex="~ gap-2" items-center>
-                  <!-- key -->
                   <n-input placeholder="属性名" v-model:value="item.key" style="width: 35%" />
-
-                  <!-- value -->
                   <n-input placeholder="属性值" v-model:value="item.value" style="width: 45%" />
-
                   <!-- 操作按钮 -->
                   <div flex="~ gap-1">
                     <n-button size="small" tertiary type="primary" @click="addAttrRow(index)">
@@ -421,7 +461,7 @@ onMounted(() => {
                 type="success"
                 :render-icon="renderAsyncIcon('Add')"
                 ghost
-                @click="dataPermissionShowStatus = true"
+                @click="openDataRuleDialog"
               >
                 数据权限
               </n-button>
@@ -453,27 +493,31 @@ onMounted(() => {
 
     <!-- 数据权限弹出框 -->
     <n-modal
-      w="[30%]"
+      w="[38%]"
       min-w="[500px]"
-      v-model:show="dataPermissionShowStatus"
+      v-model:show="dataRuleShowStatus"
       preset="card"
       title="数据权限"
       flex-height
       draggable
     >
-      <n-button
-        type="success"
-        size="small"
-        ghost
-        :render-icon="renderAsyncIcon('AddOutline')"
-      >
-        新增
-      </n-button>
-
+      <div flex gap-x="3px">
+        <n-button
+          type="success"
+          size="small"
+          ghost
+          :render-icon="renderAsyncIcon('AddOutline')"
+          @click="openAddDataRuleDialog"
+        >
+          新增
+        </n-button>
+        <n-button type="primary" size="small" ghost> 初始化默认权限 </n-button>
+      </div>
       <DynamicTable
         tableCode="data-permission-table"
-        :data="[]"
+        :data="dataRuleModel"
         :single-line="false"
+        @onAction="dataRuleAction"
       />
     </n-modal>
   </div>
