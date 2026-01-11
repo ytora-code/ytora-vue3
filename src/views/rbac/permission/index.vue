@@ -264,22 +264,80 @@ const dataRuleAction = (payload: { eventKey: string; row: SysDataRule }) => {
 
 const openAddDataRuleDialog = () => {
   resetDefault(currentDataRuleModel.value)
+  currentDataRuleModel.value.permissionId = currentModel.value.id
   addUpdateDataRuleShowStatus.value = true
 }
 
 const openEditDataRuleDialog = (row: SysDataRule) => {
   Object.assign(currentDataRuleModel.value, row)
+  currentDataRuleModel.value.permissionId = currentModel.value.id
   addUpdateDataRuleShowStatus.value = true
 }
 
 const doAddOrUpdateDataRule = async () => {
   await permissionApi.addOrUpdateDataRule(currentDataRuleModel.value)
   dataRuleModel.value = await permissionApi.listDataRule(currentModel.value.id)
+  addUpdateDataRuleShowStatus.value = false
 }
 const doDelDataRule = async (id?: string) => {
   await permissionApi.deleteDataRule(id)
   dataRuleModel.value = await permissionApi.listDataRule(currentModel.value.id)
 }
+
+const ruleTypeOption = [
+  {
+    label: '等于',
+    value: '=',
+  },
+  {
+    label: '不等于',
+    value: '<>',
+  },
+  {
+    label: '小于',
+    value: '<',
+  },
+  {
+    label: '小于等于',
+    value: '<=',
+  },
+  {
+    label: '大于',
+    value: '>',
+  },
+  {
+    label: '大于等于',
+    value: '>=',
+  },
+  {
+    label: '模糊',
+    value: 'like',
+  },
+  {
+    label: '以...开始',
+    value: 'startWith',
+  },
+  {
+    label: '以...结束',
+    value: 'endWith',
+  },
+  {
+    label: '指定用户',
+    value: '指定用户',
+  },
+  {
+    label: '指定部门',
+    value: '指定部门',
+  },
+  {
+    label: '查看全部数据',
+    value: '查看全部数据',
+  },
+  {
+    label: '自定义',
+    value: '自定义',
+  },
+]
 
 onMounted(() => {
   list()
@@ -519,6 +577,40 @@ onMounted(() => {
         :single-line="false"
         @onAction="dataRuleAction"
       />
+    </n-modal>
+
+    <!-- 数据权限弹出框 -->
+    <n-modal
+      w="[20%]"
+      min-w="[300px]"
+      v-model:show="addUpdateDataRuleShowStatus"
+      preset="card"
+      title="新增"
+      flex-height
+      draggable
+    >
+      <n-form :model="currentDataRuleModel" label-placement="left" :label-width="100">
+        <n-form-item label="规则名称" path="ruleName">
+          <n-input placeholder="规则名称" v-model:value="currentDataRuleModel.ruleName" />
+        </n-form-item>
+        <n-form-item v-if="currentDataRuleModel.ruleType !== '自定义' && currentDataRuleModel.ruleType !== '查看全部数据'" label="规则字段" path="ruleField">
+          <n-input placeholder="规则字段" v-model:value="currentDataRuleModel.ruleField" />
+        </n-form-item>
+        <n-form-item label="规则类型" path="ruleType">
+          <n-select
+            placeholder="规则类型"
+            v-model:value="currentDataRuleModel.ruleType"
+            :options="ruleTypeOption"
+            clearable
+          />
+        </n-form-item>
+        <n-form-item v-if="currentDataRuleModel.ruleType !== '指定用户' && currentDataRuleModel.ruleType !== '指定部门' && currentDataRuleModel.ruleType !== '查看全部数据'" label="规则值" path="ruleValue">
+          <n-input placeholder="规则值" v-model:value="currentDataRuleModel.ruleValue" />
+        </n-form-item>
+      </n-form>
+      <n-button ml="[280px]" type="primary" size="small" ghost @click="doAddOrUpdateDataRule">
+        提交
+      </n-button>
     </n-modal>
   </div>
 </template>

@@ -5,6 +5,8 @@ import type { SysRolePermissionResp } from '@/views/rbac/permission/type/resp/Sy
 import type SysRolePermissionReq from '@/views/rbac/permission/type/req/SysRolePermissionReq.ts'
 import type SysDataRule from '@/views/rbac/permission/type/resp/SysDataRule.ts'
 import type SysDataRuleReq from '@/views/rbac/permission/type/req/SysDataRuleReq.ts'
+import type SysRoleDataRuleReq from '@/views/rbac/permission/type/req/SysRoleDataRuleReq.ts'
+import type SysRoleDataRuleResp from '@/views/rbac/permission/type/resp/SysRoleDataRuleResp.ts'
 
 class PermissionApi extends BaseApi {
   constructor() {
@@ -65,6 +67,26 @@ class PermissionApi extends BaseApi {
    */
   deleteDataRule = (id?: string) => {
     return this.delete<unknown, { id?: string }>('deleteDataRule', { id })
+  }
+
+  /**
+   * 获取指定角色在指定资源下配置的的数据规则信息
+   */
+  listRoleDataRule = (roleId?: string, permissionId?: string) => {
+    return this.get<
+      SysRoleDataRuleResp,
+      {
+        roleId?: string
+        permissionId?: string
+      }
+    >('listRoleDataRule', { roleId, permissionId })
+  }
+
+  /**
+   * 更新角色-数据规则
+   */
+  refreshRoleDataRule = (data: SysRoleDataRuleReq) => {
+    return this.post<unknown, SysRoleDataRuleReq>('refreshRoleDataRule', data)
   }
 }
 

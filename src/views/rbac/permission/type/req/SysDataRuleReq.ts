@@ -10,6 +10,11 @@ export default interface SysDataRuleReq extends BaseReq {
   permissionId?: string
 
   /**
+   * 规则名称
+   */
+  ruleName?: string
+
+  /**
    * 规则字段
    */
   ruleField?: string

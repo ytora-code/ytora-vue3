@@ -13,6 +13,7 @@ import type SysRole from './type/resp/SysRole.ts'
 import type { SysRolePermissionResp } from '@/views/rbac/permission/type/resp/SysRolePermissionResp.ts'
 import RecycleBin from '@/views/sys/recyclebin/index.vue'
 import type SysDataRule from '@/views/rbac/permission/type/resp/SysDataRule.ts'
+import type SysRoleDataRuleResp from '@/views/rbac/permission/type/resp/SysRoleDataRuleResp.ts'
 
 /**
  * 数据库表名称
@@ -259,20 +260,40 @@ const exportXlsx = () => {
 }
 
 const recycleBinShowStatus = ref(false)
-const citiesRef = ref<(string | number)[] | null>(null)
+// 数据规则快照
+const originDataRuleIds = ref<(string | number)[]>([])
+// 最新的数据规则数组
+const currentDataRuleIds = ref<(string | number)[]>([])
+// 进入数据规则弹出框时勾选的PermissionId
+let currentPermissionId: string | undefined
 const dataRuleShowStatus = ref(false)
-
 const dataRuleModel = ref<SysDataRule[]>([])
 
 const openDataRuleDialog = async (id: string) => {
+  currentPermissionId = id
   dataRuleModel.value = []
   dataRuleShowStatus.value = true
-  dataRuleModel.value = await permissionApi.listDataRule(id)
+  const result: SysRoleDataRuleResp = await permissionApi.listRoleDataRule(currentRoleId, id)
+  dataRuleModel.value = result.dataRules
+  currentDataRuleIds.value = result.ruleIds
+  originDataRuleIds.value = result.ruleIds
 }
 
-const handleUpdateValue = (value: (string | number)[]) => {
-  citiesRef.value = value
-  console.log(value)
+const refreshRoleDataRule = async () => {
+  await permissionApi.refreshRoleDataRule({
+    roleId: currentRoleId,
+    permissionId: currentPermissionId,
+    originDataRuleIds: originDataRuleIds.value,
+    currentDataRuleIds: currentDataRuleIds.value,
+  })
+  // 关闭弹框
+  dataRuleShowStatus.value = false
+  // 将下面数据置空
+  currentPermissionId = undefined
+  dataRuleModel.value = []
+  currentDataRuleIds.value = []
+  originDataRuleIds.value = []
+  dataRuleModel.value = []
 }
 
 onMounted(() => {
@@ -425,7 +446,7 @@ onMounted(() => {
       resizable
     >
       <n-drawer-content :native-scrollbar="false">
-        <template #header> 资源</template>
+        <template #header>资源</template>
 
         <n-tree
           :data="rolePermission.tree"
@@ -464,20 +485,30 @@ onMounted(() => {
 
     <!-- 数据权限弹出框 -->
     <n-modal
-      w="[200px]"
+      w="[260px]"
       v-model:show="dataRuleShowStatus"
       preset="card"
       title="数据权限"
       flex-height
       draggable
     >
-      <n-checkbox-group :value="citiesRef" @update:value="handleUpdateValue">
+      <n-checkbox-group
+        :value="currentDataRuleIds"
+        @update:value="(value: (string | number)[]) => (currentDataRuleIds = value)"
+      >
         <n-space vertical align="center">
-          <n-checkbox v-for="item in dataRuleModel" :key="item.id" :value="item.id" :label="item.ruleName" />
+          <n-checkbox
+            v-for="item in dataRuleModel"
+            :key="item.id"
+            :value="item.id"
+            :label="item.ruleName"
+            w="[250px]" />
         </n-space>
       </n-checkbox-group>
       <n-divider />
-      <n-button ml="[100px]" type="primary" size="small" ghost>提交</n-button>
+      <n-button ml="[90px]" type="primary" size="small" ghost @click="refreshRoleDataRule"
+        >提交</n-button
+      >
     </n-modal>
   </div>
 </template>
