@@ -35,9 +35,4 @@ export default interface SysUserReq extends BaseReq {
    * 证件号
    */
   idCard?: string
-
-  /**
-   * 状态
-   */
-  status?: boolean
 }
