@@ -21,10 +21,6 @@ const dialog = useDialog()
  * 数据库表名称
  */
 const tableName = 'sys_dict'
-/**
- * 数据库表CODE
- */
-const tableCode = 'dict-table'
 
 // ======================= 查询 =======================>>
 /**
@@ -119,6 +115,7 @@ const openAddEditDraw = (row?: SysDict) => {
   // 新增
   else {
     resetDefault(currentModel.value)
+    currentModel.value.id = undefined
   }
   drawShowStatus.value = true
 }
@@ -289,7 +286,7 @@ onMounted(() => {
       :loading="tableLoading"
       :data="tableModel?.records"
       @onAction="addEditAction"
-      :tableCode="tableCode"
+      :tableCode="tableName"
       :page-no="tableModel?.pageNo"
       :page-size="tableModel?.pageSize"
       :total="tableModel?.total"
@@ -373,7 +370,7 @@ onMounted(() => {
       flex-height
       draggable
     >
-      <RecycleBin :table-name="tableName" :table-code="tableCode" @restore="page" />
+      <RecycleBin :table-name="tableName" :table-code="tableName" @restore="page" />
     </n-modal>
   </div>
 </template>

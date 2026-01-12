@@ -96,6 +96,7 @@ const openAddSubDraw = (row: SysPermission) => {
   }
   currentModel.value.visible = true
   currentModel.value.pname = row.permissionName
+  currentModel.value.id = undefined
   currentModel.value.pid = row.id
   currentModel.value.permissionType = undefined
   drawShowStatus.value = true
@@ -593,7 +594,14 @@ onMounted(() => {
         <n-form-item label="规则名称" path="ruleName">
           <n-input placeholder="规则名称" v-model:value="currentDataRuleModel.ruleName" />
         </n-form-item>
-        <n-form-item v-if="currentDataRuleModel.ruleType !== '自定义' && currentDataRuleModel.ruleType !== '查看全部数据'" label="规则字段" path="ruleField">
+        <n-form-item
+          v-if="
+            currentDataRuleModel.ruleType !== '自定义' &&
+            currentDataRuleModel.ruleType !== '查看全部数据'
+          "
+          label="规则字段"
+          path="ruleField"
+        >
           <n-input placeholder="规则字段" v-model:value="currentDataRuleModel.ruleField" />
         </n-form-item>
         <n-form-item label="规则类型" path="ruleType">
@@ -604,7 +612,15 @@ onMounted(() => {
             clearable
           />
         </n-form-item>
-        <n-form-item v-if="currentDataRuleModel.ruleType !== '指定用户' && currentDataRuleModel.ruleType !== '指定部门' && currentDataRuleModel.ruleType !== '查看全部数据'" label="规则值" path="ruleValue">
+        <n-form-item
+          v-if="
+            currentDataRuleModel.ruleType !== '指定用户' &&
+            currentDataRuleModel.ruleType !== '指定部门' &&
+            currentDataRuleModel.ruleType !== '查看全部数据'
+          "
+          label="规则值"
+          path="ruleValue"
+        >
           <n-input placeholder="规则值" v-model:value="currentDataRuleModel.ruleValue" />
         </n-form-item>
       </n-form>

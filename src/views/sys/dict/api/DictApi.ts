@@ -22,7 +22,7 @@ class DictApi extends BaseApi {
    * 查询字典项
    */
   listDictItem = (dictCode: string) => {
-    return this.get<Array<SysDictItem>, { dictCode: string }>('listDictItem', { dictCode })
+    return this.get<SysDictItem[], { dictCode: string }>('listDictItem', { dictCode })
   }
 
   /**

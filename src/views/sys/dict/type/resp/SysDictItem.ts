@@ -2,6 +2,10 @@ import type BaseResp from '@/types/resp/BaseResp.ts'
 
 export default interface SysDictItem extends BaseResp {
   /**
+   * 字典编码
+   */
+  dictCode: string
+  /**
    * 字典项值
    */
   dictItemValue?: string

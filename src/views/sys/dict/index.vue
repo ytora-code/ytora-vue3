@@ -7,24 +7,16 @@ import type PageResp from '@/types/resp/PageResp.ts'
 import type SysDict from '@/views/sys/dict/type/resp/SysDict.ts'
 import { dictApi } from './api/DictApi.ts'
 import resetDefault from '@/utils/resetDefault.ts'
-import { NButton, NFlex, NSwitch, type UploadCustomRequestOptions } from 'naive-ui'
-import { userApi } from '@/views/rbac/user/api/UserApi.ts'
+import { NButton, NFlex } from 'naive-ui'
 import { onMounted } from 'vue'
 import DynamicTable from '@/components/table/index.vue'
-import RecycleBin from '@/views/sys/recyclebin/index.vue'
-
-// ======================= USE HOOK =======================>>
-const dialog = useDialog()
+import type SysDictItem from '@/views/sys/dict/type/resp/SysDictItem.ts'
 
 // ======================= 基础信息 =======================>>
 /**
  * 数据库表名称
  */
 const tableName = 'sys_dict'
-/**
- * 数据库表CODE
- */
-const tableCode = 'dict-table'
 
 // ======================= 查询 =======================>>
 /**
@@ -56,7 +48,7 @@ const tableModel = ref<PageResp<SysDict>>()
 const page = async () => {
   tableLoading.value = true
   try {
-    tableModel.value = await dictApi.page({ ...toRaw(searchModel), ...toRaw(pageModel) })
+    tableModel.value = await dictApi.page({ ...toRaw(searchModel), ...toRaw(pageModel), type: 1 })
     pageModel.pageNo = tableModel.value.pageNo
     pageModel.pageSize = tableModel.value.pageSize
   } finally {
@@ -100,10 +92,13 @@ const currentModel = ref<SysDictReq>({})
  * 接受数据表格发送的事件
  */
 const addEditAction = (payload: { eventKey: string; row: SysDict }) => {
-  if (payload.eventKey === 'user-table::action::edit') {
+  if (payload.eventKey === 'sys_dict::action::dictItem') {
+    openDictItemDialog(payload.row.dictCode!)
+  }
+  if (payload.eventKey === 'sys_dict::action::edit') {
     openAddEditDraw(payload.row)
   }
-  if (payload.eventKey === 'user-table::action::delete-popconfirm') {
+  if (payload.eventKey === 'sys_dict::action::delete-popconfirm') {
     doDel(payload.row)
   }
 }
@@ -119,6 +114,9 @@ const openAddEditDraw = (row?: SysDict) => {
   // 新增
   else {
     resetDefault(currentModel.value)
+    currentModel.value.id = undefined
+    currentModel.value.pid = '0'
+    currentModel.value.type = 1
   }
   drawShowStatus.value = true
 }
@@ -145,78 +143,93 @@ const doDel = async (row: SysDict) => {
   await page()
 }
 
-// ======================= 导入/导出 =======================>>
-/**
- * 导入框显示状态
- */
-const importBoxShowStatus = ref(false)
-/**
- * 是否正在导入 EXCEL
- */
-const uploading = ref(false)
+// ======================= 字典项 =======================>>
 
 /**
- * 导入文件百分比
+ * 字典项表格弹出框显示状态
  */
-const percentage = ref(0)
-
+const dictItemDialogShowStatus = ref(false)
 /**
- * 下载导入模板
+ * 字典项表格loading状态
  */
-const downloadTemplate = async () => {
-  await dictApi.template()
+const dictItemTableLoading = ref(false)
+/**
+ * 字典项数据
+ */
+const dictItemModel = ref<SysDictItem[]>([])
+/**
+ * 字典项新增/编辑弹出框的显示状态
+ */
+const dictItemAddEditDialogShowStatus = ref(false)
+
+let currentDepartCode: string | undefined
+/**
+ * 打开字典项弹出框
+ */
+const openDictItemDialog = async (dictCode: string) => {
+  currentDepartCode = dictCode
+  dictItemDialogShowStatus.value = true
+  await listDictItem(dictCode)
 }
 
 /**
- * 导入 EXCEL
+ * 执行查询操作
  */
-const importXlsx = async ({ file, onFinish, onError }: UploadCustomRequestOptions) => {
-  if (!file.file) return
+const listDictItem = async (dictCode: string) => {
+  dictItemModel.value = await dictApi.listDictItem(dictCode)
+}
 
-  try {
-    const formData = new FormData()
-    formData.append('file', file.file)
-    uploading.value = true
-    await userApi.import(formData, (loaded, total, percent) => {
-      percentage.value = percent
-    })
-    onFinish()
-  } catch (err: unknown) {
-    console.error('上传失败:', err)
-    onError()
-  } finally {
-    importBoxShowStatus.value = false
-    uploading.value = false
-    await page()
+/**
+ * 字典项的新增/编辑
+ */
+const dictItemAddEditAction = (payload: { eventKey: string; row: SysDictItem }) => {
+  if (payload.eventKey === 'sys_dict_item::action::edit') {
+    openDictItemAddEditDialog(payload.row)
+  }
+  if (payload.eventKey === 'sys_dict_item::action::delete-popconfirm') {
+    doDictItemDel(payload.row)
   }
 }
 
 /**
- * 导出 EXCEL
+ * 打开字典项新增/编辑弹出框
  */
-const openExportXlsxConfirmDialog = () => {
-  // 导出数据时，弹出提示框
-  dialog.info({
-    title: '下载',
-    content: '即将导出符合查询条件的所有数据，是否继续?',
-    positiveText: '确认',
-    negativeText: '算了',
-    draggable: true,
-    onPositiveClick: async () => {
-      exportXlsx()
-    },
-    onNegativeClick: () => {},
-  })
-}
-const exportXlsx = () => {
-  userApi.export({ ...toRaw(searchModel) })
+const openDictItemAddEditDialog = (row?: SysDictItem) => {
+  // 编辑
+  if (row) {
+    Object.assign(currentModel.value, row)
+  }
+  // 新增
+  else {
+    resetDefault(currentModel.value)
+    currentModel.value.id = undefined
+    currentModel.value.dictCode = currentDepartCode
+    currentModel.value.type = 2
+  }
+  dictItemAddEditDialogShowStatus.value = true
 }
 
-// ======================= 回收站 =======================>>
 /**
- * 回收站弹出框显示状态
+ * 执行字典项新增/编辑操作
  */
-const recycleBinShowStatus = ref(false)
+const doDictItemAddOrEdit = () => {
+  dictApi
+    .insertOrUpdate(currentModel.value)
+    .then(() => {
+      listDictItem(currentDepartCode!)
+    })
+    .finally(() => {
+      dictItemAddEditDialogShowStatus.value = false
+    })
+}
+
+/**
+ * 执行字典项删除操作
+ */
+const doDictItemDel = async (row: SysDict) => {
+  await dictApi.remove(row.id)
+  await listDictItem(row.dictCode)
+}
 
 // ======================= 生命周期函数 =======================>>
 onMounted(() => {
@@ -256,32 +269,6 @@ onMounted(() => {
       >
         新增
       </n-button>
-      <n-button
-        type="primary"
-        size="small"
-        ghost
-        :render-icon="renderAsyncIcon('CloudUploadOutline')"
-        @click="importBoxShowStatus = true"
-        >导入
-      </n-button>
-      <n-button
-        type="primary"
-        size="small"
-        ghost
-        :render-icon="renderAsyncIcon('CloudDownloadOutline')"
-        @click="openExportXlsxConfirmDialog"
-      >
-        导出
-      </n-button>
-      <n-button
-        type="error"
-        size="small"
-        ghost
-        :render-icon="renderAsyncIcon('TrashOutline')"
-        @click="recycleBinShowStatus = true"
-      >
-        回收站
-      </n-button>
     </div>
 
     <!-- 数据表格 -->
@@ -289,7 +276,7 @@ onMounted(() => {
       :loading="tableLoading"
       :data="tableModel?.records"
       @onAction="addEditAction"
-      :tableCode="tableCode"
+      :tableCode="tableName"
       :page-no="tableModel?.pageNo"
       :page-size="tableModel?.pageSize"
       :total="tableModel?.total"
@@ -315,12 +302,6 @@ onMounted(() => {
           <n-form-item label="排序" path="index">
             <n-input-number placeholder="排序" v-model:value="currentModel.index" clearable />
           </n-form-item>
-          <n-form-item label="状态" path="status">
-            <n-switch checked-value="1" unchecked-value="2" v-model:value="currentModel.status">
-              <template #checked>正常</template>
-              <template #unchecked>禁用</template>
-            </n-switch>
-          </n-form-item>
           <n-form-item label="备注" path="remark">
             <n-input type="textarea" placeholder="备注" v-model:value="currentModel.remark" />
           </n-form-item>
@@ -335,45 +316,68 @@ onMounted(() => {
       </n-drawer-content>
     </n-drawer>
 
-    <!-- 数据导入弹出框 -->
+    <!-- 字典项查询弹出框 -->
     <n-modal
-      w="[30%]"
-      min-w="[300px]"
-      h="[300px]"
-      v-model:show="importBoxShowStatus"
+      w="[35%]"
+      min-w="[400px]"
+      v-model:show="dictItemDialogShowStatus"
       preset="card"
-      title="数据导入"
+      title="字典项"
       flex-height
       draggable
     >
-      <n-button text type="primary" @click.stop="downloadTemplate">下载导入模板</n-button>
-      <n-upload v-if="!uploading" :custom-request="importXlsx" accept=".xlsx,.xls">
-        <n-upload-dragger>
-          <div mb="[12px]">
-            <n-icon size="48" :depth="3">
-              <component :is="renderAsyncIcon('CloudUploadOutline')" />
-            </n-icon>
-          </div>
-          <n-text style="font-size: 16px"> 点击或者拖动文件到该区域来上传</n-text>
-        </n-upload-dragger>
-      </n-upload>
-
-      <div flex justify-center v-else>
-        <n-progress type="circle" :percentage="percentage" />
+      <!-- 操作按钮 -->
+      <div class="operaBox" flex gap-x="3px" mb-1>
+        <n-button
+          type="success"
+          size="small"
+          ghost
+          :render-icon="renderAsyncIcon('AddOutline')"
+          @click="openDictItemAddEditDialog(undefined)"
+        >
+          新增
+        </n-button>
       </div>
+
+      <!-- 字典项表格 -->
+      <DynamicTable
+        :loading="dictItemTableLoading"
+        :data="dictItemModel"
+        @onAction="dictItemAddEditAction"
+        tableCode="sys_dict_item"
+        :single-line="false"
+      />
     </n-modal>
 
-    <!-- 回收站弹出框 -->
+    <!-- 字典项新增/编辑弹出框 -->
     <n-modal
-      w="[70%]"
-      min-w="[500px]"
-      v-model:show="recycleBinShowStatus"
+      w="[20%]"
+      min-w="[300px]"
+      v-model:show="dictItemAddEditDialogShowStatus"
       preset="card"
-      title="回收站"
+      title="新增"
       flex-height
       draggable
     >
-      <RecycleBin :table-name="tableName" :table-code="tableCode" @restore="page" />
+      <n-form :model="currentModel" label-placement="left" :label-width="70" gap-2>
+        <n-form-item label="文本" path="dictItemText">
+          <n-input placeholder="文本" v-model:value="currentModel.dictItemText" clearable />
+        </n-form-item>
+        <n-form-item label="字典项值" path="dictItemValue">
+          <n-input placeholder="字典项值" v-model:value="currentModel.dictItemValue" clearable />
+        </n-form-item>
+        <n-form-item label="备注" path="remark">
+          <n-input
+            placeholder="备注"
+            type="textarea"
+            v-model:value="currentModel.remark"
+            clearable
+          />
+        </n-form-item>
+      </n-form>
+      <n-button ml="[220px]" type="primary" size="small" ghost @click="doDictItemAddOrEdit">
+        提交
+      </n-button>
     </n-modal>
   </div>
 </template>

@@ -502,7 +502,8 @@ onMounted(() => {
             :key="item.id"
             :value="item.id"
             :label="item.ruleName"
-            w="[250px]" />
+            w="[250px]"
+          />
         </n-space>
       </n-checkbox-group>
       <n-divider />
