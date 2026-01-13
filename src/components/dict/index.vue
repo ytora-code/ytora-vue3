@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import type { SelectOption } from 'naive-ui'
-import { dictApi } from '@/views/sys/dict/api/DictApi.ts'
+import { useDictCache } from '@/stores/useDictCache.ts'
+
+const dictCache = useDictCache()
 
 type ModelValue = string | number | boolean | Date | undefined
 
@@ -16,24 +18,20 @@ const emit = defineEmits<{
 
 const innerValue = computed<ModelValue>({
   get: () => props.value,
-  set: (val) => emit('update:value', val),
+  set: (val) => emit('update:value', val)
 })
 
 const options = ref<SelectOption[]>([])
 const loading = ref(false)
 
-async function loadOptions() {
+const loadOptions = async () => {
   if (!props.dictCode) {
     options.value = []
     return
   }
   loading.value = true
   try {
-    const dictItems = await dictApi.listDictItem(props.dictCode)
-    options.value = dictItems.map((item) => ({
-      label: item.dictItemText,
-      value: item.dictItemValue,
-    }))
+    options.value = await dictCache.getDict(props.dictCode)
   } finally {
     loading.value = false
   }

@@ -3,6 +3,9 @@ import { nextTick, ref } from 'vue'
 import type { DropdownOption } from 'naive-ui'
 import type { MenuKey } from '@/types/ContextMenu.ts'
 
+/**
+ * 右键菜单
+ */
 export const useContextMenuStore = defineStore('contextMenu', () => {
   const show = ref(false)
   const x = ref(0)

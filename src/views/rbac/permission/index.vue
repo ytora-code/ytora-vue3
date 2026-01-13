@@ -3,6 +3,7 @@ import { onMounted, reactive } from 'vue'
 import { permissionApi } from './api/PermissionApi.ts'
 import { NButton, NFlex } from 'naive-ui'
 import DynamicTable from '@/components/table/index.vue'
+import Dict from '@/components/dict/index.vue'
 import { renderAsyncIcon } from '@/utils/icon.ts'
 import resetDefault from '@/utils/resetDefault.ts'
 import type SysPermissionReq from './type/req/SysPermissionReq.ts'
@@ -131,67 +132,67 @@ const del = async (row: SysPermission) => {
 const options = [
   {
     label: '接口',
-    value: 1,
+    value: 1
   },
   {
     label: '页面',
-    value: 2,
+    value: 2
   },
   {
     label: '组件',
-    value: 3,
+    value: 3
   },
   {
     label: '表格',
-    value: 4,
+    value: 4
   },
   {
     label: '表格字段',
-    value: 5,
+    value: 5
   },
   {
     label: '表单',
-    value: 6,
-  },
+    value: 6
+  }
 ]
 
 const componentType = [
   {
     label: '表格',
-    value: 'table',
+    value: 'table'
   },
   {
     label: '表格列-索引',
-    value: 'table-col::index',
+    value: 'table-col::index'
   },
   {
     label: '表格列-普通文本',
-    value: 'table-col::normal',
+    value: 'table-col::normal'
   },
   {
     label: '表格列-按钮',
-    value: 'table-col::button',
+    value: 'table-col::button'
   },
   {
     label: '表格列-二次确认按钮',
-    value: 'table-col::popconfirm',
+    value: 'table-col::popconfirm'
   },
   {
     label: '表格列-标签',
-    value: 'table-col::tag',
+    value: 'table-col::tag'
   },
   {
     label: '表格列-图标',
-    value: 'table-col::icon',
+    value: 'table-col::icon'
   },
   {
     label: '表格列-插槽',
-    value: 'table-col::slot',
+    value: 'table-col::slot'
   },
   {
     label: '表格列-组件',
-    value: 'table-col::flex',
-  },
+    value: 'table-col::flex'
+  }
 ]
 
 // 元数据里面的attr列表
@@ -216,13 +217,13 @@ watch(
     if (meta?.attr) {
       attrList.value = Object.entries(meta.attr).map(([key, value]) => ({
         key,
-        value: String(value),
+        value: String(value)
       }))
     } else {
       attrList.value = []
     }
   },
-  { immediate: true },
+  { immediate: true }
 )
 
 const recycleBinShowStatus = ref(false)
@@ -239,7 +240,7 @@ watch(
         return acc
       }, {})
   },
-  { deep: true },
+  { deep: true }
 )
 
 const dataRuleShowStatus = ref(false)
@@ -284,61 +285,6 @@ const doDelDataRule = async (id?: string) => {
   await permissionApi.deleteDataRule(id)
   dataRuleModel.value = await permissionApi.listDataRule(currentModel.value.id)
 }
-
-const ruleTypeOption = [
-  {
-    label: '等于',
-    value: '=',
-  },
-  {
-    label: '不等于',
-    value: '<>',
-  },
-  {
-    label: '小于',
-    value: '<',
-  },
-  {
-    label: '小于等于',
-    value: '<=',
-  },
-  {
-    label: '大于',
-    value: '>',
-  },
-  {
-    label: '大于等于',
-    value: '>=',
-  },
-  {
-    label: '模糊',
-    value: 'like',
-  },
-  {
-    label: '以...开始',
-    value: 'startWith',
-  },
-  {
-    label: '以...结束',
-    value: 'endWith',
-  },
-  {
-    label: '指定用户',
-    value: 'SpecifyUser',
-  },
-  {
-    label: '指定部门',
-    value: 'SpecifyDepart',
-  },
-  {
-    label: '查看全部数据',
-    value: 'ALL',
-  },
-  {
-    label: '自定义',
-    value: 'Customize',
-  },
-]
 
 onMounted(() => {
   list()
@@ -522,7 +468,7 @@ onMounted(() => {
                 ghost
                 @click="openDataRuleDialog"
               >
-                数据权限
+                数据规则
               </n-button>
             </n-form-item>
           </div>
@@ -570,7 +516,7 @@ onMounted(() => {
         >
           新增
         </n-button>
-        <n-button type="primary" size="small" ghost> 初始化默认权限 </n-button>
+        <n-button type="primary" size="small" ghost> 初始化默认权限</n-button>
       </div>
       <DynamicTable
         tableCode="data-permission-table"
@@ -596,8 +542,8 @@ onMounted(() => {
         </n-form-item>
         <n-form-item
           v-if="
-            currentDataRuleModel.ruleType !== '自定义' &&
-            currentDataRuleModel.ruleType !== '查看全部数据'
+            currentDataRuleModel.ruleType !== 'Customize' &&
+            currentDataRuleModel.ruleType !== 'ALL'
           "
           label="规则字段"
           path="ruleField"
@@ -605,18 +551,14 @@ onMounted(() => {
           <n-input placeholder="规则字段" v-model:value="currentDataRuleModel.ruleField" />
         </n-form-item>
         <n-form-item label="规则类型" path="ruleType">
-          <n-select
-            placeholder="规则类型"
-            v-model:value="currentDataRuleModel.ruleType"
-            :options="ruleTypeOption"
-            clearable
-          />
+          <Dict placeholder="规则类型" dictCode="rule_type"
+                v-model:value="currentDataRuleModel.ruleType" clearable></Dict>
         </n-form-item>
         <n-form-item
           v-if="
-            currentDataRuleModel.ruleType !== '指定用户' &&
-            currentDataRuleModel.ruleType !== '指定部门' &&
-            currentDataRuleModel.ruleType !== '查看全部数据'
+            currentDataRuleModel.ruleType !== 'SpecifyUser' &&
+            currentDataRuleModel.ruleType !== 'SpecifyDepart' &&
+            currentDataRuleModel.ruleType !== 'ALL'
           "
           label="规则值"
           path="ruleValue"

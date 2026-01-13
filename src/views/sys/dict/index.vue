@@ -346,6 +346,7 @@ onMounted(() => {
         @onAction="dictItemAddEditAction"
         tableCode="sys_dict_item"
         :single-line="false"
+        max-height="600px"
       />
     </n-modal>
 
@@ -355,7 +356,7 @@ onMounted(() => {
       min-w="[300px]"
       v-model:show="dictItemAddEditDialogShowStatus"
       preset="card"
-      title="新增"
+      :title="currentModel.id ? '编辑' : '新增'"
       flex-height
       draggable
     >

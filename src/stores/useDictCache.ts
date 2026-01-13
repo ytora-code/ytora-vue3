@@ -1,0 +1,41 @@
+import { ref } from 'vue'
+import { defineStore } from 'pinia'
+import type { SelectOption } from 'naive-ui'
+import { dictApi } from '@/views/sys/dict/api/DictApi.ts'
+
+/**
+ * 字典缓存
+ */
+export const useDictCache = defineStore('dictCache', () => {
+  /**
+   * 字典缓存
+   */
+  const dictMap = ref<Record<string, SelectOption[]>>({})
+
+  const getDict = async (dictCode: string) => {
+    if (!dictCode) {
+      return []
+    }
+    // 已有缓存，则直接使用缓存
+    if (dictMap.value[dictCode]) {
+      return dictMap.value[dictCode]
+    }
+    // 请求字典数据
+    const dictItems = await listDictItem(dictCode)
+    const options = dictItems.map((item) => ({
+      label: item.dictItemText,
+      value: item.dictItemValue
+    }))
+    dictMap.value[dictCode] = options
+    return options
+  }
+
+  /**
+   * 查询字典项
+   */
+  const listDictItem = async (dictCode: string) => {
+    return await dictApi.listDictItem(dictCode)
+  }
+
+  return { getDict, listDictItem }
+})

@@ -25,6 +25,11 @@ export default interface SysDataRule extends BaseResp {
   ruleType?: string
 
   /**
+   * 规则类型
+   */
+  ruleType_dict?: string
+
+  /**
    * 规则值
    */
   ruleValue?: string
