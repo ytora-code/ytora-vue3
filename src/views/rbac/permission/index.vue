@@ -324,19 +324,19 @@ const ruleTypeOption = [
   },
   {
     label: '指定用户',
-    value: '指定用户',
+    value: 'SpecifyUser',
   },
   {
     label: '指定部门',
-    value: '指定部门',
+    value: 'SpecifyDepart',
   },
   {
     label: '查看全部数据',
-    value: '查看全部数据',
+    value: 'ALL',
   },
   {
     label: '自定义',
-    value: '自定义',
+    value: 'Customize',
   },
 ]
 
