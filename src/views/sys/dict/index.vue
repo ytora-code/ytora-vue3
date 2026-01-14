@@ -48,7 +48,7 @@ const tableModel = ref<PageResp<SysDict>>()
 const page = async () => {
   tableLoading.value = true
   try {
-    tableModel.value = await dictApi.page({ ...toRaw(searchModel), ...toRaw(pageModel), type: 1 })
+    tableModel.value = await dictApi.page({ ...toRaw(searchModel), ...toRaw(pageModel), type: 1, orderCol:'update_time↓' })
     pageModel.pageNo = tableModel.value.pageNo
     pageModel.pageSize = tableModel.value.pageSize
   } finally {
@@ -301,9 +301,9 @@ onMounted(() => {
           <n-form-item label="字典编码" path="dictCode">
             <n-input placeholder="字典编码" v-model:value="currentModel.dictCode" />
           </n-form-item>
-          <n-form-item label="排序" path="index">
-            <n-input-number placeholder="排序" v-model:value="currentModel.index" clearable />
-          </n-form-item>
+<!--          <n-form-item label="排序" path="index">-->
+<!--            <n-input-number placeholder="排序" v-model:value="currentModel.index" clearable />-->
+<!--          </n-form-item>-->
           <n-form-item label="备注" path="remark">
             <n-input type="textarea" placeholder="备注" v-model:value="currentModel.remark" />
           </n-form-item>
@@ -320,7 +320,7 @@ onMounted(() => {
 
     <!-- 字典项查询弹出框 -->
     <n-modal
-      w="[35%]"
+      w="[45%]"
       min-w="[400px]"
       v-model:show="dictItemDialogShowStatus"
       preset="card"
@@ -368,6 +368,14 @@ onMounted(() => {
         </n-form-item>
         <n-form-item label="字典项值" path="dictItemValue">
           <n-input placeholder="字典项值" v-model:value="currentModel.dictItemValue" clearable />
+        </n-form-item>
+        <n-form-item label="序号" path="index">
+          <n-input-number
+            placeholder="序号"
+            v-model:value="currentModel.index"
+            style="width: 100%"
+            clearable
+          />
         </n-form-item>
         <n-form-item label="备注" path="remark">
           <n-input

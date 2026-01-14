@@ -70,7 +70,11 @@ const pageChange = (pageNo: number, pageSize: number) => {
 const page = async () => {
   tableLoading.value = true
   try {
-    tableModel.value = await userApi.page({ ...toRaw(searchModel), ...toRaw(pageModel) })
+    tableModel.value = await userApi.page({
+      ...toRaw(searchModel),
+      ...toRaw(pageModel),
+      orderCol: 'update_time↓',
+    })
     pageModel.pageNo = tableModel.value.pageNo
     pageModel.pageSize = tableModel.value.pageSize
   } finally {
@@ -282,29 +286,24 @@ onMounted(() => {
 <template>
   <div flex flex-col gap-1 px-6 py-3>
     <!-- 搜索条件 -->
-    <div>
-      <n-form :model="searchModel" label-placement="left" inline flex flex-wrap gap-2>
-        <n-form-item label="用户名" path="userName">
-          <n-input placeholder="用户名" v-model:value="searchModel.userName" clearable />
-        </n-form-item>
-        <n-form-item label="真实姓名" path="realName">
-          <n-input placeholder="真实姓名" v-model:value="searchModel.realName" clearable />
-        </n-form-item>
-        <n-form-item label="电话" path="phone">
-          <n-input placeholder="电话" v-model:value="searchModel.phone" clearable />
-        </n-form-item>
-        <n-form-item label="状态" path="status">
-          <n-input placeholder="状态" v-model:value="searchModel.status" clearable />
-        </n-form-item>
-
+    <DynamicForm
+      formCode="user-search"
+      v-model="searchModel"
+      label-placement="left"
+      inline
+      flex
+      flex-wrap
+      gap-2
+    >
+      <template #suffix>
         <n-button type="primary" :render-icon="renderAsyncIcon('SearchOutline')" @click="page">
           搜索
         </n-button>
         <n-button type="primary" ghost :render-icon="renderAsyncIcon('SyncOutline')" @click="reset">
           重置
         </n-button>
-      </n-form>
-    </div>
+      </template>
+    </DynamicForm>
 
     <!-- 操作按钮 -->
     <div flex gap-x="3px">
@@ -536,10 +535,6 @@ onMounted(() => {
         </template>
       </DynamicTable>
     </n-modal>
-
-    <DynamicForm formCode="test" v-model="searchModel"  label-placement="left" inline :label-width="200"
-      >21312321</DynamicForm
-    >
   </div>
 </template>
 

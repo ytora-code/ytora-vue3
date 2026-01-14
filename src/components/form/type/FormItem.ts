@@ -8,6 +8,11 @@ export default interface FormItem {
   id: string
 
   /**
+   * code
+   */
+  permissionCode: string
+
+  /**
    * 表单项类型
    */
   type: string

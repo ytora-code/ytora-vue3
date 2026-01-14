@@ -190,7 +190,7 @@ export default abstract class BaseApi {
         const s = v.trim()
         if (s === '') {
           // TODO 是否删除空字符串
-          delete obj[k]
+          // delete obj[k]
         } else {
           obj[k] = s
         }

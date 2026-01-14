@@ -4,6 +4,8 @@ import type TableColumn from './type/TableColumn.ts'
 import { NButton, NFlex, NPopconfirm, NSwitch, NTag } from 'naive-ui'
 import { renderAsyncIcon } from '@/utils/icon.ts'
 
+type tagType = 'default' | 'info' | 'warning' | 'error' | 'success' | 'primary'
+
 const props = defineProps<{
   column: TableColumn
   row: T
@@ -28,7 +30,7 @@ const handleAction = (childNode: TableColumn) => {
  * 安全地获取行数据中的值并转换为指定类型
  * 解决 row[key] 报错问题
  */
-const getRowValue = (key: string): unknown => {
+const getRowValue = (key: string): string | number | boolean | undefined => {
   return props.row[key]
 }
 
@@ -78,7 +80,7 @@ const RenderVNode = (props: { vnode: unknown }) => props.vnode
       <n-tag
         v-else-if="child.colType === 'table-col::tag'"
         v-bind="child.attr"
-        :type="getTagConfig(child).type"
+        :type="getTagConfig(child).type as tagType"
       >
         {{ getTagConfig(child).label }}
       </n-tag>
@@ -106,7 +108,7 @@ const RenderVNode = (props: { vnode: unknown }) => props.vnode
       <!-- 只有当 child.icon 存在时才渲染 -->
       <component
         v-else-if="child.colType === 'table-col::icon' && getRowValue('icon')"
-        :is="renderAsyncIcon(getRowValue('icon'), child.attr)"
+        :is="renderAsyncIcon(getRowValue('icon') as string, child.attr)"
       />
 
       <template v-else-if="child.colType === 'table-col::slot'">

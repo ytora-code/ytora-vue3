@@ -349,7 +349,11 @@ onMounted(() => {
             <n-divider />
             <!-- 元数据，type、key、width三个基本字段，以及对应的attr对象字段，attr里面可以有任意字段，这些字段都会作为组件的属性 -->
             <n-form-item
-              v-if="currentModel.parentPermissionType === 4 || (currentModel.meta.type && (currentModel.meta.type as string).startsWith('table-col'))"
+              v-if="
+                currentModel.parentPermissionType === 4 ||
+                (currentModel.meta.type &&
+                  (currentModel.meta.type as string).startsWith('table-col'))
+              "
               label="表格列类型"
               path="meta.type"
             >
@@ -361,7 +365,11 @@ onMounted(() => {
               />
             </n-form-item>
             <n-form-item
-              v-if="currentModel.parentPermissionType === 5 || (currentModel.meta.type && (currentModel.meta.type as string).startsWith('form-item'))"
+              v-if="
+                currentModel.parentPermissionType === 5 ||
+                (currentModel.meta.type &&
+                  (currentModel.meta.type as string).startsWith('form-item'))
+              "
               label="表单项类型"
               path="meta.type"
             >

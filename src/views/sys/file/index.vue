@@ -1,90 +1,115 @@
 <script setup lang="ts">
-import type { TreeOption, TreeRenderPrefix } from 'naive-ui'
-import { NIcon } from 'naive-ui'
-import { h, ref } from 'vue'
-import {
-  FolderOutline,
-  FolderOpenOutline,
-  DocumentOutline,
-  ChevronForwardOutline,
-} from '@vicons/ionicons5'
-// 如果你有自己的 renderAsyncIcon，也可以替换成你的
+import { onMounted, ref } from 'vue'
+import { NTree, type TreeOption } from 'naive-ui'
+import { fileApi } from './api/FileApi.ts'
+import type SysFolder from './type/resp/SysFolder.ts'
+import { renderAsyncIcon } from '@/utils/icon'
 
-function createData() {
-  return [
-    { label: nextLabel(), key: '1', isLeaf: false },
-    { label: nextLabel(), key: '2', isLeaf: false },
-  ]
-}
+const folders = ref<SysFolder[]>([
+  {
+    path: '/',
+    depth: 0,
+  },
+])
+const loading = ref(true)
 
-function nextLabel(currentLabel?: string): string {
-  if (!currentLabel) return 'Out of Tao, One is born'
-  if (currentLabel === 'Out of Tao, One is born') return 'Out of One, Two'
-  if (currentLabel === 'Out of One, Two') return 'Out of Two, Three'
-  if (currentLabel === 'Out of Two, Three') return 'Out of Three, the created universe'
-  if (currentLabel === 'Out of Three, the created universe') return 'Out of Tao, One is born'
-  return ''
-}
+// 用于存放当前展开节点的 ID
+const expandedKeys = ref<Array<string | number>>([])
+const selectedKeys = ref<Array<string | number>>([])
 
-const expandedKeysRef = ref<string[]>([])
-const checkedKeysRef = ref<string[]>([])
-const dataRef = ref<TreeOption[]>(createData())
+/**
+ * 渲染图标逻辑
+ */
+const renderPrefix = ({
+  option,
+  selected,
+}: {
+  option: TreeOption
+  checked: boolean
+  selected: boolean // 这里能直接拿到选中状态
+}) => {
+  let iconName = 'FolderOutline'
+  if (!option.isLeaf) {
+    const isExpanded = expandedKeys.value.includes(option.id as string | number)
+    iconName = isExpanded ? 'FolderOpen' : 'FolderOutline'
+  }
 
-function handleExpandedKeysChange(expandedKeys: string[]) {
-  expandedKeysRef.value = expandedKeys
-}
-
-function handleCheckedKeysChange(checkedKeys: string[]) {
-  checkedKeysRef.value = checkedKeys
-}
-
-// ✅ 文件/文件夹 icon（不会旋转）
-const renderPrefix: TreeRenderPrefix = ({ option }) => {
-  const isExpanded = expandedKeysRef.value.includes(String(option.key))
-  const isDir = option.isLeaf === false
-
-  let iconComp
-  if (isDir) iconComp = isExpanded ? FolderOpenOutline : FolderOutline
-  else iconComp = DocumentOutline
-
-  return h(NIcon, null, { default: () => h(iconComp) })
-}
-
-// ✅ switcher 用箭头（旋转就让它旋转，符合预期）
-function renderSwitcherIcon() {
-  return h(NIcon, null, { default: () => h(ChevronForwardOutline) })
-}
-
-function handleLoad(node: TreeOption) {
-  return new Promise<void>((resolve) => {
-    setTimeout(() => {
-      node.children = [
-        {
-          label: nextLabel(node.label as string),
-          key: String(node.key) + '-' + nextLabel(node.label as string),
-          isLeaf: false,
-        },
-      ]
-      resolve()
-    }, 600)
+  // 设置图标样式
+  const iconRender = renderAsyncIcon(iconName, {
+    color: selected ? '#1890ff' : undefined,
+    size: 18,
   })
+
+  return iconRender ? iconRender() : null
 }
+
+const nodeProps = ({ option }: { option: TreeOption }) => {
+  return {
+    onClick: () => {
+      const id = option.id as string
+
+      // 1. 如果是叶子节点（文件），直接触发
+      if (option.isLeaf) {
+        selectedKeys.value = [id]
+        fetchFolderData(id)
+        return
+      }
+
+      // 2. 核心判断：检查当前节点是否在 expandedKeys 中
+      // 因为 onClick 触发时，组件内部的 toggle 还没执行，
+      // 所以此时的 isExpanded 代表的是点击前的状态。
+      const isNowExpanded = expandedKeys.value.includes(id)
+
+      if (isNowExpanded) {
+        fetchFolderData(id)
+      }
+
+      selectedKeys.value = [id]
+    },
+  }
+}
+
+/**
+ * 核心请求函数
+ */
+const fetchFolderData = (id: string) => {
+  console.log('加载文件夹数据:', id)
+}
+
+// 获取数据
+onMounted(async () => {
+  try {
+    loading.value = true
+    folders.value = await fileApi.treeFolder()
+  } catch (error) {
+    console.error('Failed to fetch folders:', error)
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <template>
-  <n-space vertical>
+  <div class="tree-container" w="[300px]" p-6>
     <n-tree
       block-line
-      :data="dataRef"
-      :checked-keys="checkedKeysRef"
-      :expanded-keys="expandedKeysRef"
-      :on-load="handleLoad"
-      :render-prefix="renderPrefix"
-      :render-switcher-icon="renderSwitcherIcon"
       expand-on-click
-      @update:checked-keys="handleCheckedKeysChange"
-      @update:expanded-keys="handleExpandedKeysChange"
+      v-model:expanded-keys="expandedKeys"
+      :data="folders as unknown as TreeOption[]"
+      key-field="id"
+      label-field="path"
+      children-field="children"
+      :render-prefix="renderPrefix"
+      :node-props="nodeProps"
     />
-    {{ JSON.stringify(checkedKeysRef) }}
-  </n-space>
+  </div>
 </template>
+
+<style scoped>
+/* 使用 :deep 穿透组件样式隔离 */
+/* 选中状态下的文字颜色 */
+:deep(.n-tree-node.n-tree-node--selected .n-tree-node-content__text) {
+  color: #1890ff !important;
+  font-weight: bold;
+}
+</style>

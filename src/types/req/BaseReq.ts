@@ -13,4 +13,9 @@ export default interface BaseReq {
    * 备注
    */
   remark?: string
+
+  /**
+   * 排序
+   */
+  orderCol?: string
 }

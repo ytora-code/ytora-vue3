@@ -42,5 +42,11 @@ watch(() => props.dictCode, loadOptions)
 </script>
 
 <template>
-  <n-select v-bind="$attrs" v-model:value="innerValue" :options="options" :loading="loading" width-mode=""/>
+  <n-select
+    v-bind="$attrs"
+    v-model:value="innerValue"
+    :options="options"
+    :loading="loading"
+    width-mode=""
+  />
 </template>
