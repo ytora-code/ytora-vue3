@@ -51,9 +51,14 @@ export const useUserStore = defineStore('user', () => {
    */
   const menus = ref<SysPermission[]>()
   /**
-   * 该用户拥有页面组件
+   * 该用户拥有 TABLE 组件
    */
-  const components = ref<SysPermission[]>([])
+  const tables = ref<SysPermission[]>([])
+
+  /**
+   * 该用户拥有 FORM 组件
+   */
+  const forms = ref<SysPermission[]>([])
 
   /**
    * 更新权限的函数，单独抽取出来作为一个方法，是因为当权限更新时，需要同步更新动态路由
@@ -85,7 +90,8 @@ export const useUserStore = defineStore('user', () => {
     remark,
     roles,
     menus,
-    components,
+    tables,
+    forms,
     updatePermission,
   }
 })

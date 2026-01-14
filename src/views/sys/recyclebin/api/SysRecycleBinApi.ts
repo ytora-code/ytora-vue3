@@ -32,7 +32,7 @@ class SysRecycleBinApi extends BaseApi {
    * 清空回收站数据
    */
   clear = (table: unknown) => {
-    return this.delete<unknown, { table: unknown }>('clear', { table })
+    return this.delete<unknown, { table: unknown }>('clear', { tables: table })
   }
 }
 

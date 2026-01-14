@@ -50,7 +50,8 @@ const doLogin = async () => {
     userStore.departName = data.departName
     userStore.remark = data.remark
     userStore.menus = data.menus
-    userStore.components = data.components
+    userStore.tables = data.tables
+    userStore.forms = data.forms
     userStore.updatePermission(data.menus)
 
     // 3. 登录成功，跳转

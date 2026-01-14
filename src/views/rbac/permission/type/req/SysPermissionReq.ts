@@ -27,7 +27,12 @@ export default interface SysPermission extends BaseReq {
   /**
    * 资源类型，1-接口、2-页面、3-页面元素
    */
-  permissionType?: 1 | 2 | 3
+  permissionType?: number
+
+  /**
+   * 父资源类型
+   */
+  parentPermissionType?: number
 
   /**
    * 前端组件地址（type为页面时生效）

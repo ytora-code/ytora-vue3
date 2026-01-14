@@ -60,9 +60,9 @@ const convertPermissionToColumn = (permissions: SysPermission[] | undefined): Ta
  * 计算 Naive UI 所需的 columns
  */
 const columns = computed(() => {
-  const components = userStore.components
-  if (!components) return []
-  const tableRoot = components.find((c) => c.permissionCode === props.tableCode)
+  const tables = userStore.tables
+  if (!tables) return []
+  const tableRoot = tables.find((c) => c.permissionCode === props.tableCode)
 
   if (!tableRoot?.children) return []
 

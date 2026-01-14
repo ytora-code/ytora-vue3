@@ -93,7 +93,7 @@ const currentModel = ref<SysDictReq>({})
  */
 const addEditAction = (payload: { eventKey: string; row: SysDict }) => {
   if (payload.eventKey === 'sys_dict::action::dictItem') {
-    openDictItemDialog(payload.row.dictCode!)
+    openDictItemDialog(payload.row)
   }
   if (payload.eventKey === 'sys_dict::action::edit') {
     openAddEditDraw(payload.row)
@@ -162,14 +162,16 @@ const dictItemModel = ref<SysDictItem[]>([])
  */
 const dictItemAddEditDialogShowStatus = ref(false)
 
-let currentDepartCode: string | undefined
+const currentDictName = ref<string | undefined>()
+let currentDictCode: string | undefined
 /**
  * 打开字典项弹出框
  */
-const openDictItemDialog = async (dictCode: string) => {
-  currentDepartCode = dictCode
+const openDictItemDialog = async (row: SysDict) => {
+  currentDictName.value = row.dictName
+  currentDictCode = row.dictCode
   dictItemDialogShowStatus.value = true
-  await listDictItem(dictCode)
+  await listDictItem(currentDictCode)
 }
 
 /**
@@ -203,7 +205,7 @@ const openDictItemAddEditDialog = (row?: SysDictItem) => {
   else {
     resetDefault(currentModel.value)
     currentModel.value.id = undefined
-    currentModel.value.dictCode = currentDepartCode
+    currentModel.value.dictCode = currentDictCode
     currentModel.value.type = 2
   }
   dictItemAddEditDialogShowStatus.value = true
@@ -216,7 +218,7 @@ const doDictItemAddOrEdit = () => {
   dictApi
     .insertOrUpdate(currentModel.value)
     .then(() => {
-      listDictItem(currentDepartCode!)
+      listDictItem(currentDictCode!)
     })
     .finally(() => {
       dictItemAddEditDialogShowStatus.value = false
@@ -322,7 +324,7 @@ onMounted(() => {
       min-w="[400px]"
       v-model:show="dictItemDialogShowStatus"
       preset="card"
-      title="字典项"
+      :title="currentDictName"
       flex-height
       draggable
     >

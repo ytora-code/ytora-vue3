@@ -15,6 +15,7 @@ declare module 'vue' {
     ComponentCellRenderer: typeof import('./src/components/table/ComponentCellRenderer.vue')['default']
     Content: typeof import('./src/components/layout/content/index.vue')['default']
     Dict: typeof import('./src/components/dict/index.vue')['default']
+    Form: typeof import('./src/components/form/index.vue')['default']
     GlobalContextMenu: typeof import('./src/components/contextmenu/GlobalContextMenu.vue')['default']
     Header: typeof import('./src/components/layout/header/index.vue')['default']
     Layout: typeof import('./src/components/layout/index.vue')['default']

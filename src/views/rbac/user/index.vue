@@ -13,6 +13,7 @@ import resetDefault from '@/utils/resetDefault.ts'
 import { getDefaultAvatar } from '@/utils/image.ts'
 import DynamicTable from '@/components/table/index.vue'
 import RecycleBin from '@/views/sys/recyclebin/index.vue'
+import DynamicForm from '@/components/form/index.vue'
 import type SysUserRole from '@/views/rbac/role/type/resp/SysUserRole.ts'
 
 /**
@@ -535,6 +536,10 @@ onMounted(() => {
         </template>
       </DynamicTable>
     </n-modal>
+
+    <DynamicForm formCode="test" v-model="searchModel"  label-placement="left" inline :label-width="200"
+      >21312321</DynamicForm
+    >
   </div>
 </template>
 

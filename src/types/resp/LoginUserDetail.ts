@@ -51,7 +51,12 @@ export default interface LoginUserDetail {
   menus: SysPermission[]
 
   /**
-   * 该用户拥有页面组件
+   * 该用户拥有 TABLE 组件
    */
-  components: SysPermission[]
+  tables: SysPermission[]
+
+  /**
+   * 该用户拥有 FORM 组件
+   */
+  forms: SysPermission[]
 }

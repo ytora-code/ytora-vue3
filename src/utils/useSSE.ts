@@ -33,7 +33,7 @@ export function useSSE() {
     console.log('建立全局 SSE 连接...')
     globalEventSource = new EventSource('http://localhost:9876/ytora/sys/sse/connect', {
       // 请求时携带 Cookie
-      withCredentials: true
+      withCredentials: true,
     })
 
     globalEventSource.onopen = (): void => {
@@ -46,7 +46,8 @@ export function useSSE() {
       console.log('SSE 连接错误，5秒后重连...')
 
       setTimeout(() => {
-        if (connectionCount > 0) { // 还有组件在使用
+        if (connectionCount > 0) {
+          // 还有组件在使用
           connect(true)
         }
       }, 5000)
@@ -56,7 +57,6 @@ export function useSSE() {
       console.log('收到默认消息:', event.data)
     }
   }
-
 
   /**
    * 断开连接
@@ -140,6 +140,6 @@ export function useSSE() {
     connect,
     disconnect,
     on,
-    off
+    off,
   }
 }

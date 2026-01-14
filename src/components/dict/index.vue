@@ -18,7 +18,7 @@ const emit = defineEmits<{
 
 const innerValue = computed<ModelValue>({
   get: () => props.value,
-  set: (val) => emit('update:value', val)
+  set: (val) => emit('update:value', val),
 })
 
 const options = ref<SelectOption[]>([])
@@ -42,5 +42,5 @@ watch(() => props.dictCode, loadOptions)
 </script>
 
 <template>
-  <n-select v-bind="$attrs" v-model:value="innerValue" :options="options" :loading="loading" />
+  <n-select v-bind="$attrs" v-model:value="innerValue" :options="options" :loading="loading" width-mode=""/>
 </template>

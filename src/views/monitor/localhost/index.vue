@@ -61,7 +61,7 @@ const updateMemory = () => {
     memory.value = {
       jsHeapSizeLimit: perf.jsHeapSizeLimit,
       totalJSHeapSize: perf.totalJSHeapSize,
-      usedJSHeapSize: perf.usedJSHeapSize
+      usedJSHeapSize: perf.usedJSHeapSize,
     }
   }
 }
@@ -72,7 +72,7 @@ const updateStorage = async () => {
     const estimate = await navigator.storage.estimate()
     storage.value = {
       quota: estimate.quota || 0,
-      usage: estimate.usage || 0
+      usage: estimate.usage || 0,
     }
   }
 }
@@ -84,7 +84,7 @@ const updateNetwork = () => {
     network.value = {
       type: conn.effectiveType,
       speed: conn.downlink,
-      latency: conn.rtt
+      latency: conn.rtt,
     }
   }
 }
@@ -96,7 +96,7 @@ const updateBattery = async () => {
     const b = await nav.getBattery()
     battery.value = {
       level: b.level * 100,
-      charging: b.charging
+      charging: b.charging,
     }
   }
 }

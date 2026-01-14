@@ -83,29 +83,44 @@ const openAddDraw = () => {
   currentModel.value.visible = true
   currentModel.value.pid = '0'
   currentModel.value.permissionType = undefined
+  currentModel.value.parentPermissionType = undefined
   drawShowStatus.value = true
 }
 
-const openAddSubDraw = (row: SysPermission) => {
+const openAddSubDraw = (parent: SysPermission) => {
   drawStatus = 2
-  const meta = currentModel.value.meta
   resetDefault(currentModel.value)
-  if (row.permissionType === 3) {
-    currentModel.value.meta = meta
-  } else {
-    currentModel.value.meta = undefined
+  // 如果父资源是 table
+  if (parent.permissionType === 4) {
+    // 表格列的默认值是文本列
+    currentModel.value.meta = { type: 'table-col::normal' }
+    // 如果上级资源属于 table，那么下级资源只能是元素
+    currentModel.value.permissionType = 3
   }
+  // 如果父资源是 form
+  else if (parent.permissionType === 5) {
+    // 表单项的默认值是输入框
+    currentModel.value.meta = { type: 'form-item::input' }
+    // 如果上级资源属于 form，那么下级资源只能是元素
+    currentModel.value.permissionType = 3
+  }
+  // 接口或者页面之类的普通资源
+  else {
+    currentModel.value.meta = undefined
+    currentModel.value.permissionType = undefined
+  }
+  currentModel.value.parentPermissionType = parent.permissionType
   currentModel.value.visible = true
-  currentModel.value.pname = row.permissionName
+  currentModel.value.pname = parent.permissionName
   currentModel.value.id = undefined
-  currentModel.value.pid = row.id
-  currentModel.value.permissionType = undefined
+  currentModel.value.pid = parent.id
   drawShowStatus.value = true
 }
 
 const openEditDraw = (row: SysPermission) => {
   drawStatus = 3
   Object.assign(currentModel.value, row)
+  currentModel.value.parentPermissionType = undefined
   drawShowStatus.value = true
 }
 
@@ -129,72 +144,6 @@ const del = async (row: SysPermission) => {
   await list()
 }
 
-const options = [
-  {
-    label: '接口',
-    value: 1
-  },
-  {
-    label: '页面',
-    value: 2
-  },
-  {
-    label: '组件',
-    value: 3
-  },
-  {
-    label: '表格',
-    value: 4
-  },
-  {
-    label: '表格字段',
-    value: 5
-  },
-  {
-    label: '表单',
-    value: 6
-  }
-]
-
-const componentType = [
-  {
-    label: '表格',
-    value: 'table'
-  },
-  {
-    label: '表格列-索引',
-    value: 'table-col::index'
-  },
-  {
-    label: '表格列-普通文本',
-    value: 'table-col::normal'
-  },
-  {
-    label: '表格列-按钮',
-    value: 'table-col::button'
-  },
-  {
-    label: '表格列-二次确认按钮',
-    value: 'table-col::popconfirm'
-  },
-  {
-    label: '表格列-标签',
-    value: 'table-col::tag'
-  },
-  {
-    label: '表格列-图标',
-    value: 'table-col::icon'
-  },
-  {
-    label: '表格列-插槽',
-    value: 'table-col::slot'
-  },
-  {
-    label: '表格列-组件',
-    value: 'table-col::flex'
-  }
-]
-
 // 元数据里面的attr列表
 const attrList = ref<{ key: string; value: string }[]>([])
 const addAttrRow = (index?: number) => {
@@ -217,13 +166,13 @@ watch(
     if (meta?.attr) {
       attrList.value = Object.entries(meta.attr).map(([key, value]) => ({
         key,
-        value: String(value)
+        value: String(value),
       }))
     } else {
       attrList.value = []
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 const recycleBinShowStatus = ref(false)
@@ -240,7 +189,7 @@ watch(
         return acc
       }, {})
   },
-  { deep: true }
+  { deep: true },
 )
 
 const dataRuleShowStatus = ref(false)
@@ -356,15 +305,18 @@ onMounted(() => {
             <n-input placeholder="资源编码" v-model:value="currentModel.permissionCode" />
           </n-form-item>
           <n-form-item label="资源类型" path="permissionType">
-            <n-select
+            <dict
+              dictCode="permission_type"
               placeholder="资源类型"
               v-model:value="currentModel.permissionType"
-              :options="options"
+              :disabled="
+                currentModel.parentPermissionType && currentModel.parentPermissionType >= 4
+              "
               clearable
-            />
+            ></dict>
           </n-form-item>
           <n-form-item
-            v-if="!currentModel.permissionType || currentModel.permissionType <= 3"
+            v-if="!currentModel.permissionType || currentModel.permissionType <= 2"
             label="图标"
             path="icon"
           >
@@ -396,14 +348,31 @@ onMounted(() => {
           <div v-if="currentModel.meta">
             <n-divider />
             <!-- 元数据，type、key、width三个基本字段，以及对应的attr对象字段，attr里面可以有任意字段，这些字段都会作为组件的属性 -->
-            <n-form-item label="组件类型" path="meta.type">
-              <n-select
-                placeholder="组件类型"
-                v-model:value="currentModel.meta.type"
-                :options="componentType"
+            <n-form-item
+              v-if="currentModel.parentPermissionType === 4 || (currentModel.meta.type && (currentModel.meta.type as string).startsWith('table-col'))"
+              label="表格列类型"
+              path="meta.type"
+            >
+              <dict
+                dictCode="tableColType"
+                placeholder="表格列类型"
+                v-model:value="currentModel.meta.type as string"
                 clearable
               />
             </n-form-item>
+            <n-form-item
+              v-if="currentModel.parentPermissionType === 5 || (currentModel.meta.type && (currentModel.meta.type as string).startsWith('form-item'))"
+              label="表单项类型"
+              path="meta.type"
+            >
+              <dict
+                dictCode="formItemType"
+                placeholder="表单项类型"
+                v-model:value="currentModel.meta.type as string"
+                clearable
+              />
+            </n-form-item>
+
             <n-form-item label="组件key" path="meta.key">
               <n-input placeholder="组件key" v-model:value="currentModel.meta.key" clearable />
             </n-form-item>
@@ -542,8 +511,7 @@ onMounted(() => {
         </n-form-item>
         <n-form-item
           v-if="
-            currentDataRuleModel.ruleType !== 'Customize' &&
-            currentDataRuleModel.ruleType !== 'ALL'
+            currentDataRuleModel.ruleType !== 'Customize' && currentDataRuleModel.ruleType !== 'ALL'
           "
           label="规则字段"
           path="ruleField"
@@ -551,8 +519,12 @@ onMounted(() => {
           <n-input placeholder="规则字段" v-model:value="currentDataRuleModel.ruleField" />
         </n-form-item>
         <n-form-item label="规则类型" path="ruleType">
-          <Dict placeholder="规则类型" dictCode="rule_type"
-                v-model:value="currentDataRuleModel.ruleType" clearable></Dict>
+          <Dict
+            placeholder="规则类型"
+            dictCode="rule_type"
+            v-model:value="currentDataRuleModel.ruleType"
+            clearable
+          ></Dict>
         </n-form-item>
         <n-form-item
           v-if="

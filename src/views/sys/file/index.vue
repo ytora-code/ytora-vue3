@@ -2,7 +2,12 @@
 import type { TreeOption, TreeRenderPrefix } from 'naive-ui'
 import { NIcon } from 'naive-ui'
 import { h, ref } from 'vue'
-import { FolderOutline, FolderOpenOutline, DocumentOutline, ChevronForwardOutline } from '@vicons/ionicons5'
+import {
+  FolderOutline,
+  FolderOpenOutline,
+  DocumentOutline,
+  ChevronForwardOutline,
+} from '@vicons/ionicons5'
 // 如果你有自己的 renderAsyncIcon，也可以替换成你的
 
 function createData() {

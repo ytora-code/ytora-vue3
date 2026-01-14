@@ -63,7 +63,8 @@ export function setupRouterGuard(router: Router) {
                 userStore.roles = userDetail.roles
                 userStore.departCode = userDetail.departCode
                 userStore.departName = userDetail.departName
-                userStore.components = userDetail.components
+                userStore.tables = userDetail.tables
+                userStore.forms = userDetail.forms
                 userStore.updatePermission(userDetail.menus)
 
                 //next()会造成刷新后白屏
