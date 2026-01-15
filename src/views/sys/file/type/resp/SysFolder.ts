@@ -12,7 +12,7 @@ export default interface SysFolder extends BaseResp {
   /**
    * 文件夹深度
    */
-  depth: number
+  depth?: number
 
   /**
    * 类型，1-文件夹/2-文件
@@ -22,7 +22,7 @@ export default interface SysFolder extends BaseResp {
   /**
    * 文件扩展
    */
-  ext: string
+  ext?: string
 
   /**
    * 子数据

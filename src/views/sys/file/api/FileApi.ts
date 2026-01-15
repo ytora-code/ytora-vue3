@@ -2,6 +2,8 @@ import BaseApi from '@/api/BaseApi'
 import type SysFolder from '../type/resp/SysFolder.ts'
 import type SysFile from '@/views/sys/file/type/resp/SysFile.ts'
 import type { AxiosRequestHeaders } from 'axios'
+import type SysFolderReq from '@/views/sys/file/type/req/SysFolderReq.ts'
+import type SysFileReq from '@/views/sys/file/type/req/SysFileReq.ts'
 
 class FileApi extends BaseApi {
   constructor() {
@@ -24,6 +26,20 @@ class FileApi extends BaseApi {
     return this.get<SysFolder[], { pid: string }>('listFolderByPid', { pid })
   }
 
+  /**
+   * 新增或编辑文件夹
+   */
+  insertOrUpdateFolder = (data: SysFolderReq) => {
+    return this.post<SysFolder, SysFolderReq>('insertOrUpdateFolder', data)
+  }
+
+  /**
+   * 删除文件夹
+   */
+  deleteFolder = (id: string) => {
+    return this.delete<never, { id: string }>('deleteFolder', { id })
+  }
+
   // ============================== 文件 =================================>
 
   /**
@@ -31,6 +47,20 @@ class FileApi extends BaseApi {
    */
   queryById = (id: string) => {
     return this.get<SysFile, { id: string }>('queryById', { id })
+  }
+
+  /**
+   * 新增或编辑文件
+   */
+  insertOrUpdate = (data: SysFileReq) => {
+    return this.post<unknown, SysFileReq>('insertOrUpdate', data)
+  }
+
+  /**
+   * 新增或编辑文件
+   */
+  deleteFile = (id: string) => {
+    return this.delete<never, { id: string }>('delete', { id })
   }
 
   /**
@@ -42,7 +72,7 @@ class FileApi extends BaseApi {
     formData: FormData,
     progress?: (loaded: number, total: number, percent: number) => void,
   ) => {
-    return this.upload<string>('upload', formData, progress)
+    return this.upload<SysFile>('upload', formData, progress)
   }
 
   /**
