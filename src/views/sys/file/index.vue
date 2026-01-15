@@ -187,8 +187,22 @@ const renderLabel = ({ option }: { option: TreeOption }) => {
  * 保存编辑/新增
  */
 const handleSaveEdit = async (node: TreeOption) => {
-  if (!editValue.value.trim()) {
+  // 校验
+  // 1. 不能为空
+  const name = editValue.value.trim()
+  if (!name) {
     message.warning('名称不能为空')
+    return
+  }
+  // 2. 限制长度
+  if (name.length > 20) {
+    message.warning('名称太长了，不能超过20个字符')
+    return
+  }
+  // 3. 正则校验：禁止危险字符
+  const forbiddenRegex = /[\\/:*?"<>|]/
+  if (forbiddenRegex.test(name)) {
+    message.warning('名称不能包含以下字符：\\ / : * ? " < > |')
     return
   }
 

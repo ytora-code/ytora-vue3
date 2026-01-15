@@ -144,6 +144,26 @@ const del = async (row: SysPermission) => {
   await list()
 }
 
+const handlePermissionTypeChange = (val: number) => {
+  currentModel.value.permissionType = val
+  const code = val === 4 ? 'table' : val === 5 ? 'form' : ''
+
+  if (val >= 4) {
+    if (!currentModel.value.meta) {
+      // 如果没有 meta，直接初始化
+      currentModel.value.meta = { type: code, key: code }
+    } else {
+      // 如果已有 meta，直接覆盖 type 和 key（或者根据业务需求判断是否覆盖）
+      currentModel.value.meta.type = code
+      currentModel.value.meta.key = code
+    }
+  } else {
+    // 如果切换回 1, 2, 3 等类型，是否需要清除元数据？
+    // 根据需求决定，如果需要清除：currentModel.value.meta = undefined
+    currentModel.value.meta = undefined
+  }
+}
+
 // 元数据里面的attr列表
 const attrList = ref<{ key: string; value: string }[]>([])
 const addAttrRow = (index?: number) => {
@@ -159,6 +179,7 @@ const addAttrRow = (index?: number) => {
 const removeAttrRow = (index: number) => {
   attrList.value.splice(index, 1)
 }
+
 // 当 meta.attr 存在时 → 初始化 attrList
 watch(
   () => currentModel.value.meta,
@@ -308,7 +329,8 @@ onMounted(() => {
             <dict
               dictCode="permission_type"
               placeholder="资源类型"
-              v-model:value="currentModel.permissionType"
+              :value="currentModel.permissionType"
+              @update:value="handlePermissionTypeChange"
               :disabled="
                 currentModel.parentPermissionType && currentModel.parentPermissionType >= 4
               "
@@ -351,32 +373,32 @@ onMounted(() => {
             <n-form-item
               v-if="
                 currentModel.parentPermissionType === 4 ||
-                (currentModel.meta.type &&
-                  (currentModel.meta.type as string).startsWith('table-col'))
+                (currentModel.meta.type && (currentModel.meta.type as string).startsWith('table'))
               "
-              label="表格列类型"
+              :label="currentModel.permissionType === 4 ? '表格类型' : '表格列类型'"
               path="meta.type"
             >
               <dict
                 dictCode="tableColType"
-                placeholder="表格列类型"
+                :placeholder="currentModel.permissionType === 4 ? '表格类型' : '表格列类型'"
                 v-model:value="currentModel.meta.type as string"
+                :disabled="currentModel.permissionType === 4"
                 clearable
               />
             </n-form-item>
             <n-form-item
               v-if="
                 currentModel.parentPermissionType === 5 ||
-                (currentModel.meta.type &&
-                  (currentModel.meta.type as string).startsWith('form-item'))
+                (currentModel.meta.type && (currentModel.meta.type as string).startsWith('form'))
               "
-              label="表单项类型"
+              :label="currentModel.permissionType === 5 ? '表单类型' : '表单项类型'"
               path="meta.type"
             >
               <dict
                 dictCode="formItemType"
-                placeholder="表单项类型"
+                :placeholder="currentModel.permissionType === 5 ? '表单类型' : '表单项类型'"
                 v-model:value="currentModel.meta.type as string"
+                :disabled="currentModel.permissionType === 5"
                 clearable
               />
             </n-form-item>
@@ -435,7 +457,7 @@ onMounted(() => {
             </n-form-item>
           </div>
 
-          <div v-if="currentModel.meta?.type === 'table'">
+          <div v-if="currentModel.permissionType === 4">
             <n-divider />
             <n-form-item label=" ">
               <n-button

@@ -26,7 +26,7 @@ const RespHandler = async <R = unknown>(response: Result<R>): Promise<R> => {
   //除此之外的其他情况都视为请求失败
   else {
     //弹出错误提示
-    notification.error({ title: response.message ?? "空", duration: 3000 })
+    notification.error({ title: response.message ?? '空', duration: 3000 })
 
     //响应码为1或2表示需要重新登录
     if (response.code === 101 || response.code === 102) {
