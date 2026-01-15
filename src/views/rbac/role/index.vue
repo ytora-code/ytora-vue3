@@ -14,6 +14,7 @@ import type { SysRolePermissionResp } from '@/views/rbac/permission/type/resp/Sy
 import RecycleBin from '@/views/sys/recyclebin/index.vue'
 import type SysDataRule from '@/views/rbac/permission/type/resp/SysDataRule.ts'
 import type SysRoleDataRuleResp from '@/views/rbac/permission/type/resp/SysRoleDataRuleResp.ts'
+import DynamicForm from '@/components/form/index.vue'
 
 /**
  * 数据库表名称
@@ -59,7 +60,11 @@ const tableModel = ref<PageResp<SysRole>>()
 const page = async () => {
   tableLoading.value = true
   try {
-    tableModel.value = await roleApi.page({ ...toRaw(searchModel), ...toRaw(pageModel) })
+    tableModel.value = await roleApi.page({
+      ...toRaw(searchModel),
+      ...toRaw(pageModel),
+      orderCol: 'update_time↓',
+    })
     pageModel.pageNo = tableModel.value.pageNo
     pageModel.pageSize = tableModel.value.pageSize
   } finally {
@@ -303,23 +308,25 @@ onMounted(() => {
 
 <template>
   <div flex flex-col gap-1 px-6 py-3>
-    <div>
-      <n-form :model="searchModel" label-placement="left" inline flex flex-wrap gap-2>
-        <n-form-item label="角色名称" path="roleName">
-          <n-input placeholder="角色名称" v-model:value="searchModel.roleName" clearable />
-        </n-form-item>
-        <n-form-item label="角色编码" path="roleCode">
-          <n-input placeholder="角色编码" v-model:value="searchModel.roleCode" clearable />
-        </n-form-item>
-
+    <!-- 搜索条件 -->
+    <DynamicForm
+      formCode="role-search"
+      v-model="searchModel"
+      label-placement="left"
+      inline
+      flex
+      flex-wrap
+      gap-2
+    >
+      <template #suffix>
         <n-button type="primary" :render-icon="renderAsyncIcon('SearchOutline')" @click="page">
           搜索
         </n-button>
         <n-button type="primary" ghost :render-icon="renderAsyncIcon('SyncOutline')" @click="reset">
           重置
         </n-button>
-      </n-form>
-    </div>
+      </template>
+    </DynamicForm>
 
     <div flex gap-x="3px">
       <n-button

@@ -2,7 +2,6 @@ import BaseApi from '@/api/BaseApi'
 import type SysUserResp from '@/views/rbac/user/type/resp/SysUserResp.ts'
 import type PageResp from '@/types/resp/PageResp.ts'
 import type SysUserReq from '@/views/rbac/user/type/req/SysUserReq.ts'
-import type { AxiosProgressEvent } from 'axios'
 
 class UserApi extends BaseApi {
   constructor() {

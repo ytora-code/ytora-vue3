@@ -48,7 +48,12 @@ const tableModel = ref<PageResp<SysDict>>()
 const page = async () => {
   tableLoading.value = true
   try {
-    tableModel.value = await dictApi.page({ ...toRaw(searchModel), ...toRaw(pageModel), type: 1, orderCol:'update_time↓' })
+    tableModel.value = await dictApi.page({
+      ...toRaw(searchModel),
+      ...toRaw(pageModel),
+      type: 1,
+      orderCol: 'update_time↓',
+    })
     pageModel.pageNo = tableModel.value.pageNo
     pageModel.pageSize = tableModel.value.pageSize
   } finally {
@@ -178,7 +183,12 @@ const openDictItemDialog = async (row: SysDict) => {
  * 执行查询操作
  */
 const listDictItem = async (dictCode: string) => {
-  dictItemModel.value = await dictApi.listDictItem(dictCode)
+  dictItemTableLoading.value = true
+  try {
+    dictItemModel.value = await dictApi.listDictItem(dictCode)
+  } finally {
+    dictItemTableLoading.value = false
+  }
 }
 
 /**
@@ -301,9 +311,9 @@ onMounted(() => {
           <n-form-item label="字典编码" path="dictCode">
             <n-input placeholder="字典编码" v-model:value="currentModel.dictCode" />
           </n-form-item>
-<!--          <n-form-item label="排序" path="index">-->
-<!--            <n-input-number placeholder="排序" v-model:value="currentModel.index" clearable />-->
-<!--          </n-form-item>-->
+          <!--          <n-form-item label="排序" path="index">-->
+          <!--            <n-input-number placeholder="排序" v-model:value="currentModel.index" clearable />-->
+          <!--          </n-form-item>-->
           <n-form-item label="备注" path="remark">
             <n-input type="textarea" placeholder="备注" v-model:value="currentModel.remark" />
           </n-form-item>

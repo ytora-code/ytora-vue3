@@ -1,4 +1,9 @@
-import { type AxiosInstance, type AxiosProgressEvent, type AxiosResponse } from 'axios'
+import {
+  type AxiosInstance,
+  type AxiosProgressEvent,
+  type AxiosRequestHeaders,
+  type AxiosResponse,
+} from 'axios'
 import axiosInstance from '@/api/request.ts'
 import type Result from '@/types/resp/Result.ts'
 import responseHandler from './RespHandler.ts'
@@ -130,38 +135,53 @@ export default abstract class BaseApi {
 
   /**
    * 文件下载
+   * @param uri 下载URI
+   * @param params 下载参数
+   * @param callback 下载完成后的回调
    */
-  protected download = async <P>(uri: string, params?: P): Promise<void> => {
+  protected download = async <P>(
+    uri: string,
+    params?: P,
+    callback?: (header: Record<string, string> & Partial<AxiosRequestHeaders>, body: Blob) => void,
+  ): Promise<void> => {
     // axios 拦截器逻辑：responseType 为 blob 时返回的是原始响应 res
     const res = await this.request.get<never, AxiosResponse<Blob>>(`${this.prefix}${uri}`, {
       params,
       responseType: 'blob',
     })
 
-    // 从响应头里取出 Content-Disposition
-    const disposition = res.headers['content-disposition'] as string | undefined
-    let fileName = '未命名文件'
-    if (disposition) {
-      // 支持两种写法：filename= 或 filename*=UTF-8''
-      const match = disposition.match(/filename\*=UTF-8''(.+)|filename="?([^"]+)"?/)
-      if (match) {
-        // 解决 Argument of type string | undefined 报错
-        const rawFileName = match[1] || match[2]
-        if (rawFileName) {
-          fileName = decodeURIComponent(rawFileName)
+    // 如果有回调，走回调的逻辑，不走默认下载逻辑
+    if (callback) {
+      // 下载完成，进行回调
+      callback(res.headers as Record<string, string> & Partial<AxiosRequestHeaders>, res.data)
+    }
+    // 没有回调，进行下载
+    else {
+      // 从响应头里取出 Content-Disposition
+      const disposition = res.headers['content-disposition'] as string | undefined
+      let fileName = '未命名文件'
+      if (disposition) {
+        // 支持两种写法：filename= 或 filename*=UTF-8''
+        const match = disposition.match(/filename\*=UTF-8''(.+)|filename="?([^"]+)"?/)
+        if (match) {
+          // 解决 Argument of type string | undefined 报错
+          const rawFileName = match[1] || match[2]
+          if (rawFileName) {
+            fileName = decodeURIComponent(rawFileName)
+          }
         }
       }
-    }
 
-    // 生成 blob 并触发下载
-    const blob = new Blob([res.data], { type: res.data.type })
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = fileName
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(link.href)
+      // 生成 blob 并触发下载
+      const blob = new Blob([res.data], { type: res.data.type })
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(link.href)
+    }
   }
 
   /**

@@ -1,4 +1,4 @@
-<script setup lang="ts" generic="T extends Record<string, any>">
+<script setup lang="ts" generic="T extends Record<string, any> & { id: string | number }">
 import { computed, h } from 'vue'
 import { type DataTableColumn, NDataTable, type PaginationInfo } from 'naive-ui'
 import CellRenderer from './ComponentCellRenderer.vue'
@@ -193,6 +193,7 @@ const pagination = computed(() => {
       :pagination="pagination"
       :scroll-x="scrollX"
       :style="{ minWidth: '80%' }"
+      :row-key="(row) => row.id"
     />
   </n-card>
 </template>

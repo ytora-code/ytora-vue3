@@ -2,7 +2,7 @@ export default interface BaseResp {
   /**
    * 主键ID
    */
-  id?: string
+  id: string
 
   /**
    * 状态

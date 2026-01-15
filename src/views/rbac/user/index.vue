@@ -2,7 +2,7 @@
 import { type CSSProperties, onMounted, reactive } from 'vue'
 import { userApi } from './api/UserApi.ts'
 import { roleApi } from '@/views/rbac/role/api/RoleApi.ts'
-import { fileApi } from '@/api/FileApi.ts'
+import { fileApi } from '@/views/sys/file/api/FileApi.ts'
 import { NButton, NFlex, NSwitch, type UploadCustomRequestOptions } from 'naive-ui'
 import type PageResp from '@/types/resp/PageResp.ts'
 import type SysUserResp from '@/views/rbac/user/type/resp/SysUserResp.ts'

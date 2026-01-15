@@ -14,5 +14,18 @@ export default interface SysFolder extends BaseResp {
    */
   depth: number
 
+  /**
+   * 类型，1-文件夹/2-文件
+   */
+  type: number
+
+  /**
+   * 文件扩展
+   */
+  ext: string
+
+  /**
+   * 子数据
+   */
   children?: SysFolder[]
 }

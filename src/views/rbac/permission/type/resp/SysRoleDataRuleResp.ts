@@ -1,4 +1,3 @@
-import type BaseReq from '@/types/req/BaseReq.ts'
 import type BaseResp from '@/types/resp/BaseResp.ts'
 import type SysDataRule from '@/views/rbac/permission/type/resp/SysDataRule.ts'
 
