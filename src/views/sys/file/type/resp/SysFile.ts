@@ -43,4 +43,9 @@ export default interface SysFile extends BaseResp {
    * 上传时间
    */
   createTime?: string
+
+  /**
+   * 对应的磁盘上的文件是否存在
+   */
+  fileExist?: boolean
 }

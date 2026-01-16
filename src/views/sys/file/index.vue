@@ -13,21 +13,23 @@ import type SysFolder from './type/resp/SysFolder.ts'
 import { renderAsyncIcon } from '@/utils/icon'
 import useFileType from './composable/useFileType.ts'
 import type SysFile from '@/views/sys/file/type/resp/SysFile.ts'
+import { useFileTreeStore } from '@/stores/useFileTreeStore.ts'
 
 const { classifyByMime, fileKindToIcon } = useFileType()
 const message = useMessage()
 
-const loadedKeys = ref<Set<string | number>>(new Set())
+const fileTreeStore = useFileTreeStore()
 
+// 用于存放当前展开节点的 ID
+// const expandedKeys = ref<Array<string | number>>([])
+// const selectedKeys = ref<Array<string | number>>([])
+// const loadedKeys = ref<Set<string | number>>(new Set())
 const folders = ref<TreeOption[]>([])
+
 const loading = ref(true)
 const importBoxShowStatus = ref(false)
 const uploading = ref(false)
 const percentage = ref(0)
-
-// 用于存放当前展开节点的 ID
-const expandedKeys = ref<Array<string | number>>([])
-const selectedKeys = ref<Array<string | number>>([])
 
 // --- 编辑相关状态 ---
 const editingKey = ref<string | number | null>(null) // 当前正在编辑的节点 ID
@@ -87,8 +89,8 @@ const handleLoad = async (node: TreeOption) => {
 
   const id = node.id as string | number
 
-  if (loadedKeys.value.has(id)) return
-  loadedKeys.value.add(id)
+  if (fileTreeStore.loadedKeys.has(id) && Array.isArray(node.children)) return
+  fileTreeStore.loadedKeys.add(id)
 
   const list = await fileApi.listFolderByPid(String(id))
   const options = list.map((item) => toOption(item))
@@ -102,13 +104,13 @@ const handleLoad = async (node: TreeOption) => {
  */
 const renderPrefix = ({ option }: { option: TreeOption; checked: boolean; selected: boolean }) => {
   const id = option.id as string | number
-  const isExpanded = expandedKeys.value.includes(id)
+  const isExpanded = fileTreeStore.expandedKeys.includes(id)
 
   // 1 文件夹 / 2 文件
   const type = (option.raw as SysFolder)?.type
   const isFile = type === 2
 
-  const shouldBlue = isFile ? selectedKeys.value.includes(id) : isExpanded
+  const shouldBlue = isFile ? fileTreeStore.selectedKeys.includes(id) : isExpanded
 
   let iconName: string
   if (isFile) {
@@ -131,54 +133,74 @@ const renderPrefix = ({ option }: { option: TreeOption; checked: boolean; select
 /**
  * 渲染节点内容
  */
+const stopOnly = (e: Event) => e.stopPropagation()
+const stopAndPrevent = (e: Event) => {
+  e.preventDefault()
+  e.stopPropagation()
+}
 const renderLabel = ({ option }: { option: TreeOption }) => {
-  // 如果当前节点正在编辑
   if (editingKey.value === option.id) {
     return h(
-      NSpace,
-      { align: 'center', wrap: false, size: 4 },
+      'div',
       {
-        default: () => [
-          h(NInput, {
-            value: editValue.value,
-            onUpdateValue: (v) => (editValue.value = v),
-            size: 'tiny',
-            autoFocus: true,
-            onKeyup: (e: KeyboardEvent) => {
-              if (e.key === 'Enter') handleSaveEdit(option)
-              if (e.key === 'Escape') handleCancelEdit()
-            },
-          }),
-          h(
-            NButton,
-            {
-              size: 'tiny',
-              type: 'primary',
-              ghost: true,
-              onClick: (e) => {
-                e.stopPropagation()
-                handleSaveEdit(option)
-              },
-            },
-            { default: () => '确定' },
-          ),
-          h(
-            NButton,
-            {
-              size: 'tiny',
-              ghost: true,
-              onClick: (e) => {
-                e.stopPropagation()
-                handleCancelEdit()
-              },
-            },
-            { default: () => '取消' },
-          ),
-        ],
+        // 外层拦截，避免冒泡到 tree 节点触发展开
+        onMousedown: stopAndPrevent,
+        onClick: stopOnly,
+        onDblclick: stopAndPrevent,
       },
+      [
+        h(
+          NSpace,
+          { align: 'center', wrap: false, size: 4 },
+          {
+            default: () => [
+              h(NInput, {
+                value: editValue.value,
+                onUpdateValue: (v) => (editValue.value = v),
+                size: 'tiny',
+                autofocus: true,
+
+                onMousedown: stopOnly,
+                onClick: stopOnly,
+
+                onKeyup: (e: KeyboardEvent) => {
+                  if (e.key === 'Enter') handleSaveEdit(option)
+                  if (e.key === 'Escape') handleCancelEdit()
+                },
+              }),
+              h(
+                NButton,
+                {
+                  size: 'tiny',
+                  type: 'primary',
+                  ghost: true,
+                  onMousedown: stopOnly,
+                  onClick: (e) => {
+                    stopOnly(e)
+                    handleSaveEdit(option)
+                  },
+                },
+                { default: () => '确定' },
+              ),
+              h(
+                NButton,
+                {
+                  size: 'tiny',
+                  ghost: true,
+                  onMousedown: stopOnly,
+                  onClick: (e) => {
+                    stopOnly(e)
+                    handleCancelEdit()
+                  },
+                },
+                { default: () => '取消' },
+              ),
+            ],
+          },
+        ),
+      ],
     )
   }
-  // 正常显示文字
   return h('span', {}, { default: () => option.path as string })
 }
 
@@ -409,7 +431,7 @@ const openContextMenu = (e: MouseEvent, option: TreeOption) => {
   e.stopPropagation()
 
   const id = option.id as string | number
-  selectedKeys.value = [id]
+  fileTreeStore.selectedKeys = [id]
   ctxSelectedKey.value = id
 
   ctxNode.value = option
@@ -470,8 +492,8 @@ const handleCtxSelect = async (key: string | number) => {
 
   // 处理文件夹内新增子文件夹
   if (key === 'mkdir') {
-    if (!expandedKeys.value.includes(id)) {
-      expandedKeys.value.push(id)
+    if (!fileTreeStore.expandedKeys.includes(id)) {
+      fileTreeStore.expandedKeys.push(id)
     }
 
     const tempId = `temp-${Date.now()}`
@@ -500,7 +522,7 @@ const handleCtxSelect = async (key: string | number) => {
       })
     })(folders.value)
 
-    loadedKeys.value.add(id)
+    fileTreeStore.loadedKeys.add(id)
 
     editingKey.value = tempId
     editValue.value = ''
@@ -520,7 +542,6 @@ const handleCtxSelect = async (key: string | number) => {
       await fileApi.deleteFolder(deleteId)
     }
     folders.value = removeNodeById(folders.value, id)
-    message.success('删除成功')
   }
 }
 
@@ -532,7 +553,7 @@ const nodeProps = ({ option }: { option: TreeOption }) => {
     class: isCtx ? 'ctx-selected' : '',
     onClick: () => {
       const id = option.id as string | number
-      selectedKeys.value = [id]
+      fileTreeStore.selectedKeys = [id]
 
       // 文件（叶子）点击才加载
       const type = (option.raw as SysFolder | undefined)?.type
@@ -574,48 +595,55 @@ const downloadFile = () => {
  */
 const previewText = ref<string>('')
 const previewUrl = ref<string>('')
-const previewTip = ref<string>('暂不支持预览，请点击下载')
+const previewTip = ref<string>('暂不支持预览，请点击')
 const previewLoading = ref(false)
 
 // 当 fileInfo 变化时，异步加载预览内容
 watch(
   () => fileInfo.value?.fileId,
   async () => {
-    const info = fileInfo.value
-    previewText.value = ''
-    previewUrl.value = ''
-    previewTip.value = '暂不支持预览，请点击下载'
+    previewLoading.value = true
+    try {
+      const info = fileInfo.value
+      previewText.value = ''
+      previewUrl.value = ''
+      previewTip.value = '暂不支持预览，请点击'
 
-    if (!info) return
+      if (!info) return
 
-    const ext = info.ext
+      const ext = info.ext
 
-    // 文本 <= 1MB：拉取 blob 并转文本
-    if (
-      (ext === 'text' || ext === 'log' || ext === 'json' || ext === 'code') &&
-      info.fileSize <= 1024 * 1024
-    ) {
-      previewLoading.value = true
-      try {
+      // 文本 <= 1MB：拉取 blob 并转文本
+      if (
+        (ext === 'text' || ext === 'log' || ext === 'json' || ext === 'code') &&
+        info.fileSize <= 1024 * 1024
+      ) {
         await fileApi.fileDownload(info.fileId, async (_header, body) => {
           previewText.value = await body.text()
         })
         previewTip.value = ''
-      } finally {
-        previewLoading.value = false
+        return
       }
-      return
-    }
 
-    // 图片：拼 URL
-    if (ext === 'image') {
-      previewUrl.value = `${import.meta.env.VITE_REQUEST_BASE_URL}sys/file/download?fileId=${info.fileId}`
-      previewTip.value = ''
-      return
-    }
+      // 图片：拼 URL
+      if (ext === 'image') {
+        previewUrl.value = `${import.meta.env.VITE_REQUEST_BASE_URL}sys/file/download?fileId=${info.fileId}`
+        previewTip.value = ''
+        return
+      }
 
-    // 其他类型
-    previewTip.value = '暂不支持预览，请点击下载'
+      // PDF，直接预览
+      if (ext === 'pdf') {
+        previewUrl.value = `${import.meta.env.VITE_REQUEST_BASE_URL}sys/file/download?fileId=${info.fileId}`
+        previewTip.value = ''
+        return
+      }
+
+      // 其他类型
+      previewTip.value = '暂不支持预览，请点击'
+    } finally {
+      previewLoading.value = false
+    }
   },
   { immediate: true },
 )
@@ -624,10 +652,51 @@ watch(
 onMounted(async () => {
   try {
     loading.value = true
+
+    // 1) folders 重建 => 重置 loadedKeys 重置
+    fileTreeStore.resetLoadedKeys()
+
+    // 2) 拉根目录
     const top = await fileApi.listFolderByPid('0')
     folders.value = top.map((item) => toOption(item))
-  } catch (error) {
-    console.error('Failed to fetch folders:', error)
+
+    // 3) 恢复展开：从根向下递归加载
+    const expandedSet = new Set(fileTreeStore.expandedKeys)
+
+    const restoreExpanded = async (nodes: TreeOption[]) => {
+      for (const n of nodes) {
+        const id = n.id as string | number
+        const type = (n.raw as SysFolder | undefined)?.type
+
+        // 只对“展开的文件夹”做懒加载
+        if (type !== 2 && expandedSet.has(id)) {
+          // 把 children 填进去（写回 folders.value）
+          await handleLoad(n)
+
+          // handleLoad 会产生新的树对象，所以不能用 n.children 继续递归
+          // 需要从 folders.value 里重新取“最新节点”的 children
+          const findLatest = (list: TreeOption[], targetId: string | number): TreeOption | null => {
+            for (const x of list) {
+              if (x.id === targetId) return x
+              const c = Array.isArray(x.children) ? x.children : []
+              const hit = c.length ? findLatest(c, targetId) : null
+              if (hit) return hit
+            }
+            return null
+          }
+
+          const latest = findLatest(folders.value, id)
+          const children = Array.isArray(latest?.children) ? (latest!.children as TreeOption[]) : []
+          if (children.length) {
+            await restoreExpanded(children)
+          }
+        }
+      }
+    }
+
+    await restoreExpanded(folders.value)
+  } catch (e) {
+    console.error(e)
   } finally {
     loading.value = false
   }
@@ -638,20 +707,22 @@ onMounted(async () => {
   <div>
     <div class="tree-container" flex p-6>
       <div w="[300px]" flex-shrink-0 @contextmenu="handleBlankContextMenu">
-        <n-tree
-          block-line
-          expand-on-click
-          v-model:expanded-keys="expandedKeys"
-          v-model:selected-keys="selectedKeys"
-          :data="folders"
-          key-field="id"
-          label-field="path"
-          children-field="children"
-          :render-prefix="renderPrefix"
-          :render-label="renderLabel"
-          :node-props="nodeProps"
-          :on-load="handleLoad"
-        />
+        <n-scrollbar style="max-height: 80vh">
+          <n-tree
+            block-line
+            expand-on-click
+            v-model:expanded-keys="fileTreeStore.expandedKeys"
+            v-model:selected-keys="fileTreeStore.selectedKeys"
+            :data="folders"
+            key-field="id"
+            label-field="path"
+            children-field="children"
+            :render-prefix="renderPrefix"
+            :render-label="renderLabel"
+            :node-props="nodeProps"
+            :on-load="handleLoad"
+          />
+        </n-scrollbar>
       </div>
 
       <!-- 分割线 -->
@@ -660,7 +731,7 @@ onMounted(async () => {
       <div flex-1>
         <n-card :title="fileInfo?.fileName" size="huge">
           <n-empty v-if="!fileInfo" description="请选择一个文件" />
-          <n-grid v-else :cols="3">
+          <n-grid v-else :cols="2">
             <n-gi> 文件ID：{{ fileInfo.fileId }}</n-gi>
             <n-gi> 文件大小：{{ fileInfo.fileSizeText }}</n-gi>
             <n-gi> 文件类型：{{ fileInfo.ext }}</n-gi>
@@ -669,12 +740,12 @@ onMounted(async () => {
             <n-gi> 上传时间：{{ fileInfo.createTime }}</n-gi>
             <n-gi> 下载次数：{{ fileInfo.downloadCount }}</n-gi>
           </n-grid>
-
-          <n-button v-if="fileInfo" type="primary" ghost @click="downloadFile">下　载</n-button>
         </n-card>
 
         <div v-if="fileInfo" class="preview">
-          <n-scrollbar style="max-height: 70vh">
+          <h2 v-if="fileInfo.fileExist === false" text="[#F00]">对应的真实文件不存在，请检查!!!</h2>
+
+          <n-scrollbar v-else style="max-height: 65vh">
             <div v-if="previewLoading">加载中...</div>
 
             <!-- 图片 -->
@@ -683,6 +754,14 @@ onMounted(async () => {
               width="80%"
               object-fit="contain"
               :src="previewUrl"
+            />
+
+            <iframe
+              v-else-if="fileInfo.ext === 'pdf'"
+              :src="previewUrl"
+              @load="previewLoading = false"
+              w="[90%]"
+              h="[65vh]"
             />
 
             <!-- 文本 -->
@@ -699,7 +778,8 @@ onMounted(async () => {
 
             <!-- 其他 -->
             <div v-else>
-              {{ previewTip }}
+              {{ previewTip
+              }}<n-button v-if="fileInfo" text type="primary" @click="downloadFile">下载</n-button>
             </div>
           </n-scrollbar>
         </div>
