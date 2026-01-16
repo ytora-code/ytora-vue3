@@ -37,12 +37,12 @@ const isCreating = ref(false) // 标记是否是“新增”操作（用于取�
 /**
  * SysFolder → TreeOption
  */
-const toOption = (f: SysFolder, isLeaf?: boolean): TreeOption => {
+const toOption = (f: SysFolder): TreeOption => {
   const isFile = f.type === 2
   return {
     id: f.id,
     path: f.path,
-    isLeaf: isLeaf ?? isFile,
+    isLeaf: isFile,
     children: isFile ? [] : undefined,
     raw: f,
   } as TreeOption
@@ -60,12 +60,12 @@ function setChildrenById(
     const id = n.id as string | number
     if (id === targetId) {
       const isFile = (n.raw as SysFolder | undefined)?.type === 2
-      const nextIsLeaf = isFile ? true : children.length === 0
-
       return {
         ...n,
         children,
-        isLeaf: nextIsLeaf,
+        // 文件：永远 isLeaf=true
+        // 文件夹：永远 isLeaf=false（哪怕 children 为空）
+        isLeaf: isFile,
       }
     }
 
@@ -73,7 +73,6 @@ function setChildrenById(
     if (Array.isArray(c) && c.length) {
       return { ...n, children: setChildrenById(c, targetId, children) }
     }
-
     return n
   })
 }
@@ -218,7 +217,7 @@ const handleSaveEdit = async (node: TreeOption) => {
       } else {
         // 新增文件夹
         const res = await fileApi.insertOrUpdateFolder({ path: editValue.value, pid: pid })
-        folders.value = updateNodeById(folders.value, node.id as string, toOption(res, true))
+        folders.value = updateNodeById(folders.value, node.id as string, toOption(res))
       }
     } else {
       // 执行重命名 API
@@ -255,13 +254,12 @@ const handleCancelEdit = () => {
  * 递归删除树中某个节点（用于取消新增或删除操作）
  */
 function removeNodeById(nodes: TreeOption[], targetId: string | number): TreeOption[] {
-  return nodes.filter((n) => {
-    if (n.id === targetId) return false
-    if (n.children) {
-      n.children = removeNodeById(n.children, targetId)
-    }
-    return true
-  })
+  return nodes
+    .filter((n) => n.id !== targetId)
+    .map((n) => {
+      const children = Array.isArray(n.children) ? removeNodeById(n.children, targetId) : n.children
+      return children === n.children ? n : { ...n, children }
+    })
 }
 
 /**
@@ -475,22 +473,34 @@ const handleCtxSelect = async (key: string | number) => {
     if (!expandedKeys.value.includes(id)) {
       expandedKeys.value.push(id)
     }
-    if (!loadedKeys.value.has(id)) {
-      await handleLoad(opt)
-    }
 
     const tempId = `temp-${Date.now()}`
     const newNode: TreeOption = {
       id: tempId,
       path: '',
-      isLeaf: false, // 设为 false 以保持文件夹外观，直到保存
+      isLeaf: false,
       raw: { type: 1, pid: id } as SysFolder,
     }
 
-    folders.value = updateNodeById(folders.value, id, {
-      children: [...(opt.children || []), newNode],
-      isLeaf: false,
-    })
+    // 一次性完成：初始化 children + append
+    folders.value = (function addChild(nodes: TreeOption[]): TreeOption[] {
+      return nodes.map((n) => {
+        if (n.id === id) {
+          const baseChildren = Array.isArray(n.children) ? n.children : []
+          return {
+            ...n,
+            children: [...baseChildren, newNode],
+            isLeaf: false,
+          }
+        }
+        if (Array.isArray(n.children) && n.children.length) {
+          return { ...n, children: addChild(n.children) }
+        }
+        return n
+      })
+    })(folders.value)
+
+    loadedKeys.value.add(id)
 
     editingKey.value = tempId
     editValue.value = ''
@@ -500,8 +510,15 @@ const handleCtxSelect = async (key: string | number) => {
   // 处理删除
   if (key === 'deleteFile' || key === 'deleteFolder') {
     const deleteId = String(id)
-    if (key === 'deleteFile') await fileApi.deleteFile(deleteId)
-    else await fileApi.deleteFolder(deleteId)
+    if (key === 'deleteFile') {
+      await fileApi.deleteFile(deleteId)
+      // 删除的是当前选中的文件
+      if (fileInfo.value?.id === deleteId) {
+        fileInfo.value = undefined
+      }
+    } else {
+      await fileApi.deleteFolder(deleteId)
+    }
     folders.value = removeNodeById(folders.value, id)
     message.success('删除成功')
   }

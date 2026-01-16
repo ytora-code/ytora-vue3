@@ -23,6 +23,10 @@ class FileApi extends BaseApi {
    * 根据PID获取子文件夹
    */
   listFolderByPid = (pid: string) => {
+    if (pid.startsWith('temp-')) {
+      console.log('临时文件夹')
+      return []
+    }
     return this.get<SysFolder[], { pid: string }>('listFolderByPid', { pid })
   }
 
@@ -57,7 +61,7 @@ class FileApi extends BaseApi {
   }
 
   /**
-   * 新增或编辑文件
+   * 删除文件
    */
   deleteFile = (id: string) => {
     return this.delete<never, { id: string }>('delete', { id })
