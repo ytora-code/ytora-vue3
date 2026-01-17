@@ -11,7 +11,10 @@ class SysRecycleBinApi extends BaseApi {
    * 分页请求
    */
   page = (param: SysRecycleBinReq) => {
-    return this.get<PageResp<Record<string, unknown>>, SysRecycleBinReq>('page', param)
+    return this.get<PageResp<Record<string, unknown> & { id: string | number }>, SysRecycleBinReq>(
+      'page',
+      param,
+    )
   }
 
   /**
@@ -31,8 +34,8 @@ class SysRecycleBinApi extends BaseApi {
   /**
    * 清空回收站数据
    */
-  clear = (table: unknown) => {
-    return this.delete<unknown, { table: unknown }>('clear', { tables: table })
+  clear = (table: string) => {
+    return this.delete<unknown, { table: string }>('clear', { table })
   }
 }
 

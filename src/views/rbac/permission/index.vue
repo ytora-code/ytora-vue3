@@ -144,7 +144,8 @@ const del = async (row: SysPermission) => {
   await list()
 }
 
-const handlePermissionTypeChange = (val: number) => {
+const handlePermissionTypeChange = (value: string | number | boolean | Date | undefined) => {
+  const val = value as number
   currentModel.value.permissionType = val
   const code = val === 4 ? 'table' : val === 5 ? 'form' : ''
 

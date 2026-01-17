@@ -33,5 +33,4 @@ export default interface DbObjTree extends BaseResp {
    * 子对象
    */
   children?: DbObjTree[]
-
 }

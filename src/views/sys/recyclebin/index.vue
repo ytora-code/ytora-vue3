@@ -56,7 +56,7 @@ const pageModel = reactive<PageReq>({
 /**
  * 表格呼叫
  */
-const tableModel = ref<PageResp<Record<string, unknown>>>()
+const tableModel = ref<PageResp<Record<string, unknown> & { id: string | number }>>()
 
 /**
  * 表格Loading

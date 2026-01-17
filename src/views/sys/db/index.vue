@@ -11,6 +11,7 @@ import type FunctionMeta from '@/views/sys/db/type/resp/FunctionMeta.ts'
 import type ProcedureMeta from '@/views/sys/db/type/resp/ProcedureMeta.ts'
 import type SequenceMeta from '@/views/sys/db/type/resp/SequenceMeta.ts'
 import type ColumnMeta from '@/views/sys/db/type/resp/ColumnMeta.ts'
+import type { VxeTableInstance } from 'vxe-table'
 
 // ====== 数据 ======
 const ds = ref<DataSourceDesc[]>([])
@@ -136,6 +137,25 @@ const objectComment = ref<string>()
  * 表格或视图的字段元数据（如果当前对象是表格/视图）
  */
 const columns = ref<ColumnMeta[]>([])
+/**
+ * 表格或视图的真实数据（分页）
+ */
+const data = ref<Record<string, unknown>[]>([])
+/**
+ * 真实数据的总数据量
+ */
+const total = ref<number>(0)
+
+/**
+ * 计算表格列宽度
+ */
+const getColumnWidth = (col: ColumnMeta) => {
+  if (col.columnType.includes('int')) return 80
+  if (col.columnType.includes('time')) return 160
+  if (col.columnLength <= 32) return 120
+  if (col.columnLength <= 64) return 160
+  return 220
+}
 
 /**
  * 打开数据源弹出框
@@ -147,7 +167,7 @@ const openDsDialog = async (item: DataSourceDesc) => {
   schemas.value = await dbApi.schemas(item.name)
 
   // 产生树形结构数据
-  dbObjTree.value = schemas.value.map(schema => {
+  dbObjTree.value = schemas.value.map((schema) => {
     return {
       id: schema,
       name: schema,
@@ -165,7 +185,6 @@ const openDsDialog = async (item: DataSourceDesc) => {
  * 渲染图标逻辑
  */
 const renderPrefix = ({ option }: { option: TreeOption; checked: boolean; selected: boolean }) => {
-
   // 判断是否展开确认icon颜色
   const isExpanded = expandedKeys.value.includes(option.id as string)
   const iconColor = isExpanded ? '#1890ff' : undefined
@@ -189,7 +208,7 @@ const renderPrefix = ({ option }: { option: TreeOption; checked: boolean; select
   }
 
   const iconRender = renderAsyncIcon(iconName, {
-    color: iconColor,
+    color: iconColor
   })
 
   return iconRender ? iconRender() : null
@@ -199,19 +218,47 @@ const renderPrefix = ({ option }: { option: TreeOption; checked: boolean; select
  * 设置每个节点的属性
  */
 const nodeProps = ({ option }: { option: TreeOption }) => {
-
   return {
     // 如果node处于展开状态
     class: expandedKeys.value.includes(option.id as string) ? 'is-expanded' : '',
-    onClick: (e: Event) => {
+    onClick: async (e: Event) => {
       e.stopPropagation()
       if (option.type === 'table') {
+        columns.value = []
+        data.value = []
         objectName.value = option.name as string
         objectComment.value = option.comment as string
 
+        // table的列元数据
         const raw = option.raw as TableMeta
         columns.value = raw.columnMetas
-        console.log(columns.value)
+
+        // 拉取table真实数据
+        dbApi
+          .fetchData(
+            {
+              ds: option.ds as string,
+              schema: raw.schema,
+              name: raw.table
+            },
+            1,
+            300
+          )
+          .then((result) => {
+            // 拉取成功
+            data.value = result
+          })
+
+        // 拉取总数量
+        dbApi
+          .fetchCount({
+            ds: option.ds as string,
+            schema: raw.schema,
+            name: raw.table
+          })
+          .then((count) => {
+            total.value = count
+          })
       }
     }
   }
@@ -224,7 +271,7 @@ const handleLoad = async (node: TreeOption) => {
   console.log(node)
   // 获取schema下面的对象
   if (node.type === 'schema') {
-    node.children = objectTypes.map(item => {
+    node.children = objectTypes.map((item) => {
       return {
         id: node.id + '-' + item,
         name: item.slice(0, -4),
@@ -241,7 +288,7 @@ const handleLoad = async (node: TreeOption) => {
   // 获取表
   else if (node.type === 'tableObjs') {
     const tables: TableMeta[] = await dbApi.tables(node.ds as string, node.schema as string)
-    node.children = tables.map(item => {
+    node.children = tables.map((item) => {
       return {
         id: node.id + '-table-' + item.table,
         name: item.table,
@@ -259,7 +306,7 @@ const handleLoad = async (node: TreeOption) => {
   // 获取视图
   else if (node.type === 'viewObjs') {
     const views: ViewMeta[] = await dbApi.views(node.ds as string, node.schema as string)
-    node.children = views.map(item => {
+    node.children = views.map((item) => {
       return {
         id: node.id + '-view-' + item.viewName,
         name: item.viewName,
@@ -276,8 +323,11 @@ const handleLoad = async (node: TreeOption) => {
   }
   // 获取函数
   else if (node.type === 'functionObjs') {
-    const functions: FunctionMeta[] = await dbApi.functions(node.ds as string, node.schema as string)
-    node.children = functions.map(item => {
+    const functions: FunctionMeta[] = await dbApi.functions(
+      node.ds as string,
+      node.schema as string
+    )
+    node.children = functions.map((item) => {
       return {
         id: node.id + '-function-' + item.name,
         name: item.name,
@@ -294,8 +344,11 @@ const handleLoad = async (node: TreeOption) => {
   }
   // 获取存储过程
   else if (node.type === 'procedureObjs') {
-    const procedures: ProcedureMeta[] = await dbApi.procedures(node.ds as string, node.schema as string)
-    node.children = procedures.map(item => {
+    const procedures: ProcedureMeta[] = await dbApi.procedures(
+      node.ds as string,
+      node.schema as string
+    )
+    node.children = procedures.map((item) => {
       return {
         id: node.id + '-procedure-' + item.name,
         name: item.name,
@@ -312,8 +365,11 @@ const handleLoad = async (node: TreeOption) => {
   }
   // 获取序列
   else if (node.type === 'sequenceObjs') {
-    const sequences: SequenceMeta[] = await dbApi.sequences(node.ds as string, node.schema as string)
-    node.children = sequences.map(item => {
+    const sequences: SequenceMeta[] = await dbApi.sequences(
+      node.ds as string,
+      node.schema as string
+    )
+    node.children = sequences.map((item) => {
       return {
         id: node.id + '-sequence-' + item.name,
         name: item.name,
@@ -332,19 +388,14 @@ const handleLoad = async (node: TreeOption) => {
   node.children = []
 }
 
+const xTable = ref<VxeTableInstance>()
 /**
- * 表格字段信息
+ * 表格编辑
  */
-const tableColumns = computed(() => {
-  return columns.value.map(item => {
-    return {
-      title: item.columnName,
-      key: item.columnName,
-      align: 'center',
-      ellipsis: true
-    }
-  })
-})
+const handleEditClosed = async ({row}) => {
+  console.log(row)
+}
+
 
 onMounted(async () => {
   loading.value = true
@@ -419,7 +470,7 @@ onMounted(async () => {
       :title="currentDs?.name"
       draggable
     >
-      <div flex >
+      <div flex>
         <!-- 元数据菜单 -->
         <div h="[80vh]" min-h="500px">
           <div class="obj-tree" w="300px">
@@ -447,31 +498,56 @@ onMounted(async () => {
         <div class="mx-4 w-px bg-gray-200"></div>
 
         <!-- 数据区域 -->
-        <n-card v-if="objectName" :title="objectName" size="huge" flex-1>
-          {{ objectComment }}
+        <n-card v-if="objectName" :title="objectName" size="huge" w="[70%]">
+          {{ objectComment }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 总数据量：{{ total }}
+
           <n-tabs type="line" animated>
             <n-tab-pane name="data" tab="表数据">
-              <n-data-table
-                remote
-                :columns="tableColumns"
-                :data="[]"
-                :bordered="true"
-                :single-line="false"
-              />
+              <n-scrollbar x-scrollable>
+                <vxe-table
+                  ref="xTable"
+                  border
+                  show-overflow="title"
+                  show-header-overflow="title"
+                  keep-source
+                  height="500"
+                  :column-config="{ resizable: true }"
+                  :edit-config="{
+                      trigger: 'click',
+                      mode: 'cell',
+                      showStatus: true,
+                      showIcon: false,
+                    }"
+                  :data="data"
+                  @edit-closed="handleEditClosed"
+                >
+                  <!-- 数据库字段，动态渲染 -->
+                  <vxe-column
+                    ref="xTable"
+                    v-for="column in columns"
+                    align="center"
+                    :key="column.columnName"
+                    :field="column.columnName"
+                    :title="column.columnName"
+                    :min-width="getColumnWidth(column)"
+                    :edit-render="{ name: 'input' }"
+                  >
+                    <template #header>
+                      <div class="db-header" :title="undefined">
+                        <div class="name">{{ column.columnName }}</div>
+                        <div font-400>{{ column.columnType }}({{ column.columnLength }})</div>
+                      </div>
+                    </template>
+                  </vxe-column>
+                </vxe-table>
+              </n-scrollbar>
             </n-tab-pane>
-            <n-tab-pane name="column" tab="表字段">
-              列字段
-            </n-tab-pane>
-            <n-tab-pane name="index" tab="索引">
-              索引
-            </n-tab-pane>
-            <n-tab-pane name="cfq" tab="触发器">
-              触发器
-            </n-tab-pane>
+            <n-tab-pane name="column" tab="表字段"> 列字段</n-tab-pane>
+            <n-tab-pane name="index" tab="索引"> 索引</n-tab-pane>
+            <n-tab-pane name="cfq" tab="触发器"> 触发器</n-tab-pane>
           </n-tabs>
         </n-card>
       </div>
-
     </n-modal>
   </div>
 </template>

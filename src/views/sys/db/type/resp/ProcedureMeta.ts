@@ -5,30 +5,28 @@ import type BaseResp from '@/types/resp/BaseResp.ts'
  * 存储过程元数据
  */
 export default interface ProcedureMeta extends BaseResp {
-
   /**
    * 所属数据库
    */
-  catalog: string;
+  catalog: string
 
   /**
    * 所属模式
    */
-  schema: string;
+  schema: string
 
   /**
    * 存储过程名称
    */
-  name: string;
+  name: string
 
   /**
    * 存储过程注释
    */
-  comment: string;
+  comment: string
 
   /**
    * 存储过程类型
    */
-  procedureType: number;
-
+  procedureType: number
 }

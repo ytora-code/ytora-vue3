@@ -5,30 +5,28 @@ import type BaseResp from '@/types/resp/BaseResp.ts'
  * 函数元数据
  */
 export default interface FunctionMeta extends BaseResp {
-
   /**
    * 所属数据库
    */
-  catalog: string;
+  catalog: string
 
   /**
    * 所属模式
    */
-  schema: string;
+  schema: string
 
   /**
    * 函数名称
    */
-  name: string;
+  name: string
 
   /**
    * 函数注释
    */
-  comment: string;
+  comment: string
 
   /**
    * 函数返回结果
    */
-  returnType: number;
-
+  returnType: number
 }

@@ -5,25 +5,23 @@ import type BaseResp from '@/types/resp/BaseResp.ts'
  * 序列元数据
  */
 export default interface SequenceMeta extends BaseResp {
-
   /**
    * 所属数据库
    */
-  catalog: string;
+  catalog: string
 
   /**
    * 所属模式
    */
-  schema: string;
+  schema: string
 
   /**
    * 序列名称
    */
-  name: string;
+  name: string
 
   /**
    * 序列注释
    */
-  comment: string;
-
+  comment: string
 }

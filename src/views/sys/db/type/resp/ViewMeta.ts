@@ -5,25 +5,23 @@ import type BaseResp from '@/types/resp/BaseResp.ts'
  * 视图元数据
  */
 export default interface ViewMeta extends BaseResp {
-
   /**
    * 所属数据库
    */
-  catalog: string;
+  catalog: string
 
   /**
    * 所属模式
    */
-  schema: string;
+  schema: string
 
   /**
    * 视图名称
    */
-  viewName: string;
+  viewName: string
 
   /**
    * 视图注释
    */
-  comment: string;
-
+  comment: string
 }

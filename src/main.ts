@@ -1,16 +1,20 @@
 import 'virtual:uno.css'
 import '@/assets/reset.css'
+import 'vxe-table/lib/style.css'
 import App from './App.vue'
 import router from './router'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import VXETable from 'vxe-table'
 
-// 创建App
+// 创建 App
 const app = createApp(App)
 // 注册路由
 app.use(router)
-// 注册pinia
+// 注册 PINIA
 app.use(createPinia())
+// 注册 VTABLE 核心组件
+app.use(VXETable)
 
 app.mount('#app')
 

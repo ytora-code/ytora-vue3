@@ -37,7 +37,7 @@ export function renderAsyncIcon(
     return undefined
   }
 
-  // 3. 定义异步组件 (修复编译报错的核心逻辑)
+  // 3. 定义异步组件
   const AsyncIcon = defineAsyncComponent({
     loader: async () => {
       const mod = await loader()

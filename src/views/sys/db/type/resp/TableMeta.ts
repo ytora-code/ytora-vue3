@@ -6,26 +6,25 @@ import type ColumnMeta from '@/views/sys/db/type/resp/ColumnMeta.ts'
  * 表元数据
  */
 export default interface TableMeta extends BaseResp {
-
   /**
    * 所属数据库
    */
-  catalog: string;
+  catalog: string
 
   /**
    * 所属模式
    */
-  schema: string;
+  schema: string
 
   /**
    * 表名称
    */
-  table: string;
+  table: string
 
   /**
    * 表注释
    */
-  comment: string;
+  comment: string
 
   /**
    * 表字段
