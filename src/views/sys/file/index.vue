@@ -709,6 +709,7 @@ onMounted(async () => {
       <div w="[300px]" flex-shrink-0 @contextmenu="handleBlankContextMenu">
         <n-scrollbar style="max-height: 80vh">
           <n-tree
+            show-line
             block-line
             expand-on-click
             v-model:expanded-keys="fileTreeStore.expandedKeys"

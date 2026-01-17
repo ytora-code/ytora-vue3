@@ -1,17 +1,26 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { NAvatar, NCard, NSpin, NTag, NText, NThing, NTooltip } from 'naive-ui'
+import { NAvatar, NCard, NSpin, NTag, NText, NThing, NTree, type TreeOption } from 'naive-ui'
 import { dbApi } from './api/DbApi'
 import type DataSourceDesc from '@/views/sys/db/type/resp/DataSourceDesc'
+import type DbObjTree from '@/views/sys/db/type/resp/DbObjTree.ts'
+import { renderAsyncIcon } from '@/utils/icon.ts'
+import type TableMeta from '@/views/sys/db/type/resp/TableMeta.ts'
+import type ViewMeta from '@/views/sys/db/type/resp/ViewMeta.ts'
+import type FunctionMeta from '@/views/sys/db/type/resp/FunctionMeta.ts'
+import type ProcedureMeta from '@/views/sys/db/type/resp/ProcedureMeta.ts'
+import type SequenceMeta from '@/views/sys/db/type/resp/SequenceMeta.ts'
+import type ColumnMeta from '@/views/sys/db/type/resp/ColumnMeta.ts'
 
 // ====== 数据 ======
 const ds = ref<DataSourceDesc[]>([])
 const loading = ref(false)
+const dbObjTree = ref<DbObjTree[]>([])
 
 // ====== 本地图标加载（Vite）======
 const iconModules = import.meta.glob('@/assets/db-icons/*.svg', {
   eager: true,
-  import: 'default',
+  import: 'default'
 }) as Record<string, string>
 
 function iconByName(name: string) {
@@ -26,7 +35,7 @@ const iconMap = {
   mariadb: iconByName('mariadb'),
   oracle: iconByName('oracle'),
   sqlite: iconByName('sqlite'),
-  sqlserver: iconByName('sqlserver'),
+  sqlserver: iconByName('sqlserver')
 } as const
 
 // ====== 驱动类名 -> dbKey ======
@@ -94,18 +103,248 @@ const viewList = computed(() => {
       _dbName: prettyDbName(dbKey),
       _icon: iconSrc,
       _pool: shortClassName(item.dsType),
-      _driver: shortClassName(item.dbType),
+      _driver: shortClassName(item.dbType)
     }
   })
 })
 
+// ============================= 数据源内部 ==============================>
+
 const currentDs = ref<DataSourceDesc>()
 const dsDialogShowStatus = ref(false)
+const schemas = ref<string[]>()
+/**
+ * 展开节点
+ */
+const expandedKeys = ref<Array<string | number>>([])
+/**
+ * 选中节点
+ */
+const selectedKeys = ref<Array<string | number>>([])
 
-const openDsDialog = (item: DataSourceDesc) => {
+const objectTypes = ['tableObjs', 'viewObjs', 'functionObjs', 'procedureObjs', 'sequenceObjs']
+
+/**
+ * 当前对象名称
+ */
+const objectName = ref<string>()
+/**
+ * 当前对象注释
+ */
+const objectComment = ref<string>()
+/**
+ * 表格或视图的字段元数据（如果当前对象是表格/视图）
+ */
+const columns = ref<ColumnMeta[]>([])
+
+/**
+ * 打开数据源弹出框
+ */
+const openDsDialog = async (item: DataSourceDesc) => {
   currentDs.value = item
   dsDialogShowStatus.value = true
+  // 获取该数据源下所有的schema
+  schemas.value = await dbApi.schemas(item.name)
+
+  // 产生树形结构数据
+  dbObjTree.value = schemas.value.map(schema => {
+    return {
+      id: schema,
+      name: schema,
+      ds: item.name,
+      schema: schema,
+      type: 'schema',
+      isLeaf: false,
+      children: undefined,
+      raw: schema
+    }
+  })
 }
+
+/**
+ * 渲染图标逻辑
+ */
+const renderPrefix = ({ option }: { option: TreeOption; checked: boolean; selected: boolean }) => {
+
+  // 判断是否展开确认icon颜色
+  const isExpanded = expandedKeys.value.includes(option.id as string)
+  const iconColor = isExpanded ? '#1890ff' : undefined
+
+  const nodeType = option.type
+  let iconName: string
+  if (nodeType === 'schema') {
+    iconName = 'LayersOutline'
+  } else if (nodeType === 'tableObjs') {
+    iconName = 'GridOutline'
+  } else if (nodeType === 'viewObjs') {
+    iconName = 'EyeOutline'
+  } else if (nodeType === 'functionObjs') {
+    iconName = 'CodeSlashOutline'
+  } else if (nodeType === 'procedureObjs') {
+    iconName = 'PlayCircleOutline'
+  } else if (nodeType === 'sequenceObjs') {
+    iconName = 'TrendingUpOutline'
+  } else {
+    iconName = 'FolderOutline'
+  }
+
+  const iconRender = renderAsyncIcon(iconName, {
+    color: iconColor,
+  })
+
+  return iconRender ? iconRender() : null
+}
+
+/**
+ * 设置每个节点的属性
+ */
+const nodeProps = ({ option }: { option: TreeOption }) => {
+
+  return {
+    // 如果node处于展开状态
+    class: expandedKeys.value.includes(option.id as string) ? 'is-expanded' : '',
+    onClick: (e: Event) => {
+      e.stopPropagation()
+      if (option.type === 'table') {
+        objectName.value = option.name as string
+        objectComment.value = option.comment as string
+
+        const raw = option.raw as TableMeta
+        columns.value = raw.columnMetas
+        console.log(columns.value)
+      }
+    }
+  }
+}
+
+/**
+ * 懒加载
+ */
+const handleLoad = async (node: TreeOption) => {
+  console.log(node)
+  // 获取schema下面的对象
+  if (node.type === 'schema') {
+    node.children = objectTypes.map(item => {
+      return {
+        id: node.id + '-' + item,
+        name: item.slice(0, -4),
+        ds: node.ds,
+        schema: node.name,
+        type: item,
+        isLeaf: false,
+        children: undefined,
+        raw: node.name
+      }
+    })
+    return
+  }
+  // 获取表
+  else if (node.type === 'tableObjs') {
+    const tables: TableMeta[] = await dbApi.tables(node.ds as string, node.schema as string)
+    node.children = tables.map(item => {
+      return {
+        id: node.id + '-table-' + item.table,
+        name: item.table,
+        ds: node.ds,
+        schema: item.schema,
+        type: 'table',
+        comment: item.comment,
+        isLeaf: true,
+        children: [],
+        raw: item
+      }
+    })
+    return
+  }
+  // 获取视图
+  else if (node.type === 'viewObjs') {
+    const views: ViewMeta[] = await dbApi.views(node.ds as string, node.schema as string)
+    node.children = views.map(item => {
+      return {
+        id: node.id + '-view-' + item.viewName,
+        name: item.viewName,
+        ds: node.ds,
+        schema: item.schema,
+        type: 'view',
+        comment: item.comment,
+        isLeaf: true,
+        children: [],
+        raw: item
+      }
+    })
+    return
+  }
+  // 获取函数
+  else if (node.type === 'functionObjs') {
+    const functions: FunctionMeta[] = await dbApi.functions(node.ds as string, node.schema as string)
+    node.children = functions.map(item => {
+      return {
+        id: node.id + '-function-' + item.name,
+        name: item.name,
+        ds: node.ds,
+        schema: item.schema,
+        type: 'function',
+        comment: item.comment,
+        isLeaf: true,
+        children: [],
+        raw: item
+      }
+    })
+    return
+  }
+  // 获取存储过程
+  else if (node.type === 'procedureObjs') {
+    const procedures: ProcedureMeta[] = await dbApi.procedures(node.ds as string, node.schema as string)
+    node.children = procedures.map(item => {
+      return {
+        id: node.id + '-procedure-' + item.name,
+        name: item.name,
+        ds: node.ds,
+        schema: item.schema,
+        type: 'procedure',
+        comment: item.comment,
+        isLeaf: true,
+        children: [],
+        raw: item
+      }
+    })
+    return
+  }
+  // 获取序列
+  else if (node.type === 'sequenceObjs') {
+    const sequences: SequenceMeta[] = await dbApi.sequences(node.ds as string, node.schema as string)
+    node.children = sequences.map(item => {
+      return {
+        id: node.id + '-sequence-' + item.name,
+        name: item.name,
+        ds: node.ds,
+        schema: item.schema,
+        type: 'sequence',
+        comment: item.comment,
+        isLeaf: true,
+        children: [],
+        raw: item
+      }
+    })
+    return
+  }
+  // 其他对象
+  node.children = []
+}
+
+/**
+ * 表格字段信息
+ */
+const tableColumns = computed(() => {
+  return columns.value.map(item => {
+    return {
+      title: item.columnName,
+      key: item.columnName,
+      align: 'center',
+      ellipsis: true
+    }
+  })
+})
 
 onMounted(async () => {
   loading.value = true
@@ -180,11 +419,66 @@ onMounted(async () => {
       :title="currentDs?.name"
       draggable
     >
-      <div h="[80vh]" min-h="500px">
+      <div flex >
+        <!-- 元数据菜单 -->
+        <div h="[80vh]" min-h="500px">
+          <div class="obj-tree" w="300px">
+            <n-scrollbar style="max-height: 80vh">
+              <n-tree
+                :data="dbObjTree"
+                v-model:expanded-keys="expandedKeys"
+                v-model:selected-keys="selectedKeys"
+                expand-on-click
+                block-line
+                show-line
+                selectable
+                key-field="id"
+                label-field="name"
+                children-field="children"
+                :render-prefix="renderPrefix"
+                :on-load="handleLoad"
+                :node-props="nodeProps"
+              />
+            </n-scrollbar>
+          </div>
+        </div>
 
+        <!-- 分割线 -->
+        <div class="mx-4 w-px bg-gray-200"></div>
+
+        <!-- 数据区域 -->
+        <n-card v-if="objectName" :title="objectName" size="huge" flex-1>
+          {{ objectComment }}
+          <n-tabs type="line" animated>
+            <n-tab-pane name="data" tab="表数据">
+              <n-data-table
+                remote
+                :columns="tableColumns"
+                :data="[]"
+                :bordered="true"
+                :single-line="false"
+              />
+            </n-tab-pane>
+            <n-tab-pane name="column" tab="表字段">
+              列字段
+            </n-tab-pane>
+            <n-tab-pane name="index" tab="索引">
+              索引
+            </n-tab-pane>
+            <n-tab-pane name="cfq" tab="触发器">
+              触发器
+            </n-tab-pane>
+          </n-tabs>
+        </n-card>
       </div>
+
     </n-modal>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+:deep(.n-tree-node.is-expanded .n-tree-node-content__text) {
+  color: #1890ff;
+  font-weight: 600;
+}
+</style>

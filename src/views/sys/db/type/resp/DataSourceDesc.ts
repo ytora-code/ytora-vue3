@@ -8,7 +8,15 @@ export default interface DataSourceDesc extends BaseResp {
   /**
    * 数据源名称
    */
-  name?: string
+  name: string
+  /**
+   * catalog
+   */
+  catalog: string
+  /**
+   * schema
+   */
+  schema: string
   /**
    * 数据源描述
    */
