@@ -1,4 +1,5 @@
 import type BaseResp from '@/types/resp/BaseResp.ts'
+import type ColumnMeta from '@/views/sys/db/type/resp/ColumnMeta.ts'
 
 /**
  * created by YT on 2026/1/17 下午6:23
@@ -18,10 +19,25 @@ export default interface ViewMeta extends BaseResp {
   /**
    * 视图名称
    */
-  viewName: string
+  name: string
 
   /**
    * 视图注释
    */
   comment: string
+
+  /**
+   * 视图字段
+   */
+  columnMetas: ColumnMeta[]
+
+  /**
+   * 视图没有主键
+   */
+  primaryKeys: undefined
+
+  /**
+   * 视图没有索引
+   */
+  indexMetas: undefined
 }
