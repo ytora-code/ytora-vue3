@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+*.local
+
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+coverage
+*.log
+.vite-dev*.log
+
+ytora

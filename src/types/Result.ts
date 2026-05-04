@@ -1,0 +1,24 @@
+/**
+ * 后端返回数据的通用数据结构
+ */
+export default interface Result<T = unknown> {
+  /**
+   * 此次请求的状态码
+   */
+  code: number
+  /**
+   * 此次请求是否成功
+   */
+  success: boolean
+  /**
+   * 此次请求的提示信息
+   */
+  message: string
+  /**耗时
+   */
+  time: number
+  /**
+   * 此次请求真正的返回数据
+   */
+  data: T
+}

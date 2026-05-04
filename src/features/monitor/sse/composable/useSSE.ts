@@ -1,0 +1,223 @@
+import { ref } from 'vue'
+
+type EventHandler = (event: MessageEvent<string>) => void
+type UnsubscribeFunction = () => void
+
+let globalEventSource: EventSource | null = null
+let connectionCount = 0
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+
+const eventHandlers = new Map<string, Set<EventHandler>>()
+const domEventListeners = new Map<string, EventListener>()
+const connectedRefs = new Set<ReturnType<typeof ref<boolean>>>()
+
+const RECONNECT_DELAY = 5000
+
+/**
+ * SSE连接地址
+ */
+const resolveSseUrl = (): string => {
+  const baseUrl = import.meta.env.VITE_REQUEST_BASE_URL || '/'
+  return `${baseUrl}sse/connect`
+}
+
+const syncConnectedState = (value: boolean) => {
+  connectedRefs.forEach((state) => {
+    state.value = value
+  })
+}
+
+const clearReconnectTimer = () => {
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer)
+    reconnectTimer = null
+  }
+}
+
+const dispatchEvent = (eventName: string, event: MessageEvent<string>) => {
+  const handlers = eventHandlers.get(eventName)
+  if (!handlers) {
+    return
+  }
+
+  handlers.forEach((handler) => {
+    try {
+      handler(event)
+    } catch (error) {
+      console.error(`处理事件 ${eventName} 失败:`, error)
+    }
+  })
+}
+
+const bindEventListener = (eventName: string) => {
+  if (!globalEventSource || domEventListeners.has(eventName)) {
+    return
+  }
+
+  const listener: EventListener = (event) => {
+    dispatchEvent(eventName, event as MessageEvent<string>)
+  }
+
+  domEventListeners.set(eventName, listener)
+  globalEventSource.addEventListener(eventName, listener)
+}
+
+const rebindEventListeners = () => {
+  Array.from(eventHandlers.keys()).forEach((eventName) => {
+    bindEventListener(eventName)
+  })
+}
+
+const createEventSource = () => {
+  clearReconnectTimer()
+
+  globalEventSource = new EventSource(resolveSseUrl(), {
+    withCredentials: true,
+  })
+
+  globalEventSource.onopen = () => {
+    syncConnectedState(true)
+    rebindEventListeners()
+  }
+
+  globalEventSource.onerror = () => {
+    syncConnectedState(false)
+
+    if (globalEventSource) {
+      globalEventSource.close()
+      globalEventSource = null
+      domEventListeners.clear()
+    }
+
+    if (connectionCount <= 0 || reconnectTimer) {
+      return
+    }
+
+    reconnectTimer = setTimeout(() => {
+      reconnectTimer = null
+      if (connectionCount > 0) {
+        createEventSource()
+      }
+    }, RECONNECT_DELAY)
+  }
+}
+
+const resetGlobalState = () => {
+  clearReconnectTimer()
+
+  if (globalEventSource) {
+    globalEventSource.close()
+    globalEventSource = null
+  }
+
+  eventHandlers.clear()
+  domEventListeners.clear()
+  syncConnectedState(false)
+}
+
+export const parseSSEData = <T>(event: MessageEvent<string>): T => {
+  return JSON.parse(event.data) as T
+}
+
+export function useSSE() {
+  const isConnected = ref(false)
+  connectedRefs.add(isConnected)
+
+  /**
+   * 连接SSE接口
+   */
+  const connect = (): void => {
+    connectionCount += 1
+
+    if (globalEventSource) {
+      syncConnectedState(globalEventSource.readyState === EventSource.OPEN)
+      return
+    }
+
+    createEventSource()
+  }
+
+  /**
+   * 断开SSE连接
+   */
+  const disconnect = (): void => {
+    connectionCount = Math.max(0, connectionCount - 1)
+
+    if (connectionCount === 0) {
+      resetGlobalState()
+    }
+
+    connectedRefs.delete(isConnected)
+  }
+
+  /**
+   * 监听某个 SSE 事件
+   *
+   * @param eventName 事件名
+   * @param handler 事件发生时的回调函数，回调函数参数是原始的 MessageEvent
+   */
+  const on = (eventName: string, handler: EventHandler): UnsubscribeFunction => {
+    if (!eventHandlers.has(eventName)) {
+      eventHandlers.set(eventName, new Set<EventHandler>())
+    }
+
+    eventHandlers.get(eventName)?.add(handler)
+
+    if (globalEventSource) {
+      bindEventListener(eventName)
+    }
+
+    return (): void => {
+      off(eventName, handler)
+    }
+  }
+
+  const off = (eventName: string, handler: EventHandler): void => {
+    const handlers = eventHandlers.get(eventName)
+    if (!handlers) {
+      return
+    }
+
+    handlers.delete(handler)
+    if (handlers.size > 0) {
+      return
+    }
+
+    eventHandlers.delete(eventName)
+
+    const listener = domEventListeners.get(eventName)
+    if (listener && globalEventSource) {
+      globalEventSource.removeEventListener(eventName, listener)
+    }
+    domEventListeners.delete(eventName)
+  }
+
+  /**
+   * 业务注册自己感兴趣的事件
+   *
+   * <p>subscribe函数返回UnsubscribeFunction，表示反注册函数，调用UnsubscribeFunction，可以取消注册<p/>
+   * <p>基于 {@link on} 函数实现<p/>
+   *
+   * @param eventName 事件名称
+   * @param handler 事件发生时的回调函数，回调函数参数是解析后的业务数据 payload
+   *
+   * @return 反注册函数
+   */
+  const subscribe = <T>(
+    eventName: string,
+    handler: (payload: T, event: MessageEvent<string>) => void,
+  ): UnsubscribeFunction => {
+    return on(eventName, (event) => {
+      handler(parseSSEData<T>(event), event)
+    })
+  }
+
+  return {
+    isConnected,
+    connect,
+    disconnect,
+    on,
+    off,
+    subscribe,
+  }
+}
