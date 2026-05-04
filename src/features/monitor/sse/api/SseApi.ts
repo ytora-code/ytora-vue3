@@ -25,14 +25,14 @@ class SseApi extends BaseApi {
    * 启动消息推送事件
    */
   startEvent = (eventName: string) => {
-    return this.get<string, { eventName: string }>('startEvent', { eventName })
+    return this.get<string, { eventName: string }>('startEvent', {eventName})
   }
 
   /**
    * 停止消息推送事件
    */
   stopEvent = (eventName: string) => {
-    return this.get<string, { eventName: string }>('stopEvent', { eventName })
+    return this.get<string, { eventName: string }>('stopEvent', {eventName})
   }
 
   /**
@@ -42,7 +42,7 @@ class SseApi extends BaseApi {
     if (!ids || ids.length === 0) {
       return Promise.reject('待删除数据的id数组不能为空')
     }
-    return this.delete<unknown, { ids: string }>('deleteByIds', { ids: ids.join(',') })
+    return this.delete<unknown, { ids: string }>('deleteByIds', {ids: ids.join(',')})
   }
 
   /**
@@ -51,6 +51,21 @@ class SseApi extends BaseApi {
   listClient = () => {
     return this.get<AppSseMetricsData>('listClient')
   }
+
+  /**
+   * SSE客户端订阅事件
+   */
+  subscribe = (eventName: string) => {
+    return this.get<unknown, { eventName: string }>('subscribe', {eventName})
+  }
+
+  /**
+   * SSE客户端取消事件订阅
+   */
+  unSubscribe = (eventName: string) => {
+    return this.get<unknown, { eventName: string }>('unSubscribe', {eventName})
+  }
+
 }
 
 export default new SseApi()

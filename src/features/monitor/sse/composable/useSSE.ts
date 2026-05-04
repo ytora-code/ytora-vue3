@@ -1,4 +1,5 @@
-import { ref } from 'vue'
+import {ref} from 'vue'
+import sseApi from "../api/SseApi";
 
 type EventHandler = (event: MessageEvent<string>) => void
 type UnsubscribeFunction = () => void
@@ -167,6 +168,10 @@ export function useSSE() {
       bindEventListener(eventName)
     }
 
+    // 向后端发起订阅
+    sseApi.subscribe(eventName).then(() => {
+      console.log(`订阅${eventName}成功`)
+    })
     return (): void => {
       off(eventName, handler)
     }
@@ -190,6 +195,11 @@ export function useSSE() {
       globalEventSource.removeEventListener(eventName, listener)
     }
     domEventListeners.delete(eventName)
+
+    // 向后端取消订阅
+    sseApi.unSubscribe(eventName).then(() => {
+      console.log(`取消订阅${eventName}成功`)
+    })
   }
 
   /**
