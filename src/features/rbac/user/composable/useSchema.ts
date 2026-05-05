@@ -163,11 +163,11 @@ const useFormSchema = () => {
    * 新增或编辑表单的校验规则
    */
   const drawerRules: FormRules = {
-    userName: [{required: true, message: '请输入用户名称', trigger: ['input', 'blur']}],
-    realName: [{required: true, message: '请输入真实名称', trigger: ['input', 'blur']}],
-    phone: [{required: true, message: '请输入电话号码', trigger: ['input', 'blur']}],
+    userName: [{ required: true, message: '请输入用户名称', trigger: ['input', 'blur'] }],
+    realName: [{ required: true, message: '请输入真实名称', trigger: ['input', 'blur'] }],
+    phone: [{ required: true, message: '请输入电话号码', trigger: ['input', 'blur'] }],
     status: [
-      {required: true, type: 'number', message: '请选择状态', trigger: ['change', 'blur']},
+      { required: true, type: 'number', message: '请选择状态', trigger: ['change', 'blur'] },
     ],
   }
 
@@ -175,7 +175,7 @@ const useFormSchema = () => {
    * 数据表格的列结构
    */
   const tableSchemas: DynamicTableSchema<SysUserData>[] = [
-    {type: 'selection', key: 'selection', width: 48, fixed: 'left'},
+    { type: 'selection', key: 'selection', width: 48, fixed: 'left' },
     {
       title: '头像',
       key: 'avatar',
@@ -185,29 +185,29 @@ const useFormSchema = () => {
       imageWidth: 40,
       imageHeight: 40,
     },
-    {title: '账号', key: 'userName', dataKey: 'userName', width: 140},
-    {title: '姓名', key: 'realName', dataKey: 'realName', width: 140},
-    {title: '主部门', key: 'departCode', dataKey: 'departCode_DICT', width: 140},
-    {title: '电话', key: 'phone', dataKey: 'phone', width: 140},
-    {title: '邮箱', key: 'email', dataKey: 'email', width: 140},
-    {title: '生日', key: 'birthday', dataKey: 'birthday', type: 'date', width: 120},
-    {title: '证件号', key: 'idCard', dataKey: 'idCard', width: 120},
+    { title: '账号', key: 'userName', dataKey: 'userName', width: 140 },
+    { title: '姓名', key: 'realName', dataKey: 'realName', width: 140 },
+    { title: '主部门', key: 'departCode', dataKey: 'departCode_DICT', width: 140 },
+    { title: '电话', key: 'phone', dataKey: 'phone', width: 140 },
+    { title: '邮箱', key: 'email', dataKey: 'email', width: 140 },
+    { title: '生日', key: 'birthday', dataKey: 'birthday', type: 'date', width: 120 },
+    { title: '证件号', key: 'idCard', dataKey: 'idCard', width: 120 },
     {
       title: '状态',
       key: 'status',
       dataKey: 'status',
       width: 120,
-      render: ({row}) => {
+      render: ({ row }) => {
         const enabled = row.status === 1
         return h(
           NTag,
-          {type: enabled ? 'success' : 'error'},
-          {default: () => (enabled ? '启用' : '停用')},
+          { type: enabled ? 'success' : 'error' },
+          { default: () => (enabled ? '启用' : '停用') },
         )
       },
     },
-    {title: '备注', key: 'remark', dataKey: 'remark', width: 200},
-    {title: '操作', key: 'action', type: 'slot', width: 280, fixed: 'right'},
+    { title: '备注', key: 'remark', dataKey: 'remark', width: 200 },
+    { title: '操作', key: 'action', type: 'slot', width: 280, fixed: 'right' },
   ]
 
   return {

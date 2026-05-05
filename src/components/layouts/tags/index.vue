@@ -2,7 +2,7 @@
 import type { DropdownOption } from 'naive-ui'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTabsStore, type VisitedTab } from '@/stores/tabsStore'
+import { useTabsStore, type VisitedTab } from '@/stores/useTabsStore'
 
 const route = useRoute()
 const router = useRouter()

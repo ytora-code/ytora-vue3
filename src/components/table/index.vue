@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="TRow extends TableRowData = TableRowData">
-import { computed, h, ref } from 'vue'
+import { computed, h, ref, shallowRef, watch } from 'vue'
 import type { Component } from 'vue'
 import {
   NDataTable,
@@ -14,7 +14,12 @@ import { useTableSchema } from './composable/useTableSchema'
 import type DynamicTableSchema from './type/DynamicTableSchema'
 import type { DynamicTableSlots } from './type/DynamicTableSlots'
 import type ResolvedDynamicTableSchema from './type/ResolvedDynamicTableSchema'
+import type { DynamicTableColumnType } from './type/DynamicTableSchema'
 import type { TableRowData, TableRowKeyField } from './type/TableRenderContext'
+import useTableStore from '@/stores/useTableStore'
+import type SysTableSchemaData from '@/features/rbac/permission/type/SysTableSchemaData'
+
+const tableStore = useTableStore()
 
 type TableSize = 'small' | 'medium' | 'large'
 type RowKeyResolver = TableRowKeyField<TRow> | ((row: TRow) => DataTableRowKey)
@@ -23,6 +28,7 @@ const props = withDefaults(
   defineProps<{
     data?: TRow[]
     schemas?: DynamicTableSchema<TRow>[]
+    code?: string
     rowKey?: RowKeyResolver
     checkedRowKeys?: DataTableRowKey[]
     loading?: boolean
@@ -42,7 +48,8 @@ const props = withDefaults(
   }>(),
   {
     data: () => [],
-    schemas: () => [],
+    schemas: undefined,
+    code: undefined,
     rowKey: () => 'id' as RowKeyResolver,
     checkedRowKeys: () => [],
     loading: false,
@@ -96,9 +103,49 @@ const emit = defineEmits<{
 const slots = defineSlots<DynamicTableSlots<TRow>>()
 const tableRef = ref<{ scrollTo: (options?: unknown) => void } | null>(null)
 const isScrollbarVisible = ref(false)
+const remoteSchemas = shallowRef<DynamicTableSchema<TRow>[]>([])
+
+const parseBoolean = (value?: boolean | string | null) => {
+  if (typeof value === 'boolean') return value
+  if (value === 'true') return true
+  if (value === 'false') return false
+  return undefined
+}
+
+const normalizeRemoteSchema = (schema: SysTableSchemaData): DynamicTableSchema<TRow> => {
+  let attrConfig: Partial<DynamicTableSchema<TRow>> = {}
+
+  if (schema.attr) {
+    try {
+      attrConfig = JSON.parse(schema.attr) as Partial<DynamicTableSchema<TRow>>
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  return {
+    ...attrConfig,
+    key: schema.key || attrConfig.key,
+    dataKey: (schema.key || attrConfig.dataKey) as TableRowKeyField<TRow>,
+    title: schema.title ?? attrConfig.title,
+    type: (schema.type as DynamicTableColumnType | undefined) ?? attrConfig.type,
+    width: schema.width ?? attrConfig.width,
+    align: schema.align
+      ? (schema.align as DynamicTableSchema<TRow>['align'])
+      : attrConfig.align,
+    fixed: schema.fixed
+      ? (schema.fixed as DynamicTableSchema<TRow>['fixed'])
+      : attrConfig.fixed,
+    ellipsis: parseBoolean(schema.ellipsis) ?? attrConfig.ellipsis,
+  }
+}
+
+const mergedSchemas = computed<DynamicTableSchema<TRow>[]>(() =>
+  (props.schemas ?? remoteSchemas.value) as DynamicTableSchema<TRow>[],
+)
 
 const { resolvedSchemas } = useTableSchema({
-  schemas: () => props.schemas,
+  schemas: () => mergedSchemas.value,
 })
 
 const _minHeight = computed(() => {
@@ -310,6 +357,25 @@ const scrollTo = (options?: unknown) => {
 }
 
 const getCheckedRows = () => checkedRows.value
+
+watch(
+  () => [props.code, props.schemas] as const,
+  async ([code, schemas]) => {
+    if (schemas) {
+      remoteSchemas.value = []
+      return
+    }
+
+    if (!code) {
+      remoteSchemas.value = []
+      return
+    }
+
+    const nextSchemas = await tableStore.getTableSchema(code)
+    remoteSchemas.value = nextSchemas.map((item) => normalizeRemoteSchema(item))
+  },
+  { immediate: true },
+)
 
 defineExpose({
   scrollTo,

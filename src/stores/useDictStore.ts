@@ -5,7 +5,7 @@ import dictApi from '@/features/sys/dict/api/SysDictItemApi'
 /**
  * 字典缓存
  */
-export const useDictCache = defineStore('dictCache', () => {
+export const useDictStore = defineStore('dictStore', () => {
   /**
    * 字典缓存
    */

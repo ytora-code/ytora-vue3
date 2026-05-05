@@ -5,7 +5,7 @@ import { useUserStore } from '@/stores/userStore'
 const tabsStore = useTabsStore()
 import { ensureSessionLogoutSSE, teardownSessionLogoutSSE } from './useSessionLogoutSSE'
 import { removeCookie } from '@/utils/cookies'
-import { useTabsStore } from '@/stores/tabsStore'
+import { useTabsStore } from '@/stores/useTabsStore'
 
 export function useLoginCore() {
   const route = useRoute()

@@ -58,7 +58,7 @@ const handleAuthExpired = async (messageText?: string) => {
 
     const [{ useUserStore }, { useTabsStore }, { teardownSessionLogoutSSE }] = await Promise.all([
       import('@/stores/userStore'),
-      import('@/stores/tabsStore'),
+      import('@/stores/useTabsStore'),
       import('@/components/login/composable/useSessionLogoutSSE'),
     ])
 

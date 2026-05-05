@@ -1,5 +1,5 @@
-import {ref} from 'vue'
-import sseApi from "../api/SseApi";
+import { ref } from 'vue'
+import sseApi from '../api/SseApi'
 
 type EventHandler = (event: MessageEvent<string>) => void
 type UnsubscribeFunction = () => void

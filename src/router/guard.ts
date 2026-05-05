@@ -5,7 +5,7 @@ import type {
   Router,
 } from 'vue-router'
 import { getCookie } from '@/utils/cookies'
-import { useTabsStore } from '@/stores/tabsStore'
+import { useTabsStore } from '@/stores/useTabsStore'
 import { useUserStore } from '@/stores/userStore'
 
 /**

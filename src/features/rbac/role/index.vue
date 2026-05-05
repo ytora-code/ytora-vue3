@@ -69,9 +69,7 @@ const {
   closePermissionDrawer,
   collapseAllPermissions,
   currentRoleId,
-  currentRoleCode,
   currentPermission,
-  currentRoleRemark,
   expandAllPermissions,
   handlePermissionCheckedKeysUpdate,
   closePermissionDetail,
@@ -208,17 +206,6 @@ onMounted(async () => {
     <n-drawer v-model:show="permissionDrawerVisible" :width="520" placement="right">
       <n-drawer-content :title="permissionDrawerTitle" closable>
         <div class="permission-drawer">
-          <div class="permission-drawer__summary">
-            <div class="permission-drawer__summary-item">
-              <span class="permission-drawer__summary-label">角色编码</span>
-              <span class="permission-drawer__summary-value">{{ currentRoleCode }}</span>
-            </div>
-            <div class="permission-drawer__summary-item">
-              <span class="permission-drawer__summary-label">角色备注</span>
-              <span class="permission-drawer__summary-value">{{ currentRoleRemark }}</span>
-            </div>
-          </div>
-
           <div class="permission-drawer__toolbar">
             <div class="permission-drawer__toolbar-actions">
               <n-button size="small" @click="expandAllPermissions">展开全部</n-button>

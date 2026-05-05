@@ -1,6 +1,6 @@
 import type { Router } from 'vue-router'
 import { useSSE } from '@/features/monitor/sse/composable/useSSE'
-import { useTabsStore } from '@/stores/tabsStore'
+import { useTabsStore } from '@/stores/useTabsStore'
 import { useUserStore } from '@/stores/userStore'
 import { removeCookie } from '@/utils/cookies'
 

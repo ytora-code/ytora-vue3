@@ -8,6 +8,11 @@ export default interface SysPermissionData {
   id: string
 
   /**
+   * 创建时间
+   */
+  createTime?: Date
+
+  /**
    * 父资源id
    */
   pid?: string

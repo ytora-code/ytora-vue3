@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import type { SelectOption } from 'naive-ui'
-import { useDictCache } from '@/stores/useDictCache'
+import { useDictStore } from '@/stores/useDictStore'
 
-const dictCache = useDictCache()
+const dictCache = useDictStore()
 
 type ModelValue = string | number | Array<string | number> | null | undefined
 
