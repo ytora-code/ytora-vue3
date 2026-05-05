@@ -7,6 +7,11 @@ import type {
 import { getCookie } from '@/utils/cookies'
 import { useTabsStore } from '@/stores/useTabsStore'
 import { useUserStore } from '@/stores/userStore'
+import { useFavicon } from '@vueuse/core'
+import { ensureIconSvg } from '@/features/sys/icon/composable/icon'
+
+const favicon = useFavicon()
+let latestFaviconIcon = ''
 
 /**
  * 注册路由守卫
@@ -76,6 +81,19 @@ const setupRouterGuard = (router: Router) => {
     tabsStore.addVisitedTab(to as RouteLocationNormalizedLoaded)
     if (typeof to.meta.title === 'string') {
       document.title = to.meta.title
+    }
+    if (typeof to.meta.icon === 'string') {
+      latestFaviconIcon = to.meta.icon
+      const currentIcon = to.meta.icon
+      void ensureIconSvg(currentIcon, { color: '#1890ff' }).then((svg) => {
+        if (!svg) {
+          return
+        }
+        if (latestFaviconIcon !== currentIcon) {
+          return
+        }
+        favicon.value = `data:image/svg+xml,${encodeURIComponent(svg)}`
+      })
     }
     loadingBar.finish()
   })

@@ -1,6 +1,6 @@
-import {defineStore} from 'pinia'
-import tableSchemaApi from "@/features/rbac/permission/api/SysTableSchemaApi";
-import SysTableSchemaData from "@/features/rbac/permission/type/SysTableSchemaData";
+import { defineStore } from 'pinia'
+import tableSchemaApi from '@/features/rbac/permission/api/SysTableSchemaApi'
+import SysTableSchemaData from '@/features/rbac/permission/type/SysTableSchemaData'
 
 /**
  * table缓存
@@ -33,6 +33,5 @@ export default defineStore('tableStore', () => {
     return await tableSchemaApi.listSchemasByTableCode(dictCode)
   }
 
-
-  return {getTableSchema, listSchemas}
+  return { getTableSchema, listSchemas }
 })

@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
   const shouldOpen = env.VITE_OPEN === 'true'
   const publicPath = env.VITE_PUBLIC_PATH || '/'
   const isDevMode = mode === 'dev'
-  const isProdMode = mode === 'prod'
+  const _isProdMode = mode === 'prod'
 
   return {
     // Vite 自动加载 config/.env、config/.env.[mode] 等环境变量文件。
@@ -74,10 +74,10 @@ export default defineConfig(({ mode }) => {
       // Vue DevTools 只在本地开发模式启用，避免影响测试/生产构建。
       isDevMode ? vueDevTools() : null,
 
-      // 打包体积分析，只在生产模式启用。构建后会生成 stats.html 并自动打开。
-      isProdMode
+      // 打包体积分析，每次build都会产生。构建后会生成 stats.html 并自动打开。
+      !isDevMode
         ? visualizer({
-            filename: `dist/${appName}/stats.html`,
+            filename: `${appName}/stats.html`,
             open: true,
             gzipSize: true,
             brotliSize: true,

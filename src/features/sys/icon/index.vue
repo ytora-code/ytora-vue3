@@ -4,42 +4,53 @@ import { message } from '@/utils/naiveApi'
 
 import iconApi from './api/IconApi'
 import IconGrid, { type IconGridItem } from './IconGrid.vue'
-import { renderIcon } from '@/utils/icon'
+import { renderIcon } from '@/features/sys/icon/composable/icon'
 
 const loading = ref(false)
 const keyword = ref('')
+const pageNo = ref(1)
+const pageSize = ref(30)
+const total = ref(0)
 const iconList = ref<IconGridItem[]>([])
-const displayedIcons = ref<IconGridItem[]>([])
-
-const applyFilter = () => {
-  const normalizedKeyword = keyword.value.trim().toLowerCase()
-
-  if (!normalizedKeyword) {
-    displayedIcons.value = iconList.value
-    return
-  }
-
-  displayedIcons.value = iconList.value.filter((item) => {
-    return [item.name, item.code, item.type].some((value) =>
-      value?.toLowerCase().includes(normalizedKeyword),
-    )
-  })
-}
 
 const loadIcons = async () => {
   loading.value = true
   try {
-    const response = await iconApi.list()
-    const normalizedIcons = response.map((item) => ({
-      ...item,
-      renderer: renderIcon(item.code),
-    }))
+    const result = await iconApi.page({
+      pageNo: pageNo.value,
+      pageSize: pageSize.value,
+      key: keyword.value,
+    })
 
-    iconList.value = normalizedIcons
-    displayedIcons.value = normalizedIcons
+    pageNo.value = result.pageNo
+    pageSize.value = result.pageSize
+    total.value = result.total ?? 0
+    iconList.value = result.records
   } finally {
     loading.value = false
   }
+}
+
+const applyFilter = async () => {
+  pageNo.value = 1
+  await loadIcons()
+}
+
+const resetFilter = async () => {
+  keyword.value = ''
+  pageNo.value = 1
+  await loadIcons()
+}
+
+const pageChange = async (value: number) => {
+  pageNo.value = value
+  await loadIcons()
+}
+
+const pageSizeChange = async (value: number) => {
+  pageNo.value = 1
+  pageSize.value = value
+  await loadIcons()
 }
 
 const copyIconCode = async (code: string) => {
@@ -65,7 +76,8 @@ onMounted(() => {
         </div>
 
         <div class="icon-page__meta">
-          <n-tag type="info">{{ displayedIcons.length }} / {{ iconList.length }}</n-tag>
+          <n-tag type="info">{{ total }} 个图标</n-tag>
+          <n-tag type="default">{{ pageSize }} / 页</n-tag>
         </div>
       </div>
 
@@ -80,10 +92,24 @@ onMounted(() => {
         <n-button type="primary" :render-icon="renderIcon('i-lucide-search')" @click="applyFilter">
           查 询
         </n-button>
+        <n-button ghost @click="resetFilter">重 置</n-button>
       </div>
 
       <n-spin :show="loading">
-        <IconGrid :icons="displayedIcons" @copy="copyIconCode" />
+        <IconGrid :icons="iconList" @copy="copyIconCode" />
+        <div class="icon-page__pagination">
+          <n-pagination
+            :page="pageNo"
+            :page-size="pageSize"
+            :item-count="total"
+            :page-sizes="[20, 30, 60]"
+            :prefix="({ itemCount }) => '共 ' + (itemCount ?? 0) + ' 条'"
+            show-size-picker
+            show-quick-jumper
+            @update:page="pageChange"
+            @update:page-size="pageSizeChange"
+          />
+        </div>
       </n-spin>
     </n-card>
   </div>
@@ -137,6 +163,12 @@ onMounted(() => {
   max-width: 360px;
 }
 
+.icon-page__pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 20px;
+}
+
 @media (max-width: 768px) {
   .icon-page__header {
     flex-direction: column;
@@ -149,6 +181,10 @@ onMounted(() => {
 
   .icon-page__search {
     max-width: none;
+  }
+
+  .icon-page__pagination {
+    justify-content: center;
   }
 }
 </style>

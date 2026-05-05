@@ -30,7 +30,9 @@ class SysTableSchemaApi extends BaseApi {
    * 根据表格code查询数据表格列Schema数据
    */
   listSchemasByTableCode = (tableCode: string) => {
-    return this.get<Array<SysTableSchemaData>, { tableCode: string }>('listSchemasByTableCode', { tableCode })
+    return this.get<Array<SysTableSchemaData>, { tableCode: string }>('listSchemasByTableCode', {
+      tableCode,
+    })
   }
 
   /**

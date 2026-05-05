@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { EChartsOption } from 'echarts'
-import { renderIcon } from '@/utils/icon'
+import { renderIcon } from '@/features/sys/icon/composable/icon'
 import MonitorChart from './MonitorChart.vue'
 
 const props = withDefaults(

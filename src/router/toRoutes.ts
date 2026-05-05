@@ -8,7 +8,7 @@ import SysPermissionData from '@/features/rbac/permission/type/SysPermissionData
  * - 静态路由：保留原始嵌套结构，用于注册根布局和登录页
  * - 动态业务路由：只提取叶子节点，统一挂到根布局下
  */
-const featureViews = import.meta.glob('@/features/**/*.vue')
+const featureViews = import.meta.glob('@/features/**/index.vue')
 const layoutViews = import.meta.glob('@/components/layouts/**/index.vue')
 const loginViews = import.meta.glob('@/components/login/**/index.vue')
 
@@ -79,6 +79,7 @@ const createRouteRecord = (permission: SysPermissionData): RouteRecordRaw | null
     children: [],
     meta: {
       title: permission.permissionName,
+      icon: permission.icon,
       hidden: !permission.visible,
     },
     ...(permission.redirect ? { redirect: normalizePath(permission.redirect) } : {}),

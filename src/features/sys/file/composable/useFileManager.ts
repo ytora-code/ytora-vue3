@@ -21,7 +21,7 @@ import {
 } from '@/features/sys/file/composable/useFileTreeUtils'
 import type SysFile from '@/features/sys/file/type/SysFileData'
 import type SysFolderData from '@/features/sys/file/type/SysFolderData'
-import { renderIcon } from '@/utils/icon'
+import { renderIcon } from '@/features/sys/icon/composable/icon'
 
 type NativeFile = globalThis.File
 type NativeEvent = globalThis.Event

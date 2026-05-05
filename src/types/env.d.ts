@@ -18,6 +18,7 @@ interface ImportMeta {
   readonly env: ImportMetaEnv
 }
 
+declare const __APP_NAME__: string
 declare const __APP_ENV__: string
 declare const __BUILD_TIME__: string
 

@@ -5,7 +5,7 @@ import sysPermissionApi from '@/features/rbac/permission/api/SysPermissionApi'
 import type SysPermissionData from '@/features/rbac/permission/type/SysPermissionData'
 import type SysRolePermissionParam from '@/features/rbac/permission/type/SysRolePermissionParam'
 import type SysRoleData from '../type/data/SysRoleData'
-import { renderIcon } from '@/utils/icon'
+import { renderIcon } from '@/features/sys/icon/composable/icon'
 import { message } from '@/utils/naiveApi'
 
 const toTreeOption = (permission: SysPermissionData): TreeOption => ({

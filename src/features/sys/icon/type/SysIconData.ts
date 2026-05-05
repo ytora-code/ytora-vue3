@@ -15,4 +15,19 @@ export default interface SysIconData extends BaseData {
    * 图标库类型，默认lucide
    */
   type: string
+
+  /**
+   * 宽度
+   */
+  width: number
+
+  /**
+   * 高度
+   */
+  height: number
+
+  /**
+   * 图标SVG主体数据
+   */
+  body?: string
 }

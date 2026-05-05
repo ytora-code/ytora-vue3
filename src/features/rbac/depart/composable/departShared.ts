@@ -3,7 +3,7 @@ import type { TreeOption } from 'naive-ui'
 import { DEPART_TYPE_OPTIONS } from './useSchema'
 import type SysDepartData from '../type/SysDepartData'
 import type SysDepartParam from '../type/SysDepartParam'
-import { renderIcon } from '@/utils/icon'
+import { renderIcon } from '@/features/sys/icon/composable/icon'
 
 export interface FormInstance {
   validate: () => Promise<void>

@@ -9,7 +9,7 @@ import { useFormSchema } from './composable/useFormSchema'
 import type { DynamicFormSlots } from './type/DynamicFormSlots'
 import type DynamicFormSchema from './type/DynamicFormSchema'
 import type { FormFieldKey, FormModelValue } from './type/FormRenderContext'
-import { renderIcon } from '@/utils/icon'
+import { renderIcon } from '@/features/sys/icon/composable/icon'
 
 const props = withDefaults(
   defineProps<{

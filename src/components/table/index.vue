@@ -130,18 +130,14 @@ const normalizeRemoteSchema = (schema: SysTableSchemaData): DynamicTableSchema<T
     title: schema.title ?? attrConfig.title,
     type: (schema.type as DynamicTableColumnType | undefined) ?? attrConfig.type,
     width: schema.width ?? attrConfig.width,
-    align: schema.align
-      ? (schema.align as DynamicTableSchema<TRow>['align'])
-      : attrConfig.align,
-    fixed: schema.fixed
-      ? (schema.fixed as DynamicTableSchema<TRow>['fixed'])
-      : attrConfig.fixed,
+    align: schema.align ? (schema.align as DynamicTableSchema<TRow>['align']) : attrConfig.align,
+    fixed: schema.fixed ? (schema.fixed as DynamicTableSchema<TRow>['fixed']) : attrConfig.fixed,
     ellipsis: parseBoolean(schema.ellipsis) ?? attrConfig.ellipsis,
   }
 }
 
-const mergedSchemas = computed<DynamicTableSchema<TRow>[]>(() =>
-  (props.schemas ?? remoteSchemas.value) as DynamicTableSchema<TRow>[],
+const mergedSchemas = computed<DynamicTableSchema<TRow>[]>(
+  () => (props.schemas ?? remoteSchemas.value) as DynamicTableSchema<TRow>[],
 )
 
 const { resolvedSchemas } = useTableSchema({

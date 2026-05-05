@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import type { Component } from 'vue'
 import type SysIconData from './type/SysIconData'
 
-export interface IconGridItem extends SysIconData {
-  renderer?: Component
-}
+export type IconGridItem = SysIconData
 
 defineProps<{
   icons: IconGridItem[]
@@ -27,7 +24,19 @@ const emit = defineEmits<{
       @click="emit('copy', item.code)"
     >
       <div class="icon-card__preview">
-        <component :is="item.renderer" />
+        <svg
+          :viewBox="`0 0 ${item.width || 24} ${item.height || 24}`"
+          width="1em"
+          height="1em"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          focusable="false"
+          v-html="item.body || ''"
+        />
       </div>
 
       <div class="icon-card__body">
