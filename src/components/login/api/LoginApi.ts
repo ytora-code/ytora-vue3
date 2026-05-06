@@ -28,6 +28,14 @@ class LoginApi extends BaseApi {
   doLogout = () => {
     return this.get<string>('doLogout')
   }
+
+  /**
+   * 测试接口，测试当前会话是否正常
+   */
+  check = () => {
+    return this.get<unknown>('check')
+  }
+
 }
 
 // 导出单例

@@ -97,13 +97,13 @@ export default defineConfig(({ mode }) => {
       host,
       port,
       open: shouldOpen,
-      proxy: {
-        '/ytora': {
-          target: 'http://127.0.0.1:9876',
-          changeOrigin: true,
-          secure: false,
-        },
-      },
+      // proxy: {
+      //   '/ytora': {
+      //     target: 'http://127.0.0.1:9876',
+      //     changeOrigin: true,
+      //     secure: false,
+      //   },
+      // },
     },
 
     preview: {

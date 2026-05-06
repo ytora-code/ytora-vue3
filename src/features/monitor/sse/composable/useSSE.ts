@@ -1,8 +1,11 @@
 import { ref } from 'vue'
+import loginApi from '@/components/login/api/LoginApi'
 import sseApi from '../api/SseApi'
 
 type EventHandler = (event: MessageEvent<string>) => void
 type UnsubscribeFunction = () => void
+type SsePrecheckStatus = 'ok' | 'expired' | 'retry'
+type RespError = Error & { code?: number }
 
 let globalEventSource: EventSource | null = null
 let connectionCount = 0
@@ -13,6 +16,25 @@ const domEventListeners = new Map<string, EventListener>()
 const connectedRefs = new Set<ReturnType<typeof ref<boolean>>>()
 
 const RECONNECT_DELAY = 5000
+
+/**
+ * 进行SSE连接前做一次测试连接
+ */
+const tryCheckSseConnection = async (): Promise<SsePrecheckStatus> => {
+  try {
+    await loginApi.check()
+    return 'ok'
+  } catch (error: unknown) {
+    console.error('SSE 连接预检失败:', error)
+
+    const code = (error as RespError).code
+    if (code === 10 || code === 11) {
+      return 'expired'
+    }
+
+    return 'retry'
+  }
+}
 
 /**
  * SSE连接地址
@@ -33,6 +55,20 @@ const clearReconnectTimer = () => {
     clearTimeout(reconnectTimer)
     reconnectTimer = null
   }
+}
+
+const scheduleReconnect = () => {
+  if (connectionCount <= 0 || reconnectTimer) {
+    return
+  }
+
+  reconnectTimer = setTimeout(() => {
+    reconnectTimer = null
+
+    if (connectionCount > 0) {
+      void createEventSource()
+    }
+  }, RECONNECT_DELAY)
 }
 
 const dispatchEvent = (eventName: string, event: MessageEvent<string>) => {
@@ -69,8 +105,31 @@ const rebindEventListeners = () => {
   })
 }
 
-const createEventSource = () => {
+/**
+ * 进行SSE连接
+ */
+const createEventSource = async () => {
   clearReconnectTimer()
+
+  const status = await tryCheckSseConnection()
+
+  if (connectionCount <= 0) {
+    syncConnectedState(false)
+    return
+  }
+
+  // SSE连接前的测试连接失败
+  if (status === 'expired') {
+    syncConnectedState(false)
+    return
+  }
+
+  // SSE连接前的测试连接网络超时，重试
+  if (status === 'retry') {
+    syncConnectedState(false)
+    scheduleReconnect()
+    return
+  }
 
   globalEventSource = new EventSource(resolveSseUrl(), {
     withCredentials: true,
@@ -90,16 +149,7 @@ const createEventSource = () => {
       domEventListeners.clear()
     }
 
-    if (connectionCount <= 0 || reconnectTimer) {
-      return
-    }
-
-    reconnectTimer = setTimeout(() => {
-      reconnectTimer = null
-      if (connectionCount > 0) {
-        createEventSource()
-      }
-    }, RECONNECT_DELAY)
+    scheduleReconnect()
   }
 }
 
@@ -120,6 +170,9 @@ export const parseSSEData = <T>(event: MessageEvent<string>): T => {
   return JSON.parse(event.data) as T
 }
 
+/**
+ * SSE函数
+ */
 export function useSSE() {
   const isConnected = ref(false)
   connectedRefs.add(isConnected)
@@ -135,7 +188,7 @@ export function useSSE() {
       return
     }
 
-    createEventSource()
+    void createEventSource()
   }
 
   /**
