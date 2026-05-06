@@ -27,7 +27,7 @@ class IconApi extends BaseApi {
    * 分页查询系统图标库
    */
   queryByCode = (code: string) => {
-    return this.get<SysIconData, { code: string }>('queryByCode', {code})
+    return this.get<SysIconData, { code: string }>('queryByCode', { code })
   }
 }
 

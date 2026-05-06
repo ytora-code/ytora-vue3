@@ -76,9 +76,14 @@ select {
   scrollbar-width: auto;
 }
 
+.show-scrollbar,
+.show-scrollbar * {
+  scrollbar-width: auto;
+}
+
 .show-scrollbar::-webkit-scrollbar,
 .show-scrollbar *::-webkit-scrollbar {
-  display: initial;
+  display: block;
   width: 8px;
   height: 8px;
 }

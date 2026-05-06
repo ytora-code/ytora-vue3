@@ -1,4 +1,4 @@
-import BaseParam from "@/types/BaseParam";
+import BaseParam from '@/types/BaseParam'
 
 export default interface SysIconParam extends BaseParam {
   /**
@@ -10,5 +10,4 @@ export default interface SysIconParam extends BaseParam {
    * 图标库类型，默认lucide
    */
   type?: string
-
 }

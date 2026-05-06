@@ -7,18 +7,7 @@ const normalizeIconCode = (icon: string) => {
   const normalizedInput = icon.trim()
   if (!normalizedInput) return ''
 
-  const prefixedMatch = normalizedInput.match(/^i-([^-]+)-(.+)$/)
-  const collection = prefixedMatch?.[1] ?? 'lucide'
-  const rawName = prefixedMatch?.[2] ?? normalizedInput
-  const normalizedName = rawName
-    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-    .replace(/([a-zA-Z])(\d)/g, '$1-$2')
-    .replace(/(\d)([a-zA-Z])/g, '$1-$2')
-    .replace(/_/g, '-')
-    .toLowerCase()
-
-  return `i-${collection}-${normalizedName}`
+  return normalizedInput
 }
 
 type ResolvedIconData = SysIconData & { body: string }
