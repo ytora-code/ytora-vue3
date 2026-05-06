@@ -4,7 +4,7 @@ import { message } from '@/utils/naiveApi'
 
 import iconApi from './api/IconApi'
 import IconGrid, { type IconGridItem } from './IconGrid.vue'
-import { renderIcon } from '@/features/sys/icon/composable/icon'
+import { renderIcon } from '@/features/sys/icon/composable/useIcon'
 
 const loading = ref(false)
 const keyword = ref('')

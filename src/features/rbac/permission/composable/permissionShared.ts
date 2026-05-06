@@ -3,7 +3,7 @@ import type { TreeOption } from 'naive-ui'
 import { PERMISSION_TYPE_OPTIONS } from './useSchema'
 import type SysPermissionData from '../type/SysPermissionData'
 import type SysPermissionParam from '../type/SysPermissionParam'
-import { renderIcon } from '@/features/sys/icon/composable/icon'
+import { renderIcon } from '@/features/sys/icon/composable/useIcon'
 
 export interface FormInstance {
   validate: () => Promise<void>

@@ -8,7 +8,7 @@ import { getCookie } from '@/utils/cookies'
 import { useTabsStore } from '@/stores/useTabsStore'
 import { useUserStore } from '@/stores/userStore'
 import { useFavicon } from '@vueuse/core'
-import { ensureIconSvg } from '@/features/sys/icon/composable/icon'
+import { ensureIconSvg } from '@/features/sys/icon/composable/useIcon'
 
 const favicon = useFavicon()
 let latestFaviconIcon = ''

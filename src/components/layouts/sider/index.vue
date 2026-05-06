@@ -6,7 +6,7 @@ import AppLogo from '@/components/layouts/sider/AppLogo.vue'
 import type SysPermissionData from '@/features/rbac/permission/type/SysPermissionData'
 import { useAppStore } from '@/stores/app'
 import { useUserStore } from '@/stores/userStore'
-import { renderIcon } from '@/features/sys/icon/composable/icon'
+import { renderIcon } from '@/features/sys/icon/composable/useIcon'
 
 interface MenuSkeleton {
   key?: string | number
