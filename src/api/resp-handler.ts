@@ -1,5 +1,5 @@
 import type Result from '@/types/Result'
-import { handleAuthExpired } from './authExpired'
+import { handleAuthExpired } from './auth-expired'
 
 type RespError = Error & {
   code?: number

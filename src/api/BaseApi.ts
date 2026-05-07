@@ -6,7 +6,7 @@ import {
 } from 'axios'
 import axiosInstance from '@/api/request'
 import type Result from '@/types/Result'
-import respHandler from './RespHandler'
+import respHandler from './resp-handler'
 
 /**
  * 后端响应的数据格式都是固定的，用一个接口IResp来表示响应的数据格式

@@ -277,6 +277,18 @@ const threadStateOption = computed<EChartsOption>(() => {
         <n-tag :bordered="false" type="info">最近刷新 {{ latestUpdatedAt }}</n-tag>
       </div>
 
+      <div class="stat-grid">
+        <MonitorMetricCard
+          v-for="card in metricCards"
+          :key="card.title"
+          :title="card.title"
+          :value="card.value"
+          :subtitle="card.subtitle"
+          :icon="card.icon"
+          :tone="card.tone"
+        />
+      </div>
+
       <div class="hero-grid">
         <n-card title="堆内存驾驶舱" :bordered="false" class="monitor-card">
           <div class="hero-memory">
@@ -333,17 +345,9 @@ const threadStateOption = computed<EChartsOption>(() => {
         </n-card>
       </div>
 
-      <div class="stat-grid">
-        <MonitorMetricCard
-          v-for="card in metricCards"
-          :key="card.title"
-          :title="card.title"
-          :value="card.value"
-          :subtitle="card.subtitle"
-          :icon="card.icon"
-          :tone="card.tone"
-        />
-      </div>
+      <n-card title="线程状态分布" :bordered="false" class="monitor-card">
+        <MonitorChart :option="threadStateOption" :height="280" />
+      </n-card>
 
       <n-card title="JVM 运行曲线" :bordered="false" class="monitor-card">
         <MonitorChart :option="runtimeChartOption" :height="320" />
@@ -435,10 +439,6 @@ const threadStateOption = computed<EChartsOption>(() => {
           />
         </n-card>
       </div>
-
-      <n-card title="线程状态分布" :bordered="false" class="monitor-card">
-        <MonitorChart :option="threadStateOption" :height="280" />
-      </n-card>
     </div>
   </n-spin>
 </template>
