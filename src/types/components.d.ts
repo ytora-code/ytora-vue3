@@ -13,6 +13,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppLogo: typeof import('./../components/layouts/sider/AppLogo.vue')['default']
     BeautifulLoginSkin: typeof import('./../components/login/skins/BeautifulLoginSkin.vue')['default']
+    Coder: typeof import('./../components/coder/index.vue')['default']
     ComponentCellRenderer: typeof import('./../components/table/ComponentCellRenderer.vue')['default']
     Content: typeof import('./../components/layouts/content/index.vue')['default']
     DefaultLoginSkin: typeof import('./../components/login/skins/DefaultLoginSkin.vue')['default']

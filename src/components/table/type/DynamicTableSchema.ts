@@ -9,6 +9,7 @@ type DynamicTableColumnType =
   | 'image'
   | 'link'
   | 'tag'
+  | 'dict'
   | 'switch'
   | 'slot'
 
@@ -128,6 +129,11 @@ interface DynamicTableSchema<Row extends TableRowData = TableRowData> {
    */
   tagMap?: Record<string, DynamicTableTagOption>
   tagSplitPattern?: string | RegExp
+
+  /**
+   * dict类型的相关属性
+   */
+  dictCode?: string
 
   /**
    * switch类型的相关属性

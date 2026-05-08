@@ -1,10 +1,12 @@
 <script setup lang="ts" generic="TRow extends TableRowData = TableRowData">
 import type { TableRowData } from './type/TableRenderContext'
-import { computed } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { NImage, NSpace, NSwitch, NTag } from 'naive-ui'
+import type { SelectOption } from 'naive-ui'
 
 import RenderFactory from '@/components/form/RenderFactory.vue'
 import type ResolvedDynamicTableSchema from './type/ResolvedDynamicTableSchema'
+import { useDictStore } from '@/stores/useDictStore'
 
 type SwitchValue = string | number | boolean | undefined
 
@@ -17,11 +19,30 @@ const props = defineProps<{
 }>()
 
 const slots = useSlots()
+const dictStore = useDictStore()
 
 const slotName = computed(() => props.schema.key)
+const dictOptions = ref<SelectOption[]>([])
+const dictLoading = ref(false)
+
+const loadDictOptions = async () => {
+  if (props.schema.type !== 'dict' || !props.schema.dictCode) {
+    dictOptions.value = []
+    return
+  }
+
+  dictLoading.value = true
+  try {
+    dictOptions.value = await dictStore.getDict(props.schema.dictCode)
+  } finally {
+    dictLoading.value = false
+  }
+}
+
+const isEmptyValue = (value: unknown) => value === null || value === undefined || value === ''
 
 const stringValue = computed(() => {
-  if (props.value === null || props.value === undefined || props.value === '') {
+  if (isEmptyValue(props.value)) {
     return props.schema.emptyText
   }
 
@@ -36,7 +57,7 @@ const stringValue = computed(() => {
 })
 
 const tagItems = computed(() => {
-  if (props.value === null || props.value === undefined || props.value === '') return []
+  if (isEmptyValue(props.value)) return []
 
   const source = Array.isArray(props.value)
     ? props.value
@@ -59,15 +80,46 @@ const tagItems = computed(() => {
   })
 })
 
+const dictOptionMap = computed(() => {
+  const map = new Map<string, SelectOption>()
+
+  dictOptions.value.forEach((option) => {
+    map.set(String(option.value ?? ''), option)
+  })
+
+  return map
+})
+
+const dictItems = computed(() => {
+  if (isEmptyValue(props.value)) return []
+
+  const source = Array.isArray(props.value)
+    ? props.value
+    : String(props.value)
+        .split(props.schema.tagSplitPattern)
+        .map((item) => item.trim())
+        .filter(Boolean)
+
+  return source.map((item) => {
+    const key = String(item)
+    const option = dictOptionMap.value.get(key)
+
+    return {
+      key,
+      label: String(option?.label ?? key),
+    }
+  })
+})
+
 const linkHref = computed(() => {
-  if (props.value === null || props.value === undefined || props.value === '') return ''
+  if (isEmptyValue(props.value)) return ''
   return String(props.value)
 })
 
 const linkText = computed(() => props.schema.linkText ?? stringValue.value)
 
 const imageSrc = computed(() => {
-  if (props.value === null || props.value === undefined || props.value === '') return ''
+  if (isEmptyValue(props.value)) return ''
   return String(props.value)
 })
 
@@ -85,6 +137,18 @@ const renderContext = computed(() => ({
   value: props.value,
   setValue: props.setValue,
 }))
+
+onMounted(() => {
+  void loadDictOptions()
+})
+
+watch(
+  () => [props.schema.type, props.schema.dictCode] as const,
+  () => {
+    void loadDictOptions()
+  },
+  { immediate: false },
+)
 </script>
 
 <template>
@@ -136,6 +200,18 @@ const renderContext = computed(() => ({
     </n-tag>
   </n-space>
   <span v-else-if="schema.type === 'tag'">{{ schema.emptyText }}</span>
+  <n-space v-else-if="schema.type === 'dict' && dictItems.length" :size="8" wrap>
+    <n-tag
+      v-for="item in dictItems"
+      :key="`${schema.key}-${item.key}`"
+      type="primary"
+      :bordered="false"
+      size="small"
+    >
+      {{ item.label }}
+    </n-tag>
+  </n-space>
+  <span v-else-if="schema.type === 'dict'">{{ dictLoading ? '加载中...' : schema.emptyText }}</span>
   <n-switch
     v-else-if="schema.type === 'switch'"
     v-model:value="switchValue"

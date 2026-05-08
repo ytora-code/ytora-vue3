@@ -17,7 +17,7 @@ const normalizeAlign = <Row extends TableRowData>(
 ): DynamicTableAlign => {
   if (schema.align) return schema.align
 
-  if (['selection', 'index', 'image', 'tag', 'switch'].includes(type)) return 'center'
+  if (['selection', 'index', 'image', 'tag', 'dict', 'switch'].includes(type)) return 'center'
   if (type === 'number') return 'right'
   return 'center'
 }
@@ -50,7 +50,8 @@ const useTableSchema = <Row extends TableRowData>(options: UseTableSchemaOptions
           minWidth: normalizeMinWidth(schema.minWidth),
           visible: schema.visible ?? true,
           align: normalizeAlign(schema, type),
-          ellipsis: schema.ellipsis ?? ['text', 'number', 'date', 'link', 'tag'].includes(type),
+          ellipsis:
+            schema.ellipsis ?? ['text', 'number', 'date', 'link', 'tag', 'dict'].includes(type),
           emptyText: schema.emptyText ?? '',
           linkTarget: schema.linkTarget ?? '_blank',
           linkRel: schema.linkRel ?? 'noreferrer noopener',
