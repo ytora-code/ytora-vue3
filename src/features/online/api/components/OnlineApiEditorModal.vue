@@ -69,6 +69,16 @@ const testParamModel = computed({
   },
 })
 
+const resultDescModel = computed({
+  get: () => localModel.value.resultDesc ?? '',
+  set: (value: string) => {
+    localModel.value = {
+      ...localModel.value,
+      resultDesc: value,
+    }
+  },
+})
+
 const handleClose = () => {
   emit('update:show', false)
 }
@@ -173,6 +183,16 @@ const handleSubmit = async () => {
                     </div>
                     <n-empty v-else description="暂无测试结果" />
                   </n-spin>
+                </div>
+
+                <div class="online-api-editor__section">
+                  <div class="online-api-editor__label">返回字段说明</div>
+                  <CodeEditor
+                    v-model="resultDescModel"
+                    language="json"
+                    height="18vh"
+                    placeholder="请输入接口返回字段说明，供其他人查看参考"
+                  />
                 </div>
               </div>
             </n-tab-pane>

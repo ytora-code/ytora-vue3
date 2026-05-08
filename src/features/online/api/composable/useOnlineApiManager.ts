@@ -3,9 +3,9 @@ import { computed, ref } from 'vue'
 import useOnlineApiGroupContextMenu from './useOnlineApiGroupContextMenu'
 import useOnlineApiGroupCrud from './useOnlineApiGroupCrud'
 import useOnlineApiEditor from './useOnlineApiEditor'
-import { menuIcon } from './onlineApiShared'
 import type SysDynamicApiData from '../type/SysDynamicApiData'
 import { dialog } from '@/utils/naiveApi'
+import { renderIcon } from '@/features/sys/icon/composable/useIcon'
 
 interface UseOnlineApiManagerOptions {
   drawerFormModel: Readonly<{ value: import('../type/SysDynamicApiParam').default }>
@@ -35,7 +35,7 @@ const useOnlineApiManager = ({
   offlineRow,
 }: UseOnlineApiManagerOptions) => {
   const treeKeyword = ref('')
-  const closeIcon = menuIcon('X')
+  const closeIcon = renderIcon('X')
 
   const groupCrud = useOnlineApiGroupCrud()
   const {

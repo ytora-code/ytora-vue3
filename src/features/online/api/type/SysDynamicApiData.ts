@@ -41,6 +41,11 @@ export default interface SysDynamicApiData extends BaseData {
   testParam?: string
 
   /**
+   * 返回结果字段说明
+   */
+  resultDesc?: string
+
+  /**
    * 是否开启事务
    */
   transactional?: boolean

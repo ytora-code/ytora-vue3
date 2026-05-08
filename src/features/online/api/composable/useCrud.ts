@@ -25,6 +25,7 @@ const createInitialDrawerFormModel = (): SysDynamicApiParam => ({
   type: '',
   content: '',
   testParam: '{\n  \n}',
+  resultDesc: '',
   transactional: false,
   max: 200,
   status: 1,
