@@ -1,5 +1,5 @@
 import { EditorSelection, Prec } from '@codemirror/state'
-import { EditorView, keymap } from '@codemirror/view'
+import { keymap } from '@codemirror/view'
 import { insertNewlineAndIndent } from '@codemirror/commands'
 
 export interface DslBraceEnterOptions {

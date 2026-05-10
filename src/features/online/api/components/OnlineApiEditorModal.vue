@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { DataTableColumns, FormRules } from 'naive-ui'
+import { useRouter } from 'vue-router'
 
 import CodeEditor from '@/components/coder/index.vue'
 import DynamicForm from '@/components/form/index.vue'
@@ -42,6 +43,7 @@ const emit = defineEmits<{
 
 const basicFormRef = ref<FormInstance | null>(null)
 const codeFormRef = ref<FormInstance | null>(null)
+const router = useRouter()
 const localModel = computed({
   get: () => props.model,
   set: (value: SysDynamicApiParam) => {
@@ -81,6 +83,11 @@ const resultDescModel = computed({
 
 const handleClose = () => {
   emit('update:show', false)
+}
+
+const openDslGuide = () => {
+  const route = router.resolve('/online/api/dsl-guide')
+  window.open(route.href, '_blank', 'noopener,noreferrer')
 }
 
 const handleSubmit = async () => {
@@ -141,6 +148,7 @@ const handleSubmit = async () => {
                 />
 
                 <div class="online-api-editor__section">
+                  <n-button w-10 text type="primary" @click="openDslGuide">语法说明</n-button>
                   <CodeEditor
                     v-model="contentModel"
                     language="dsl"

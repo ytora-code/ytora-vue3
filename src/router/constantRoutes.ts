@@ -40,6 +40,19 @@ const home: SysPermissionData = {
   ],
 }
 
+const guide: SysPermissionData = {
+  id: 'online-api-dsl-guide',
+    pid: '2',
+  permissionCode: '/online/api/dsl-guide',
+  permissionName: '动态API DSL 语法说明',
+  permissionType: 2,
+  component: '/features/online/api/guide/index.vue',
+  visible: false,
+  icon: '',
+  index: 999,
+  children: [],
+}
+
 const notFound: SysPermissionData = {
   id: '404',
   pid: '0',
@@ -53,6 +66,6 @@ const notFound: SysPermissionData = {
   children: [],
 }
 
-const constantRoutes: SysPermissionData[] = [login, home, notFound]
+const constantRoutes: SysPermissionData[] = [login, home, guide, notFound]
 
 export default constantRoutes

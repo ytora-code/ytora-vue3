@@ -3,7 +3,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { basicSetup } from 'codemirror'
 import { Compartment, EditorState } from '@codemirror/state'
-import { EditorView, placeholder } from '@codemirror/view'
+import { EditorView, placeholder as _placeholder } from '@codemirror/view'
 import { oneDark } from '@codemirror/theme-one-dark'
 
 import type CodeEditorLanguage from './type/CodeEditorLanguage'
@@ -19,7 +19,6 @@ const props = withDefaults(
     placeholder?: string
   }>(),
   {
-    modelValue: '',
     language: 'text',
     readonly: false,
     dark: false,
@@ -55,7 +54,7 @@ onMounted(() => {
       readonlyCompartment.of(EditorState.readOnly.of(props.readonly)),
       heightCompartment.of(createHeightTheme(props.height)),
 
-      props.placeholder ? placeholder(props.placeholder) : [],
+      props.placeholder ? _placeholder(props.placeholder) : [],
 
       EditorView.updateListener.of((update) => {
         if (!update.docChanged) return
@@ -163,7 +162,7 @@ function createHeightTheme(height: string) {
 </script>
 
 <template>
-  <div ref="editorRef" class="code-editor"></div>
+  <div ref="editorRef" class="code-editor" />
 </template>
 
 <style scoped>

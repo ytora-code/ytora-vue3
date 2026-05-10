@@ -1,4 +1,4 @@
-import { StreamLanguage } from '@codemirror/language'
+import { StreamLanguage, StringStream } from '@codemirror/language'
 
 import {
   YTORA_DSL_FUNCTIONS,
@@ -112,14 +112,14 @@ export const ytoraDslLanguage = StreamLanguage.define<YtoraDslState>({
     /**
      * 单字符运算符 / 标点
      */
-    if (stream.match(/[+\-*\/%><!&|?:=]/)) {
+    if (stream.match(/[+\-*/%><!&|?:=]/)) {
       return 'operator'
     }
 
     /**
      * 括号
      */
-    if (stream.match(/[{}\[\]().,]/)) {
+    if (stream.match(/[{}[\]().,]/)) {
       return 'bracket'
     }
 
@@ -169,7 +169,7 @@ export const ytoraDslLanguage = StreamLanguage.define<YtoraDslState>({
   }
 })
 
-function readString(stream: any) {
+function readString(stream:  StringStream) {
   const quote = stream.next()
   let escaped = false
 

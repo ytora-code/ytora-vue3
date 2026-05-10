@@ -1,5 +1,4 @@
 import BaseApi from '@/api/BaseApi'
-import type PageParam from '@/types/PageParam'
 import type SysDynamicApiGroupData from '../type/SysDynamicApiGroupData'
 import type SysDynamicApiGroupParam from '../type/SysDynamicApiGroupParam'
 

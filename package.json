@@ -14,6 +14,17 @@
     "format": "prettier --write . --config config/prettier.config.mjs && pnpm lint:fix",
     "format:check": "prettier --check . --config config/prettier.config.mjs && pnpm lint"
   },
+  "scripts-desc": {
+    "dev": "启动本地开发服务，--config 参数表示指定 Vite 配置文件，--mode dev 表示指定环境配置文件：.env & .env.dev",
+    "build:test": "构建测试环境包，pnpm lint：检查代码规范；vue-tsc --noEmit：进行 TypeScript 类型检查，但是不输出编译文件；vite build表示使用vite构建包；&& 表示：前一步成功，才会执行下一步",
+    "build:prod": "构建生产环境包",
+    "preview:test": "预览测试环境构建结果，vite preview 用来预览打包后的产物",
+    "preview:prod": "预览生产环境构建结果",
+    "lint": "检查代码规范，只检查src、config两个文件夹下的代码，--config config/eslint.config.mjs 指定 ESLint 配置文件，--max-warnings 0 表示不允许有 warning",
+    "lint:fix": "在lint的基础上，可以自动修复一些简单的问题，比如：格式、排序、简单语法风格",
+    "format": "格式化整个项目，然后再用 ESLint 自动修复代码问题",
+    "format:check": "检查代码格式和规范，但不修改文件"
+  },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.2",
     "@codemirror/commands": "^6.10.3",
