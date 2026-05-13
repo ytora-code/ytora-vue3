@@ -7,6 +7,9 @@ const {
   permissionId,
   formLoading,
   formRecords,
+  formPageNo,
+  formPageSize,
+  formTotal,
   checkedFormKeys,
   formModalVisible,
   formModalLoading,
@@ -31,6 +34,8 @@ const {
   schemaTableSchemas,
   formFormSchemas,
   schemaFormSchemas,
+  handleFormPageChange,
+  handleFormPageSizeChange,
   openCreateForm,
   openEditForm,
   closeFormModal,
@@ -81,6 +86,20 @@ const {
         </div>
       </template>
     </DynamicTable>
+
+    <div class="permission-form__pagination">
+      <n-pagination
+        :page="formPageNo"
+        :page-size="formPageSize"
+        :item-count="formTotal"
+        :page-sizes="[10, 20, 30, 50]"
+        :prefix="({ itemCount }) => `共 ${itemCount ?? 0} 条`"
+        show-size-picker
+        show-quick-jumper
+        @update:page="handleFormPageChange"
+        @update:page-size="handleFormPageSizeChange"
+      />
+    </div>
 
     <n-modal
       v-model:show="formModalVisible"
@@ -214,5 +233,10 @@ const {
   display: flex;
   justify-content: center;
   gap: 8px;
+}
+
+.permission-form__pagination {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

@@ -100,6 +100,9 @@ const usePermissionForm = (externalPermissionId?: MaybeRef<string | number | nul
   })
   const formLoading = ref(false)
   const formRecords = ref<SysPermissionData[]>([])
+  const formPageNo = ref(1)
+  const formPageSize = ref(10)
+  const formTotal = ref(0)
   const formSourceRecords = ref<SysPermissionData[]>([])
   const checkedFormKeys = ref<Array<string | number>>([])
 
@@ -513,8 +516,15 @@ const usePermissionForm = (externalPermissionId?: MaybeRef<string | number | nul
     formLoading.value = true
 
     try {
-      const result = await sysFormSchemaApi.listForms(permissionId.value)
-      formSourceRecords.value = result
+      const result = await sysFormSchemaApi.pageForms({
+        permissionId: permissionId.value,
+        pageNo: formPageNo.value,
+        pageSize: formPageSize.value
+      })
+      formSourceRecords.value = result.records
+      formPageNo.value = result.pageNo
+      formPageSize.value = result.pageSize
+      formTotal.value = result.total ?? result.records.length
       applyFormFilter()
       syncCurrentForm()
     } catch (error) {
@@ -565,6 +575,17 @@ const usePermissionForm = (externalPermissionId?: MaybeRef<string | number | nul
       permissionCode: '',
     }
     applyFormFilter()
+  }
+
+  const handleFormPageChange = async (pageNo: number) => {
+    formPageNo.value = pageNo
+    await loadForms()
+  }
+
+  const handleFormPageSizeChange = async (pageSize: number) => {
+    formPageNo.value = 1
+    formPageSize.value = pageSize
+    await loadForms()
   }
 
   const openCreateForm = () => {
@@ -853,6 +874,9 @@ const usePermissionForm = (externalPermissionId?: MaybeRef<string | number | nul
     formSearchFormModel,
     formLoading,
     formRecords,
+    formPageNo,
+    formPageSize,
+    formTotal,
     checkedFormKeys,
     formModalVisible,
     formModalLoading,
@@ -882,6 +906,8 @@ const usePermissionForm = (externalPermissionId?: MaybeRef<string | number | nul
     schemaFormSchemas,
     handleFormSearch,
     resetFormSearch,
+    handleFormPageChange,
+    handleFormPageSizeChange,
     openCreateForm,
     openEditForm,
     closeFormModal,

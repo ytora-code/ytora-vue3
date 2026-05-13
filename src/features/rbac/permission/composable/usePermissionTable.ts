@@ -105,6 +105,9 @@ const usePermissionTable = (
   })
   const tableLoading = ref(false)
   const tableRecords = ref<SysPermissionData[]>([])
+  const tablePageNo = ref(1)
+  const tablePageSize = ref(10)
+  const tableTotal = ref(0)
   const tableSourceRecords = ref<SysPermissionData[]>([])
   const checkedTableKeys = ref<Array<string | number>>([])
 
@@ -475,6 +478,17 @@ const usePermissionTable = (
     currentTable.value = matched
   }
 
+  const handleTablePageChange = async (pageNo: number) => {
+    tablePageNo.value = pageNo
+    await loadTables()
+  }
+
+  const handleTablePageSizeChange = async (pageSize: number) => {
+    tablePageNo.value = 1
+    tablePageSize.value = pageSize
+    await loadTables()
+  }
+
   const loadTables = async () => {
     if (!permissionId.value) {
       tableSourceRecords.value = []
@@ -486,8 +500,15 @@ const usePermissionTable = (
     tableLoading.value = true
 
     try {
-      const result = await sysTableSchemaApi.listTables(permissionId.value)
-      tableSourceRecords.value = result
+      const result = await sysTableSchemaApi.pageTables({
+        permissionId: permissionId.value,
+        pageNo: tablePageNo.value,
+        pageSize: tablePageSize.value
+      })
+      tableSourceRecords.value = result.records
+      tablePageNo.value = result.pageNo
+      tablePageSize.value = result.pageSize
+      tableTotal.value = result.total ?? result.records.length
       applyTableFilter()
       syncCurrentTable()
     } catch (error) {
@@ -818,6 +839,9 @@ const usePermissionTable = (
     tableSearchFormModel,
     tableLoading,
     tableRecords,
+    tablePageNo,
+    tablePageSize,
+    tableTotal,
     checkedTableKeys,
     tableModalVisible,
     tableModalLoading,
@@ -848,6 +872,8 @@ const usePermissionTable = (
     schemaFormSchemas,
     handleTableSearch,
     resetTableSearch,
+    handleTablePageChange,
+    handleTablePageSizeChange,
     openCreateTable,
     openEditTable,
     closeTableModal,

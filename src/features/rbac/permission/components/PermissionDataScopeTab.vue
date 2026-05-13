@@ -5,7 +5,6 @@ import usePermissionDataScope from '../composable/usePermissionDataScope'
 
 const {
   permissionId,
-  groupSearchFormModel,
   groupLoading,
   groupPageNo,
   groupPageSize,
@@ -49,14 +48,11 @@ const {
   groupTableSchemas,
   scopeTableSchemas,
   userPickerTableSchemas,
-  groupSearchFormSchemas,
   scopeSearchFormSchemas,
   userSearchFormSchemas,
   departSearchFormSchemas,
   groupFormSchemas,
   scopeFormSchemas,
-  handleGroupSearch,
-  resetGroupSearch,
   handleGroupPageChange,
   handleGroupPageSizeChange,
   openCreateGroup,
@@ -95,19 +91,6 @@ const {
   </div>
 
   <div v-else class="permission-scope">
-    <DynamicForm
-      v-model="groupSearchFormModel"
-      :schemas="groupSearchFormSchemas"
-      submit-text="搜 索"
-      submit-icon="i-lucide-search"
-      reset-text="重 置"
-      reset-icon="i-lucide-rotate-ccw"
-      action-placement="inline"
-      :show-feedback="false"
-      @submit="handleGroupSearch"
-      @reset="resetGroupSearch"
-    />
-
     <div class="permission-scope__toolbar">
       <n-button type="success" size="small" ghost @click="openCreateGroup">新 增</n-button>
       <n-button type="error" size="small" ghost @click="handleBatchDeleteGroups">

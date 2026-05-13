@@ -3,6 +3,8 @@ import type PageParam from '@/types/PageParam'
 import type SysFormSchemaData from '../type/SysFormSchemaData'
 import type SysFormSchemaParam from '../type/SysFormSchemaParam'
 import SysPermissionData from '@/features/rbac/permission/type/SysPermissionData'
+import PageData from "@/types/PageData";
+import SysRoleFormSchemaParam from "@/features/rbac/permission/type/SysRoleFormSchemaParam";
 
 class SysFormSchemaApi extends BaseApi {
   constructor() {
@@ -12,12 +14,10 @@ class SysFormSchemaApi extends BaseApi {
   // ============================== CRUD =================================>
 
   /**
-   * 列表查询指定资源下的表单
+   * 分页查询指定资源下的表单
    */
-  listForms = (permissionId: string) => {
-    return this.get<Array<SysPermissionData>, { permissionId: string }>('listForms', {
-      permissionId,
-    })
+  pageForms = (params: SysFormSchemaParam & PageParam) => {
+    return this.get<PageData<SysPermissionData>, SysFormSchemaParam & PageParam>('pageForms', params)
   }
 
   /**
@@ -52,6 +52,31 @@ class SysFormSchemaApi extends BaseApi {
   }
 
   // ============================== 其他 =================================>
+
+  /**
+   * 查询指定角色在指定资源下拥有的表单
+   */
+  listFormsForRole = (roleId: string, permissionId: string) =>
+    this.get<PageData<SysPermissionData>, { roleId: string, permissionId: string }>('listFormsForRole', { roleId, permissionId })
+
+  /**
+   * 更新指定角色在指定资源下拥有的表单
+   */
+  refreshFormsForRole = (param: SysRoleFormSchemaParam) =>
+    this.post<PageData<SysPermissionData>, SysRoleFormSchemaParam>('refreshFormsForRole', param)
+
+  /**
+   * 查询指定角色在指定表单下拥有的表单项字段
+   */
+  listSchemasForRole = (roleId: string, formId: string) =>
+    this.get<PageData<SysPermissionData>, { roleId: string, formId: string }>('listSchemasForRole', { roleId, formId })
+
+  /**
+   * 更新指定角色在指定表单下拥有的表单项字段
+   */
+  refreshSchemasForRole = (param: SysRoleFormSchemaParam) =>
+    this.post<PageData<SysPermissionData>, SysRoleFormSchemaParam>('refreshSchemasForRole', param)
+
 }
 
 export default new SysFormSchemaApi()
