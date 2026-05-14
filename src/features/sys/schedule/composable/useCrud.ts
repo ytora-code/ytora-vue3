@@ -232,6 +232,7 @@ const useCrud = () => {
     action: 'runOnce' | 'start' | 'stop',
   ) => {
     const actionTextMap = {
+      log: '查询日志',
       runOnce: '执行一次',
       start: '启动',
       stop: '关闭',

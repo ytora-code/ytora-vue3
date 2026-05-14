@@ -8,17 +8,17 @@ export default interface SysRoleTableSchemaParam extends BaseParam {
   /**
    * 角色ID
    */
-  roleId?: number
+  roleId?: string | number
 
   /**
    * 所属的资源ID
    */
-  permissionId?: number
+  permissionId?: string | number
 
   /**
    * 表格的资源ID
    */
-  tableId?: number
+  tableId?: string | number
 
   /**
    * 最新的ID数组

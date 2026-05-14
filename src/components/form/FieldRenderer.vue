@@ -61,7 +61,7 @@ const inputValue = computed<string | [string, string] | null | undefined>({
 
 const selectValue = computed<string | number | string[] | number[] | null | undefined>({
   get: () =>
-    (currentValue.value ?? null) as string | number | string[] | number[] | null | undefined,
+    currentValue.value === '' ? null : (currentValue.value ?? null) as string | number | string[] | number[] | null | undefined,
   set: (value) => {
     props.setValue(props.schema, value)
   },

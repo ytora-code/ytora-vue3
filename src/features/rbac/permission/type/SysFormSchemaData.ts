@@ -65,6 +65,11 @@ export default interface SysFormSchemaData extends BaseData {
   defaultValue?: string
 
   /**
+   * 排序
+   */
+  index?: number
+
+  /**
    * attr
    */
   attr?: string

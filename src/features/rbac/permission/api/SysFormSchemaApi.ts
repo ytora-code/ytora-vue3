@@ -8,7 +8,7 @@ import SysRoleFormSchemaParam from "@/features/rbac/permission/type/SysRoleFormS
 
 class SysFormSchemaApi extends BaseApi {
   constructor() {
-    super('/sys/form-schema')
+    super('/rbac/form-schema')
   }
 
   // ============================== CRUD =================================>
@@ -28,10 +28,16 @@ class SysFormSchemaApi extends BaseApi {
   }
 
   /**
+   * 根据表单code查询当前角色拥有的表单项Schema
+   */
+  listSchemasByFormCode = (formCode: string) =>
+    this.get<Array<SysFormSchemaData>, { formCode: string }>('listSchemasByFormCode', { formCode })
+
+  /**
    * 根据ID查询
    */
   queryById = (id: string | number) => {
-    return this.get<SysFormSchemaData, { id: string | number }>('queryById', { id })
+    return this.get<SysFormSchemaData, { id: string | number }>('queryById', {id})
   }
 
   /**
@@ -48,7 +54,7 @@ class SysFormSchemaApi extends BaseApi {
     if (!ids || ids.length === 0) {
       return Promise.reject('待删除数据的id数组不能为空')
     }
-    return this.delete<unknown, { ids: string }>('deleteByIds', { ids: ids.join(',') })
+    return this.delete<unknown, { ids: string }>('deleteByIds', {ids: ids.join(',')})
   }
 
   // ============================== 其他 =================================>
@@ -57,25 +63,25 @@ class SysFormSchemaApi extends BaseApi {
    * 查询指定角色在指定资源下拥有的表单
    */
   listFormsForRole = (roleId: string, permissionId: string) =>
-    this.get<PageData<SysPermissionData>, { roleId: string, permissionId: string }>('listFormsForRole', { roleId, permissionId })
+    this.get<Array<string>, { roleId: string, permissionId: string }>('listFormsForRole', {roleId, permissionId})
 
   /**
    * 更新指定角色在指定资源下拥有的表单
    */
   refreshFormsForRole = (param: SysRoleFormSchemaParam) =>
-    this.post<PageData<SysPermissionData>, SysRoleFormSchemaParam>('refreshFormsForRole', param)
+    this.post<string, SysRoleFormSchemaParam>('refreshFormsForRole', param)
 
   /**
    * 查询指定角色在指定表单下拥有的表单项字段
    */
   listSchemasForRole = (roleId: string, formId: string) =>
-    this.get<PageData<SysPermissionData>, { roleId: string, formId: string }>('listSchemasForRole', { roleId, formId })
+    this.get<Array<string>, { roleId: string, formId: string }>('listSchemasForRole', {roleId, formId})
 
   /**
    * 更新指定角色在指定表单下拥有的表单项字段
    */
   refreshSchemasForRole = (param: SysRoleFormSchemaParam) =>
-    this.post<PageData<SysPermissionData>, SysRoleFormSchemaParam>('refreshSchemasForRole', param)
+    this.post<string, SysRoleFormSchemaParam>('refreshSchemasForRole', param)
 
 }
 

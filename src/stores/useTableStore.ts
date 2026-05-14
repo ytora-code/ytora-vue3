@@ -29,8 +29,8 @@ export default defineStore('tableStore', () => {
   /**
    * 查询表格列Schema
    */
-  const listSchemas = async (dictCode: string) => {
-    return await tableSchemaApi.listSchemasByTableCode(dictCode)
+  const listSchemas = async (tableCode: string) => {
+    return await tableSchemaApi.listSchemasByTableCode(tableCode)
   }
 
   return { getTableSchema, listSchemas }

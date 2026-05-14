@@ -8,7 +8,7 @@ import SysRoleTableSchemaParam from "@/features/rbac/permission/type/SysRoleTabl
 
 class SysTableSchemaApi extends BaseApi {
   constructor() {
-    super('/sys/table-schema')
+    super('/rbac/table-schema')
   }
 
   // ============================== CRUD =================================>
@@ -92,25 +92,25 @@ class SysTableSchemaApi extends BaseApi {
    * 查询指定角色在指定资源下拥有的表格
    */
   listTablesForRole = (roleId: string, permissionId: string) =>
-    this.get<PageData<SysPermissionData>, { roleId: string, permissionId: string }>('listTablesForRole', { roleId, permissionId })
+    this.get<Array<string>, { roleId: string, permissionId: string }>('listTablesForRole', { roleId, permissionId })
 
   /**
    * 更新指定角色在指定资源下拥有的表格
    */
   refreshTablesForRole = (param: SysRoleTableSchemaParam) =>
-    this.post<PageData<SysPermissionData>, SysRoleTableSchemaParam>('refreshTablesForRole', param)
+    this.post<string, SysRoleTableSchemaParam>('refreshTablesForRole', param)
 
   /**
    * 查询指定角色在指定表格下拥有的表格列字段
    */
   listSchemasForRole = (roleId: string, tableId: string) =>
-    this.get<PageData<SysPermissionData>, { roleId: string, tableId: string }>('listSchemasForRole', { roleId, tableId })
+    this.get<Array<string>, { roleId: string, tableId: string }>('listSchemasForRole', { roleId, tableId })
 
   /**
    * 更新指定角色在指定表格下拥有的表格列字段
    */
   refreshSchemasForRole = (param: SysRoleTableSchemaParam) =>
-    this.post<PageData<SysPermissionData>, SysRoleTableSchemaParam>('refreshSchemasForRole', param)
+    this.post<string, SysRoleTableSchemaParam>('refreshSchemasForRole', param)
 
 }
 

@@ -50,6 +50,11 @@ export default interface SysTableSchemaParam extends BaseParam {
   formatter?: string
 
   /**
+   * 排序
+   */
+  index?: number
+
+  /**
    * 其他属性
    */
   attr?: string

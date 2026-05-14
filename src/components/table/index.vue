@@ -136,6 +136,10 @@ const normalizeRemoteSchema = (schema: SysTableSchemaData): DynamicTableSchema<T
   }
 }
 
+/**
+ * props.schemas 有值，就优先用本地传入的
+ * props.schemas 没传时，则回退到 remoteSchemas
+ */
 const mergedSchemas = computed<DynamicTableSchema<TRow>[]>(
   () => (props.schemas ?? remoteSchemas.value) as DynamicTableSchema<TRow>[],
 )

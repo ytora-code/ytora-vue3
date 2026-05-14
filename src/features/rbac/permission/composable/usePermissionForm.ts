@@ -26,6 +26,7 @@ type FormResourceModel = Required<Pick<SysPermissionParam, 'permissionName' | 'p
   pid?: string
   permissionType: number
   remark: string
+  index?: number
 }
 
 type FormSchemaModel = {
@@ -44,6 +45,7 @@ type FormSchemaModel = {
   defaultValue: string
   attr: string
   remark: string
+  index?: number
 }
 
 const FORM_PERMISSION_TYPE = 4
@@ -270,7 +272,6 @@ const usePermissionForm = (externalPermissionId?: MaybeRef<string | number | nul
       label: '表单名称',
       labelPosition: 'left',
       placeholder: '请输入表单名称',
-      span: 12,
       prop: { clearable: true, maxlength: 100 },
     },
     {
@@ -280,7 +281,15 @@ const usePermissionForm = (externalPermissionId?: MaybeRef<string | number | nul
       label: '表单编码',
       labelPosition: 'left',
       placeholder: '请输入表单编码',
-      span: 12,
+      prop: { clearable: true, maxlength: 200 },
+    },
+    {
+      type: 'input-number',
+      key: 'index',
+      dataKey: 'index',
+      label: '排序',
+      labelPosition: 'left',
+      placeholder: '排序',
       prop: { clearable: true, maxlength: 200 },
     },
     {
@@ -290,7 +299,6 @@ const usePermissionForm = (externalPermissionId?: MaybeRef<string | number | nul
       label: '备注',
       labelPosition: 'left',
       placeholder: '请输入备注',
-      span: 24,
       prop: {
         clearable: true,
         autosize: {
@@ -423,6 +431,16 @@ const usePermissionForm = (externalPermissionId?: MaybeRef<string | number | nul
           maxRows: 5,
         },
       },
+    },
+    {
+      type: 'input-number',
+      key: 'index',
+      dataKey: 'index',
+      label: '排序',
+      labelPosition: 'left',
+      placeholder: '排序',
+      span: 12,
+      prop: { clearable: true, maxlength: 120 },
     },
     {
       type: 'textarea',
@@ -643,6 +661,7 @@ const usePermissionForm = (externalPermissionId?: MaybeRef<string | number | nul
         permissionType: FORM_PERMISSION_TYPE,
         permissionName: formFormModel.value.permissionName.trim(),
         permissionCode: formFormModel.value.permissionCode.trim(),
+        index: schemaFormModel.value.index,
         remark: formFormModel.value.remark.trim(),
       })
       closeFormModal()
@@ -810,6 +829,7 @@ const usePermissionForm = (externalPermissionId?: MaybeRef<string | number | nul
         hidden: schemaFormModel.value.hidden,
         disabled: schemaFormModel.value.disabled,
         defaultValue: schemaFormModel.value.defaultValue.trim(),
+        index: schemaFormModel.value.index,
         attr: schemaFormModel.value.attr.trim(),
         remark: schemaFormModel.value.remark.trim(),
       })

@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="TModel extends FormModelValue = FormModelValue">
-import { computed, ref } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
 import { NButton, NForm, NFormItem, type FormInst, type FormRules } from 'naive-ui'
 
 import FieldRenderer from './FieldRenderer.vue'
@@ -10,11 +10,16 @@ import type { DynamicFormSlots } from './type/DynamicFormSlots'
 import type DynamicFormSchema from './type/DynamicFormSchema'
 import type { FormFieldKey, FormModelValue } from './type/FormRenderContext'
 import { renderIcon } from '@/features/sys/icon/composable/useIcon'
+import useFormStore from '@/stores/useFormStore'
+import type SysFormSchemaData from '@/features/rbac/permission/type/SysFormSchemaData'
+
+const formStore = useFormStore()
 
 const props = withDefaults(
   defineProps<{
     modelValue?: TModel
     schemas?: DynamicFormSchema<TModel>[]
+    code?: string
     rules?: FormRules
     labelWidth?: number | string
     labelPosition?: 'left' | 'top'
@@ -35,7 +40,8 @@ const props = withDefaults(
   }>(),
   {
     modelValue: () => ({}) as TModel,
-    schemas: () => [],
+    schemas: undefined,
+    code: undefined,
     rules: undefined,
     labelWidth: 100,
     labelPosition: 'left',
@@ -75,15 +81,78 @@ const emit = defineEmits<{
 defineSlots<DynamicFormSlots<TModel>>()
 const formRef = ref<FormInst | null>(null)
 const containerRef = ref<globalThis.HTMLElement | null>(null)
+const remoteSchemas = shallowRef<DynamicFormSchema<TModel>[]>([])
+
+const parseBoolean = (value?: boolean | string | null) => {
+  if (typeof value === 'boolean') return value
+  if (value === 'true') return true
+  if (value === 'false') return false
+  return undefined
+}
+
+const normalizeRemoteSchema = (schema: SysFormSchemaData): DynamicFormSchema<TModel> => {
+  let attrConfig: Partial<DynamicFormSchema<TModel>> = {}
+
+  if (schema.attr) {
+    try {
+      attrConfig = JSON.parse(schema.attr) as Partial<DynamicFormSchema<TModel>>
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  return {
+    ...attrConfig,
+    key: schema.key || attrConfig.key,
+    dataKey: (schema.key || attrConfig.dataKey) as FormFieldKey<TModel>,
+    type:
+      (schema.type as DynamicFormSchema<TModel>['type'] | undefined) ??
+      attrConfig.type ??
+      'input',
+    label: schema.label ?? attrConfig.label,
+    labelPosition:
+      (schema.labelPosition as DynamicFormSchema<TModel>['labelPosition'] | undefined) ??
+      attrConfig.labelPosition,
+    labelWidth: schema.labelWidth ?? attrConfig.labelWidth,
+    size: (schema.size as DynamicFormSchema<TModel>['size'] | undefined) ?? attrConfig.size,
+    placeholder: schema.placeholder ?? attrConfig.placeholder,
+    dictCode: schema.dictCode ?? attrConfig.dictCode,
+    hidden: parseBoolean(schema.hidden) ?? attrConfig.hidden,
+    disabled: parseBoolean(schema.disabled) ?? attrConfig.disabled,
+    defaultValue: schema.defaultValue ?? attrConfig.defaultValue,
+    prop:
+      schema.index !== undefined
+        ? {
+            ...(attrConfig.prop ?? {}),
+            index: schema.index,
+          }
+        : attrConfig.prop,
+    on: attrConfig.on,
+    render: attrConfig.render,
+    rules: attrConfig.rules,
+    span: attrConfig.span,
+    rowSpan: attrConfig.rowSpan,
+    startPoint: attrConfig.startPoint,
+    endPoint: attrConfig.endPoint,
+  }
+}
+
+/**
+ * props.schemas 有值，就优先用本地传入的
+ * props.schemas 没传时，则回退到 remoteSchemas
+ */
+const mergedSchemas = computed<DynamicFormSchema<TModel>[]>(
+  () => (props.schemas ?? remoteSchemas.value) as DynamicFormSchema<TModel>[],
+)
 
 const { model, setFieldValue, setFieldsValue, resetFieldsValue } = useFormModel({
   modelValue: () => props.modelValue,
-  schemas: () => props.schemas,
+  schemas: () => mergedSchemas.value,
   emit,
 })
 
 const { resolvedSchemas } = useFormSchema({
-  schemas: () => props.schemas,
+  schemas: () => mergedSchemas.value,
   labelPosition: () => props.labelPosition,
   disabled: () => props.disabled,
 })
@@ -158,6 +227,25 @@ const scrollToField = (field: FormFieldKey<TModel>) => {
     block: 'nearest',
   })
 }
+
+watch(
+  () => [props.code, props.schemas] as const,
+  async ([code, schemas]) => {
+    if (schemas !== undefined) {
+      remoteSchemas.value = []
+      return
+    }
+
+    if (!code) {
+      remoteSchemas.value = []
+      return
+    }
+
+    const nextSchemas = await formStore.getFormSchema(code)
+    remoteSchemas.value = nextSchemas.map((item) => normalizeRemoteSchema(item))
+  },
+  { immediate: true },
+)
 
 defineExpose({
   validate,

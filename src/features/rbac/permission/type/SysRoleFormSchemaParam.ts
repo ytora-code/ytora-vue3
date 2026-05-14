@@ -8,17 +8,17 @@ export default interface SysRoleFormSchemaParam extends BaseParam {
   /**
    * 角色ID
    */
-  roleId?: number
+  roleId?: string | number
 
   /**
    * 所属的资源ID
    */
-  permissionId?: number
+  permissionId?: string | number
 
   /**
    * 表单的资源ID
    */
-  formId?: number
+  formId?: string | number
 
   /**
    * 最新的ID数组

@@ -74,6 +74,10 @@ const resolveMoreOptions = (row: SysSchedulerTaskData) => {
 
   return [
     {
+      label: '查询日志',
+      key: 'log',
+    },
+    {
       label: '执行一次',
       key: 'runOnce',
     },

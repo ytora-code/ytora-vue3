@@ -43,6 +43,7 @@ type SchemaFormModel = Required<Pick<SysTableSchemaParam, 'key' | 'title'>> & {
   formatter: string
   attr: string
   remark: string
+  index?: number
 }
 
 const TABLE_PERMISSION_TYPE = 3
@@ -154,6 +155,7 @@ const usePermissionTable = (
     ellipsis: 'false',
     formatter: '',
     attr: '',
+    index: undefined,
     remark: '',
   })
 
@@ -269,7 +271,6 @@ const usePermissionTable = (
       label: '表格名称',
       labelPosition: 'left',
       placeholder: '请输入表格名称',
-      span: 12,
       prop: { clearable: true, maxlength: 100 },
     },
     {
@@ -279,7 +280,15 @@ const usePermissionTable = (
       label: '表格编码',
       labelPosition: 'left',
       placeholder: '请输入表格编码',
-      span: 12,
+      prop: { clearable: true, maxlength: 200 },
+    },
+    {
+      type: 'input-number',
+      key: 'index',
+      dataKey: 'index',
+      label: '排序',
+      labelPosition: 'left',
+      placeholder: '排序',
       prop: { clearable: true, maxlength: 200 },
     },
     {
@@ -289,7 +298,6 @@ const usePermissionTable = (
       label: '备注',
       labelPosition: 'left',
       placeholder: '请输入备注',
-      span: 24,
       prop: {
         clearable: true,
         autosize: {
@@ -370,6 +378,16 @@ const usePermissionTable = (
       placeholder: '请选择是否省略',
       span: 12,
       prop: { clearable: true, options: ELLIPSIS_OPTIONS },
+    },
+    {
+      type: 'input-number',
+      key: 'index',
+      dataKey: 'index',
+      label: '排序',
+      labelPosition: 'left',
+      placeholder: '排序',
+      span: 12,
+      prop: { clearable: true, maxlength: 200 },
     },
     {
       type: 'input',
@@ -776,6 +794,7 @@ const usePermissionTable = (
         ellipsis: schemaFormModel.value.ellipsis.trim(),
         formatter: schemaFormModel.value.formatter.trim(),
         attr: schemaFormModel.value.attr.trim(),
+        index: schemaFormModel.value.index,
         remark: schemaFormModel.value.remark.trim(),
       })
       closeSchemaModal()
