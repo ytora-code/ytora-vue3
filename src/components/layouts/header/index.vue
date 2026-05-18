@@ -23,16 +23,13 @@ const fullscreenIcon = computed(() =>
 const sidebarTitle = computed(() => (appStore.sidebarCollapsed ? '展开菜单' : '折叠菜单'))
 const themeTitle = computed(() => (appStore.isDark ? '浅色主题' : '深色主题'))
 const fullscreenTitle = computed(() => (isFullscreen.value ? '退出全屏' : '进入全屏'))
+const bellTitle = computed(() => "我的消息")
 const pageTitle = computed(() => String(route.meta.title || route.name || '首页'))
 
 const userOptions: DropdownOption[] = [
   {
     label: '个人中心',
     key: 'profile',
-  },
-  {
-    label: '消息通知',
-    key: 'notification',
   },
   {
     label: '退出登录',
@@ -103,6 +100,14 @@ onBeforeUnmount(() => {
           <span :class="fullscreenIcon" />
         </template>
       </n-button>
+
+      <n-badge :value="1" :max="99">
+        <n-button quaternary circle :title="bellTitle">
+          <template #icon>
+            <span class="i-lucide-bell" />
+          </template>
+        </n-button>
+      </n-badge>
 
       <n-dropdown trigger="click" :options="userOptions" @select="handleUserOptionSelect">
         <button class="layout-header__user" type="button">

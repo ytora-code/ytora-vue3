@@ -25,6 +25,7 @@ declare module 'vue' {
     Layouts: typeof import('./../components/layouts/index.vue')['default']
     Login: typeof import('./../components/login/index.vue')['default']
     NAvatar: typeof import('naive-ui')['NAvatar']
+    NBadge: typeof import('naive-ui')['NBadge']
     NBreadcrumb: typeof import('naive-ui')['NBreadcrumb']
     NBreadcrumbItem: typeof import('naive-ui')['NBreadcrumbItem']
     NButton: typeof import('naive-ui')['NButton']
